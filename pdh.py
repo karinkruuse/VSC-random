@@ -10,9 +10,9 @@ p = 2*np.pi
 wavelength = 1064*10**-9
 f = c/wavelength
 
-T = 1/f/15
-print("Sample spacing", T)
-t = np.arange(0, 50*p/f, T)
+dT = 1/f/4.2
+print("Sample spacing", dT)
+t = np.arange(0, 100*p/f, dT)
 N = len(t)
 print(N, "samples")
 
@@ -20,14 +20,14 @@ div = np.random.uniform(1.1, 7)
 fLO = f/div
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-12, 1), "THz")
-LO = 0.4*np.sin(fLO*t)
-L_mod = np.sin(f*t + LO)
+LO = 0.4*np.sin(p*fLO*t)
 
 noise_switch = True
 if noise_switch:
     noise_L = np.random.normal(0, 0.2, N)
-    L_mod = np.sin(f*t + LO + noise_L)
-
+    L_mod = np.sin(p*f*t + LO + noise_L)
+else:
+    L_mod = np.sin(p*f*t + LO)
 
 """cavity"""   
 R = 0.99
@@ -66,25 +66,43 @@ def cavity(f, plot=False):
     return _I
  
 
-
 show_laser = True
 if(show_laser):
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(12, 8))
+    fig, (ax2, ax3, ax1) = plt.subplots(3, 1, figsize=(12, 8))
 
-    ax1.plot(t, L_mod)
-    ax1.set_xlabel("Time (s)")
-    ax1.grid()
 
-    x = np.linspace(0.0, N*T, N, endpoint=False)
+    
     yf = fft(L_mod)[:N//2]
-    xf = fftfreq(N, T)[:N//2]
-    print(T)
-    ax2.plot(xf, 2.0/N * np.abs(yf))
+    xf = fftfreq(N, dT)[:N//2]
+
+    lower_bound = (f - fLO) * 0.8
+    upper_bound = (f + fLO) + (f - fLO) * 0.2
+
+    slice_indices = np.where((xf > lower_bound) & (xf < upper_bound))
+    cropped_xf = xf[slice_indices]
+    cropped_yf = yf[slice_indices]
+
+    ax2.plot(cropped_xf, 2.0/N * np.abs(cropped_yf))
+    #print(slice_indices)
+    #ax2.vlines(xf[slice_indices[0][0]], 0, 1, color="red")
+    #ax2.vlines(xf[slice_indices[0][-1]], 0, 1, color="red")
+    #ax2.vlines(f, 0, 1, color="black", linestyle="--")
+    #ax2.vlines(f+fLO, 0, 1, color="black", linestyle="--")
+    #ax2.vlines(f-fLO, 0, 1, color="black", linestyle="--")
     ax2.set_xlabel("Frequency (Hz)")
     ax2.grid()
 
-    #PD_I = np.multiply(1 - cavity(xf), yf)
-    #ax3.plot(xf, cavity(xf))
+    PD_I = np.multiply(1 - cavity(cropped_xf), cropped_yf)
+    ax3.plot(cropped_xf, cavity(cropped_xf))
+    f2wl = lambda x : c/x 
+    wl2f = lambda x : c/x
+    secax = ax3.secondary_xaxis('top', functions=(f2wl, wl2f))
+    secax.set_xlabel('wavelength [nm]')
+    ax3.grid()
+
+    ax1.plot(cropped_xf, PD_I)
+    ax1.grid()
+
 
     plt.tight_layout()
     plt.show()
