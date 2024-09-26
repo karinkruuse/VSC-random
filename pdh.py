@@ -13,7 +13,9 @@ T = 1/f/5
 N = 1000
 t = np.arange(0, N*T, T)
 
-fLO = f/2.7
+fLO = f/1.6
+print("laser frequency", np.round(f*10**-12, 1), "THz")
+print("modulating frequency", np.round(fLO*10**-12, 1), "THz")
 LO = 0.3*np.sin(fLO*t)
 L_mod = np.sin(f*t + LO)
 
@@ -45,29 +47,32 @@ T = 1 - R
 
 M = 4*R/T**2
 n = 1
-m = 45
+m = 1
+L = 2 * wavelength/n*m
+
+const = 2*n*L
+
+# Returns the intensity
 def cavity(f, plot=False):
     _wavelength = c/f
-    _L = 2 * _wavelength/n*m
-    phi = p*n*_L/_wavelength
-    _I = 1/(1+M*np.sin(phi)**2)
+    _phi = p*n*L/_wavelength
+    _I = 1/(1+M*np.sin(_phi)**2)
 
     # entrance angle 0
-    show_cavity = True
-    if show_cavity:
+    if plot:
         delta_wl = 500*10**-9/m
         wl = np.arange(_wavelength-delta_wl, _wavelength+delta_wl, 10**-11)
-        phi = p*n*_L/wl
+        phi = p*n*L/wl
         I = 1/(1+M*np.sin(phi)**2)
+
         fig, ax = plt.subplots(constrained_layout=True)
         ax.plot(phi/np.pi, -I)
-        phi2wl = lambda x : 2*n*_L/x * 10**9
-        wl2phi = lambda x : 2*n*_L/x * 10**-9
+        phi2wl = lambda x : const/x * 10**9
+        wl2phi = lambda x : const/x * 10**-9
         secax = ax.secondary_xaxis('top', functions=(phi2wl, wl2phi))
         secax.set_xlabel('wavelength [nm]')
-        #plt.xlabel("wavelength (nm)")
         plt.show()
     
-    return -_I
+    return _I
  
-print(cavity(f))
+print(cavity(c/wavelength*1.01, False))
