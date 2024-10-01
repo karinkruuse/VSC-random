@@ -12,14 +12,14 @@ p = 2*np.pi
 wavelength = 1064*10**-9
 f = c/wavelength
 
-dT = 1/f/4.2
+dT = 1/f/3.3
 print("Sample spacing", dT)
 t = np.arange(0, 1500*p/f, dT)
 N = len(t)
 print(N, "samples")
 
 
-R = 0.99
+R = 0.9
 r = np.sqrt(R)
 T = 1 - R
 
@@ -30,17 +30,20 @@ L = 2 * wavelength/n*m
 const = 2*n*L
 fsr = c/2/L
 
-fLO = f/3
+fLO = f/60
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
 LO = 0.3*np.sin(p*fLO*t)
 
+
 noise_switch = True
+f = 0.99*f
 if noise_switch:
-    noise_L = np.random.normal(0, 0.6, N)
-    L_mod = np.sin(p*f*t + LO + noise_L)
+    noise_L = np.random.normal(0, 0.1, N)
+    # Miks see ei toota hasti, kui siin on sin
+    L_mod = np.exp(1j *(p*f*t + LO + noise_L))
 else:
-    L_mod = np.sin(p*f*t + LO)
+    L_mod = np.exp(1j *(p*f*t + LO))
 
 
 
@@ -78,36 +81,40 @@ def reflection_coef(f):
 
 show_laser = True
 if(show_laser):
-    fig, (ax2, ax1, ax3) = plt.subplots(3, 1, figsize=(12, 8))
+    fig, (ax3, ax1, ax2) = plt.subplots(3, 1, figsize=(12, 8))
 
-    yf = 2.0/N *fft(L_mod)[:N//2]
-    xf = fftfreq(N, dT)[:N//2]
+    E0 = fft(L_mod)
+    xf = fftfreq(N, dT)
+
+
+    E_ref = reflection_coef(xf) * E0
+    E_time = ifft(E_ref)
+    I = np.real(E_time)**2 + np.imag(E_time)**2
+
+    I_spec = 2.0/N*np.abs(fft(I))
+    xf2 = fftfreq(len(I), dT)
+    ax1.set_title("spectrum of the PD reading?")
+    ax1.plot(xf[1:N//2], I_spec[1:N//2])
+    ax1.set_xlabel("Frequency [Hz?]")
+    ax1.grid()
 
     lower_bound = (f - fLO) * 0.8
     upper_bound = (f + fLO) + (f - fLO) * 0.2
 
     slice_indices = np.where((xf > lower_bound) & (xf < upper_bound))
     cropped_xf = xf[slice_indices]
-    cropped_yf = yf[slice_indices]
+    cropped_yf = 2/N*E0[slice_indices]
 
-    ax2.plot(xf, np.real(yf))
-    ax2.plot(xf, np.imag(yf), color='gray', linestyle="--")
-    ax2.set_xlabel("Frequency (Hz)")
+    ax2.set_title("E Spectrum after reflection")
+    ax2.plot(cropped_xf, 2/N*np.real(E_ref[slice_indices]))
+    ax2.plot(cropped_xf, 2/N*np.imag(E_ref[slice_indices]), color='gray', linestyle="--")
     ax2.grid()
 
-    temp = reflection_coef(xf) * yf
-    PD_I = np.real(temp)**2 + np.imag(temp)**2
-    ax1.plot(xf, PD_I)
-    ax1.grid()
 
-    #reflected = 1-cavity(xf)
-    #PD_I = reflected * yf
-    #L_mod_reconstructed = ifft(PD_I)
-    #ax3.plot(t[:N//2], L_mod_reconstructed)
-    #f2wl = lambda x : c/x * 10**9
-    #wl2f = lambda x : c/x * 10**-9
-    #secax = ax3.secondary_xaxis('top', functions=(f2wl, wl2f))
-    #secax.set_xlabel('wavelength [nm]')
+    ax3.set_title("PM spectrum")
+    ax3.plot(cropped_xf, np.real(cropped_yf))
+    ax3.plot(cropped_xf, np.imag(cropped_yf), color='gray', linestyle="--")
+    ax3.set_xlabel("Frequency (Hz)")
     ax3.grid()
 
     plt.tight_layout()
