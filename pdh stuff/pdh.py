@@ -14,7 +14,7 @@ f = c/wavelength
 
 dT = 1/f/3.3
 print("Sample spacing", dT)
-t = np.arange(0, 3000*p/f, dT)
+t = np.arange(0, 10000*p/f, dT)
 N = len(t)
 print(N, "samples")
 
@@ -31,7 +31,7 @@ const = 2*n*L
 fsr = c/2/L
 print("FSR is", np.round(fsr*10**-12, 3), "THz")
 
-fLO = 0.004 * fsr
+fLO = 0.00004 * fsr
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
 LO = 0.7*np.sin(p*fLO*t)
@@ -54,7 +54,7 @@ else:
 
 xf = fftfreq(N, dT)
 
-delta_f = 1 * fsr * 10**-1
+delta_f = 1 * fsr * 10**-3
 fs = np.arange(f - delta_f, f + delta_f, 2 * delta_f / 500)
 error_signal = []
 
