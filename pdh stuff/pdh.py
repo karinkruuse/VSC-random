@@ -14,7 +14,7 @@ f = c/wavelength
 
 dT = 1/f/3.3
 print("Sample spacing", dT)
-t = np.arange(0, 50000*p/f, dT)
+t = np.arange(0, 300000*p/f, dT)
 N = len(t)
 print(N, "samples")
 
@@ -31,7 +31,7 @@ const = 2*n*L
 fsr = c/2/L
 print("FSR is", np.round(fsr*10**-12, 3), "THz")
 
-fLO = 0.04 * fsr
+fLO = 50*10**8 #0.04 * fsr
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
 mod_depth = 0.15
@@ -73,6 +73,7 @@ if LP_filtering:
     #plt.show()
 
 for f in fs:
+    print(f)
     noise_L = np.random.normal(0, 0.5, N)
     L_mod = np.exp(1j *(p*f*t + LO + noise_L))
     # Modulated laser spectrum
