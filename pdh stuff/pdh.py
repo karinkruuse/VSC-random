@@ -34,7 +34,8 @@ print("FSR is", np.round(fsr*10**-12, 3), "THz")
 fLO = 0.00004 * fsr
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
-LO = 0.7*np.sin(p*fLO*t)
+mod_depth = 0.15
+LO = mod_depth*np.sin(p*fLO*t)
 
 
 # the reflection for E
@@ -54,6 +55,8 @@ else:
 
 xf = fftfreq(N, dT)
 
+
+# Sweeping the frequencies
 delta_f = 1 * fsr * 10**-3
 fs = np.arange(f - delta_f, f + delta_f, 2 * delta_f / 500)
 error_signal = []
@@ -100,7 +103,7 @@ for f in fs:
    
 
 
-plt.title("Modulating frequency is " + str(np.round(fLO*10**-12, 1)) + " THz")
+plt.title("Modulating frequency is " + str(np.round(fLO*10**-9, 1)) + " GHz")
 plt.plot(fs/fsr, np.real(reflection_coef(fs)), color="black")
 ax2 = plt.twinx()
 ax2.plot(fs/fsr, np.real(error_signal), color="navy")
