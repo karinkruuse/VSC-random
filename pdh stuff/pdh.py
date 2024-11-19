@@ -1,81 +1,122 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy.fft import fft, ifft, fftfreq
 from scipy.constants import c
+import matplotlib.pyplot as plt
 
-from signal_generator import LaserSignal
+from collections.abc import Iterable
+
+np.seterr(divide='ignore')
+
+p = 2*np.pi
+
+wavelength = 1064*10**-9
+f = c/wavelength
+
+dT = 1/f/3.3
+print("Sample spacing", dT)
+t = np.arange(0, 50000*p/f, dT)
+N = len(t)
+print(N, "samples")
 
 
-class PDHLocking:
-    def __init__(self, R=0.9, n=1, m=1, wavelength=1064e-9, fsr_ratio=1e-3, lp_filtering=False, cutoff_ratio=0.1):
-        self.R = R
-        self.r = np.sqrt(R)
-        self.T = 1 - R
-        self.n = n
-        self.m = m
-        self.wavelength = wavelength
-        self.frequency = c / wavelength
-        self.L = 2 * wavelength / n * m
-        self.const = 2 * n * self.L
-        self.fsr = c / (2 * self.L)
-        self.delta_f = fsr_ratio * self.fsr
-        self.lp_filtering = lp_filtering
-        self.cutoff_ratio = cutoff_ratio
-        self.error_signal = []
+R = 0.999
+r = np.sqrt(R)
+T = 1 - R
 
-    def reflection_coef(self, freq):
-        ex = np.exp(-1j * self.const * 2 * np.pi / c * freq)
-        return -self.r * (ex - 1) / (1 - self.R * ex)
+M = 4*R/T**2
+n = 1
+m = 1
+L = 2 * wavelength/n*m
+const = 2*n*L
+fsr = c/2/L
+print("FSR is", np.round(fsr*10**-12, 3), "THz")
 
-    def _compute_error_for_frequency(self, f, t, fLO, LO, xf, LP_filter=None):
-        # Generate modulated laser signal for a specific frequency
-        L_mod = np.exp(1j * (2 * np.pi * f * t + LO))
-        E0 = fft(L_mod)
-        
-        # Reflect through cavity and compute error signal
-        E_ref = self.reflection_coef(xf) * E0
-        E_time = ifft(E_ref)
-        I = np.real(E_time) ** 2 + np.imag(E_time) ** 2
-        mixed_signal = np.multiply(np.sin(2 * np.pi * fLO * t), I)
-        mixed_spectrum = fft(mixed_signal)
-        
-        if LP_filter is not None:
-            filt_spec = LP_filter * mixed_spectrum
-            filt_P = ifft(filt_spec)
-            return np.mean(filt_P)
-        else:
-            return mixed_spectrum[0]
-        
-    def calculate_error_signal(self, t):
-        N = len(t)
-        dT = t[1] - t[0]
-        xf = fftfreq(N, dT)
-        
-        fs = np.arange(self.frequency - self.delta_f, self.frequency + self.delta_f, 2 * self.delta_f / 50)
-        
-        fLO = 0.00004 * self.fsr
-        LO = np.sin(2 * np.pi * fLO * t)
-        
-        LP_filter = None
-        if self.lp_filtering:
-            f_cutoff = self.cutoff_ratio * fLO
-            LP_filter = f_cutoff / (xf + f_cutoff)
-        
-        for f in fs:
-            error_value = self._compute_error_for_frequency(f, t, fLO, LO, xf, LP_filter)
-            self.error_signal.append(np.real(error_value))
-        
-        
-        plt.plot(fs/self.fsr, self.error_signal)
-        plt.title("FSR = " + str(self.fsr))
-        plt.xlabel("Frequency (FSRs)")
-        plt.show()
-        return self.error_signal
+fLO = 0.04 * fsr
+print("laser frequency", np.round(f*10**-12, 1), "THz")
+print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
+mod_depth = 0.15
+LO = mod_depth*np.sin(p*fLO*t)
 
-# Usage Example
-laser = LaserSignal()
-#laser.plot_spectrum()
-laser_signal, t = laser.get_signal()
+finesse = np.pi*np.sqrt(R)/(1-R)
+print("Finesse is", finesse)
 
-pdh = PDHLocking()
-error_signal = pdh.calculate_error_signal(t)
+# the reflection for E
+def reflection_coef(f):
+    ex = np.exp(-1j*const*p/c*f)
+    return -r*(ex - 1)/(1-R*ex)
+
+
+noise_switch = True
+if noise_switch:
+    noise_L = np.random.normal(0, 0.1, N)
+    L_mod = np.exp(1j *(p*f*t + LO + noise_L))
+else:
+    L_mod = np.exp(1j *(p*f*t + LO))
+
+
+xf = fftfreq(N, dT)
+
+
+# Sweeping the frequencies
+delta_f = 1 * fsr * 10**-3
+fs = np.arange(f - delta_f, f + delta_f, 2 * delta_f / 50)
+error_signal = []
+
+LP_filtering = False
+
+if LP_filtering:
+    f_cutoff = 0.1 * fLO
+    LP_filter = lambda f: f_cutoff/(f + f_cutoff)
+    filter_response = LP_filter(xf)
+    #plt.plot(xf[:N//2], filter_response[:N//2])
+    #plt.grid()
+    #plt.show()
+
+for f in fs:
+    noise_L = np.random.normal(0, 0.5, N)
+    L_mod = np.exp(1j *(p*f*t + LO + noise_L))
+    # Modulated laser spectrum
+    E0 = fft(L_mod)
+
+    # Add cavity reflection coef
+    E_ref = reflection_coef(xf) * E0
+    # Now go back to time domain
+    E_time = ifft(E_ref)
+    # Find power (PD reading essentially)
+    I = np.real(E_time)**2 + np.imag(E_time)**2
+    # And find its spectrum :)
+    I_spec = 2.0/N*np.abs(fft(I))
+
+    # The mixing
+    mixed_signal = np.multiply(np.sin(p*fLO*t), I)
+    # Spectrum after mixing
+    mixed_spectrum = fft(mixed_signal)
+
+    if LP_filtering:
+        #filter spectrum
+        filt_spec = filter_response * mixed_spectrum
+        filt_P = ifft(filt_spec)
+        error_signal.append(np.mean(filt_P))
+
+    else:
+        # And only the DC (LP filter :))
+        error_signal.append(mixed_spectrum[0])
+   
+
+
+plt.title("Modulating frequency is " + str(np.round(fLO*10**-9, 1)) + " GHz")
+data1 = np.real(reflection_coef(fs))
+y_lim2 = np.max(data1)
+
+plt.plot(fs/fsr/4, data1, color="black")
+plt.ylim(-y_lim2, y_lim2)
+ax2 = plt.twinx()
+y_lim1 = np.max(np.real(error_signal))
+ax2.plot(fs/fsr/4, np.real(error_signal), color="navy")
+ax2.set_ylim(-y_lim1, y_lim1)
+ax2.tick_params(axis='y', labelcolor="navy")
+plt.grid()
+plt.xlabel("Frquency [FSR]")
+plt.show()
+
+
