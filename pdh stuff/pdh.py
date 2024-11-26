@@ -38,7 +38,9 @@ mod_depth = 0.15
 LO = mod_depth*np.sin(p*fLO*t)
 
 finesse = np.pi*np.sqrt(R)/(1-R)
+#finesse2 = 4*R/(1-R)**2
 print("Finesse is", finesse)
+#print("Finesse also is", finesse2)
 
 # the reflection for E
 def reflection_coef(f):

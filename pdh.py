@@ -5,6 +5,8 @@ from scipy.constants import c
 
 from signal_generator import LaserSignal
 
+# The PDH frequency stabilization is accomplished by modulating the laser
+# phase using an electro-optical modulator with MHz side-bands
 
 class PDHLocking:
     def __init__(self, R=0.9, n=1, m=1, wavelength=1064e-9, fsr_ratio=1e-3, lp_filtering=False, cutoff_ratio=0.1):
