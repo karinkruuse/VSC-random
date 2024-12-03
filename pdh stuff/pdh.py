@@ -31,7 +31,7 @@ const = 2*n*L
 fsr = c/2/L
 print("FSR is", np.round(fsr*10**-12, 3), "THz")
 
-fLO = 50*10**8 #0.04 * fsr
+fLO = 0.04 * fsr
 print("laser frequency", np.round(f*10**-12, 1), "THz")
 print("modulating frequency", np.round(fLO*10**-9, 1), "GHz")
 mod_depth = 0.15
