@@ -1,5 +1,5 @@
 
-from elements.biquad_module import Biquad
+from biquad_module import Biquad
 import matplotlib.pyplot as plt
 import numpy as np
 
