@@ -14,8 +14,6 @@ def photodetector(laser1, laser2):
 def delay_line(signal, delay):
     return signal
 
-def PLL(signal):
-    return signal
 
 """Spectral stuff"""
 def LP_filter(signal, f_cutoff):

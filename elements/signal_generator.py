@@ -120,24 +120,3 @@ class LaserSignal:
 
 
     
-
-N = 2*10**7
-
-laser1_digital = LaserSignal(wavelength=1064e-9, nr_cyc=N, f_mod=2.4*10**9, mod_depth=0.15, noise_std=0.1, 
-                 noise_amplitude=10, modulation_type='analog')
-print("gen L1")
-laser1_digital.generate_signal()
-print("L1 gen done")
-laser1_digital.write_to_file("L1_data.txt")
-
-
-# 1 MHz higher
-diff = 10*10**6
-l_LO = c/(c/1064e-9+diff)
-print("gen LO")
-LO_digital = LaserSignal(wavelength=l_LO, nr_cyc=N, f_mod=2.401*10**9, mod_depth=0.15, noise_std=0.1, 
-                 noise_amplitude=10, modulation_type='analog')
-LO_digital.generate_signal()
-print("LO gen done")
-
-LO_digital.write_to_file("LO_data.txt")
