@@ -6,43 +6,34 @@ from scipy.constants import c
 class LaserSignal:
 
 
-    def __init__(self, wavelength=1064e-9, nr_cyc=500000, dT=0):
+    def __init__(self, name, wavelength=1064e-9, nr_cyc=500000, dT=0):
 
+        self.name = name
         self.wavelength = wavelength
         self.frequency = c / wavelength
         if dT == 0: self.dT = 1 / self.frequency / 2.5
         else: self.dT = dT
+        print(f"{name}: dT: {self.dT*1000000} us")
         self.t = np.arange(0, nr_cyc * 2 * np.pi / self.frequency, self.dT)
         self.laser = None
         self.laser_noise = None
         self.clock_jitter = None
         self.N = len(self.t)
-        print("Number of samples:", self.N)
+        print(f"{name}: Number of samples: {self.N}")
 
     @classmethod
-    def from_duration(cls, wavelength=1064e-9, duration=1.0):
+    def from_duration(cls, name, wavelength=1064e-9, duration=1.0, dT=0):
         """
         Alternative constructor to initialize the LaserSignal object with the length of the data stream in seconds.
         """
         frequency = c / wavelength
-        nr_cyc = int(duration * frequency / (2 * np.pi))
-        print("laser wavelegth: ", wavelength)
-        print(f"Number of cycles: {nr_cyc}")
-        return cls(wavelength, nr_cyc)
-    
-    @classmethod
-    def from_duration_and_N(cls, N, wavelength=1064e-9, duration=1.0):
-        """
-        Alternative constructor to initialize the LaserSignal object with the length of the data stream in seconds.
-        """
-        frequency = c / wavelength
-        dT = duration / N
         nr_cyc = duration * frequency / (2 * np.pi)
-        print("laser wavelegth: ", wavelength)
-        print(f"Number of cycles: {nr_cyc}")
-        return cls(wavelength, nr_cyc, dT)
+        print(f"{name}: laser wavelegth: {np.round(wavelength)}")
+        print(f"{name}: Number of cycles: {nr_cyc}")
+        return cls(name, wavelength, nr_cyc, dT=dT)
+    
 
-    def generate_signal(self, mod_depth=0.15, f_mod=2.4*10**9, laser_noise_amplitude=0.001, laser_noise_std=0.1, clock_noise_amplitude=0.1, clock_noise_std=0.01, modulation_type='analog'):
+    def generate_signal(self, mod_depth=0.15, f_mod=2.4*10**9, laser_noise_amplitude=0.01, laser_noise_std=0.1, clock_noise_amplitude=0, clock_noise_std=0.01, modulation_type='analog'):
         
         """
         if modulation_type == 'analog':
@@ -107,7 +98,7 @@ class LaserSignal:
 
         if lim_on: plt.xlim(self.frequency - lim_on*self.f_mod, self.frequency + lim_on*self.f_mod)
 
-        plt.title("Spectrum of the Laser Signal")
+        plt.title(f"{self.name}: Spectrum of the Laser Signal")
         plt.xlabel("Frequency (Hz)")
         plt.ylabel("Amplitude")
         plt.grid()
