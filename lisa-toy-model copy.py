@@ -31,7 +31,7 @@ f1 = 15 * 10**carrier_order
 wl1 = wl(f1)
 
 mod_depth = 0.1
-clock_noise_amplitude = 0.0000
+clock_noise_amplitude = 10**-13
 f_mod1 = 22 * 10**mod_order
 
 laser1 = LaserSignal.from_duration("SC1", wavelength=wl1, duration=duration, dT=1/fADC)
@@ -79,23 +79,24 @@ gamma12 = alpha12 + (f_mod1 - f_mod2) / fADC
 gamma13 = alpha13 + (f_mod1 - f_mod3) / fADC
 gamma23 = alpha23 + (f_mod2 - f_mod3) / fADC
 
-diff1 = N_to_delay12 - N_to_delay13
-diff2 = N_to_delay12 - N_to_delay23
-print(diff1, diff2)
+diff1 = N_to_delay12 - N_to_delay23
+diff2 = N_to_delay13 - N_to_delay23
+#print(diff1, diff2)
 
 # This is supposed to be like the PM measurements. 
 # In the beginning of the array are older values
-carrier12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] + alpha12 * q1[N_to_delay12:]
-carrier21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] + alpha12 * q2[N_to_delay12:]
-carrier13 = - l1[N_to_delay13:] + l3[:-N_to_delay13] + alpha13 * q1[N_to_delay13:]
-carrier31 = - l3[N_to_delay13:] + l1[:-N_to_delay13] + alpha13 * q3[N_to_delay13:]
+carrier12 = - l1[N_to_delay12-diff1:] + l2[-diff1:-N_to_delay12] + alpha12 * q1[N_to_delay12-diff1:]
+carrier21 = - l2[N_to_delay12-diff1:] + l1[-diff1:-N_to_delay12] + alpha12 * q2[N_to_delay12-diff1:]
+carrier13 = - l1[N_to_delay13-diff2:] + l3[-diff2:-N_to_delay13] + alpha13 * q1[N_to_delay13-diff2:]
+carrier31 = - l3[N_to_delay13-diff2:] + l1[-diff2:-N_to_delay13] + alpha13 * q3[N_to_delay13-diff2:]
 carrier23 = - l2[N_to_delay23:] + l3[:-N_to_delay23] + alpha23 * q2[N_to_delay23:]
 carrier32 = - l3[N_to_delay23:] + l2[:-N_to_delay23] + alpha23 * q3[N_to_delay23:]
+#print(len(carrier12), len(carrier21), len(carrier13), len(carrier31), len(carrier23), len(carrier32))
 
-sb12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] - q1[N_to_delay12:] + q2[:-N_to_delay12] + gamma12 * q1[N_to_delay12:]
-sb21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] - q2[N_to_delay12:] + q1[:-N_to_delay12] + gamma12 * q2[N_to_delay12:]
-sb13 = - l1[N_to_delay13:] + l3[:-N_to_delay13] - q1[N_to_delay13:] + q3[:-N_to_delay13] + gamma13 * q1[N_to_delay13:]
-sb31 = - l3[N_to_delay13:] + l1[:-N_to_delay13] - q3[N_to_delay13:] + q1[:-N_to_delay13] + gamma13 * q3[N_to_delay13:]
+sb12 = - l1[N_to_delay12-diff1:] + l2[-diff1:-N_to_delay12] - q1[N_to_delay12-diff1:] + q2[-diff1:-N_to_delay12] + gamma12 * q1[N_to_delay12-diff1:]
+sb21 = - l2[N_to_delay12-diff1:] + l1[-diff1:-N_to_delay12] - q2[N_to_delay12-diff1:] + q1[-diff1:-N_to_delay12] + gamma12 * q2[N_to_delay12-diff1:]
+sb13 = - l1[N_to_delay13-diff2:] + l3[-diff2:-N_to_delay13] - q1[N_to_delay13-diff2:] + q3[-diff2:-N_to_delay13] + gamma13 * q1[N_to_delay13-diff2:]
+sb31 = - l3[N_to_delay13-diff2:] + l1[-diff2:-N_to_delay13] - q3[N_to_delay13-diff2:] + q1[-diff2:-N_to_delay13] + gamma13 * q3[N_to_delay13-diff2:]
 sb23 = - l2[N_to_delay23:] + l3[:-N_to_delay23] - q2[N_to_delay23:] + q3[:-N_to_delay23] + gamma23 * q2[N_to_delay23:]
 sb32 = - l3[N_to_delay23:] + l2[:-N_to_delay23] - q3[N_to_delay23:] + q2[:-N_to_delay23] + gamma23 * q3[N_to_delay23:]
 
@@ -118,7 +119,7 @@ carrier31_decimated = scipy.signal.decimate(carrier31, decimation_factor, ftype=
 carrier23_decimated = scipy.signal.decimate(carrier23, decimation_factor, ftype='iir')
 carrier32_decimated = scipy.signal.decimate(carrier32, decimation_factor, ftype='iir')
 
-"""
+
 print("decimating sidebands")
 sb12_decimated = scipy.signal.decimate(sb12, decimation_factor, ftype='iir')
 sb21_decimated = scipy.signal.decimate(sb21, decimation_factor, ftype='iir')
@@ -133,14 +134,13 @@ sb32_decimated = scipy.signal.decimate(sb32, decimation_factor, ftype='iir')
 #delay2 = N_to_delay2 * dT
 #print(f"Delay2: {delay2*1000} ms")
 
-Precleaning
 Q12 = carrier12_decimated
 Q23 = carrier23_decimated - alpha23*(carrier21_decimated - sb21_decimated)/(alpha12 + 1 - gamma12)
 Q31 = carrier31_decimated - alpha13*(carrier31_decimated - sb31_decimated)/(alpha13 + 1 - gamma13)
 Q13 = carrier13_decimated
 Q21 = carrier21_decimated - alpha12*(carrier21_decimated - sb21_decimated)/(alpha12 + 1 - gamma12)
 Q32 = carrier32_decimated - alpha23*(carrier31_decimated - sb31_decimated)/(alpha13 + 1 - gamma13)
-"""
+
 
 #X0 = carrier12_decimated[N_to_delay12_2:] + carrier21_decimated[:-N_to_delay12_2] - carrier13_decimated[N_to_delay13_2:] - carrier31_decimated[:-N_to_delay13_2]
 to_skip = 300
@@ -150,18 +150,30 @@ to_skip = 300
 # by using the difference of D_1213 and D1312
 # ie the relative delays should still stay correct
 # Also I currently know ITS NEGATIVE
+diff = 0 
 diff = N_to_delay12_2 - N_to_delay13_2
+"""
 print(diff)
 print(N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff, "0", len(carrier12_decimated))
 print(N_to_delay13_2 + N_to_delay12_2 - diff, - N_to_delay12_2, len(carrier21_decimated))
 print(N_to_delay13_2 - diff, - N_to_delay12_2 - N_to_delay12_2, len(carrier13_decimated))
 print(-diff, - N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2, len(carrier31_decimated))
-
+print(N_to_delay12_2 + N_to_delay13_2 + N_to_delay13_2, "0", len(carrier13_decimated))
+print(N_to_delay12_2 + N_to_delay13_2, - N_to_delay13_2, len(carrier31_decimated))
+print(N_to_delay12_2, - N_to_delay13_2 - N_to_delay13_2, len(carrier12_decimated))
+print("0", - N_to_delay13_2 - N_to_delay12_2 - N_to_delay13_2, len(carrier21_decimated))
+"""
 X1 = carrier12_decimated[N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff:] + carrier21_decimated[N_to_delay13_2 + N_to_delay12_2 - diff: - N_to_delay12_2 ] +\
      carrier13_decimated[N_to_delay13_2 - diff: - N_to_delay12_2 - N_to_delay12_2] + carrier31_decimated[-diff: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2] -\
      carrier13_decimated[N_to_delay12_2 + N_to_delay13_2 + N_to_delay13_2:] - carrier31_decimated[N_to_delay12_2 + N_to_delay13_2: - N_to_delay13_2] - \
      carrier12_decimated[N_to_delay12_2: - N_to_delay13_2 - N_to_delay13_2] - carrier21_decimated[: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay13_2]
 X1 = X1[to_skip:-to_skip]
+
+X1_c = Q12[N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff:] + Q21[N_to_delay13_2 + N_to_delay12_2 - diff: - N_to_delay12_2 ] +\
+     Q13[N_to_delay13_2 - diff: - N_to_delay12_2 - N_to_delay12_2] + Q31[-diff: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2] -\
+     Q13[N_to_delay12_2 + N_to_delay13_2 + N_to_delay13_2:] - Q31[N_to_delay12_2 + N_to_delay13_2: - N_to_delay13_2] - \
+     Q12[N_to_delay12_2: - N_to_delay13_2 - N_to_delay13_2] - Q21[: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay13_2]
+X1_c = X1_c[to_skip:-to_skip]
 
 #X0_c = Q12[N_to_delay2:] + Q21[:-N_to_delay2] - Q13[N_to_delay2:] - Q31[:-N_to_delay2]
 #X0_c = X0_c[to_skip:-to_skip]
@@ -193,18 +205,18 @@ ax = plt.subplot(2, 1, 1)
 f, basic_psd_X2 = scipy.signal.welch(X1, fs = f_slow, nperseg= len(X1))
 ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
 #ax.vlines(1/delay, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black")
-ax.set_title("TDI Signal (X0, not accounting for clock jitter)")
+ax.set_title("TDI Signal (X1, not accounting for clock jitter)")
 ax.set_xlabel("Frequency (Hz)")
 #ax.set_ylabel("Amplitude")
 ax.grid()
-"""
+
 ax = plt.subplot(2, 1, 2)
-f, basic_psd_X2 = scipy.signal.welch(X0_c, fs = f_slow, nperseg= len(X0_c))
+f, basic_psd_X2 = scipy.signal.welch(X1_c, fs = f_slow, nperseg= len(X1_c))
 ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
-ax.set_title("TDI Signal (X0 with Sidebands)")
+ax.set_title("TDI Signal (X1 with Sidebands)")
 ax.set_xlabel("Frequency (Hz)")
 #ax.set_ylabel("Amplitude")
 ax.grid()
-"""
+
 plt.tight_layout()
 plt.show()
