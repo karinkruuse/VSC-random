@@ -33,7 +33,7 @@ class LaserSignal:
         return cls(name, wavelength, nr_cyc, dT=dT)
     
 
-    def generate_signal(self, mod_depth=0.15, f_mod=2.4*10**9, laser_noise_amplitude=0.01, laser_noise_std=0.1, clock_noise_amplitude=0, clock_noise_std=0.01, modulation_type='analog'):
+    def generate_signal(self, mod_depth=0.15, f_mod=2.4*10**9, laser_noise_amplitude=10**-14, laser_noise_std=0.1, clock_noise_amplitude=0.001, clock_noise_std=0.01, modulation_type='analog'):
         
         """
         if modulation_type == 'analog':
@@ -46,23 +46,23 @@ class LaserSignal:
 
         # Clock noise
         # GAUSSIAN-ish
-        self.clock_jitter = np.cumsum(clock_noise_amplitude * np.random.normal(0, clock_noise_std, len(self.t)))
-        sideband = mod_depth * np.sin(2 * np.pi * f_mod * self.t + self.clock_jitter)
+        self.clock_jitter = clock_noise_amplitude * np.cumsum(np.random.normal(0, clock_noise_std, len(self.t)))
+        self.sideband = mod_depth * np.sin(2 * np.pi * f_mod * self.t + self.clock_jitter)
 
         # Add GAUSSIAN noise to the signal
         # GAUUSIAN-ish
         self.laser_noise = np.cumsum(laser_noise_amplitude * np.random.normal(0, laser_noise_std, len(self.t)))
-        self.laser = np.exp(1j * (2 * np.pi * self.frequency * self.t + sideband + self.laser_noise))
+        self.laser = np.exp(1j * (2 * np.pi * self.frequency * self.t + self.sideband + self.laser_noise))
     
     def get_signal(self):
-        """
-        Get the generated laser signal and time array.
-        
-        Returns:
-        tuple: (laser signal, time array)
-        """
         return self.laser, self.t
 
+    def get_laser_noise(self):
+        return self.laser_noise, self.t
+
+    def get_clock_jitter(self):
+        return self.clock_jitter
+    
     def add_noise():
         """
         Generate your desired power spectral density in the frequency domain (for example Gaussian, 1/f, etc).
@@ -84,12 +84,6 @@ class LaserSignal:
         return freqs, fft_values
 
     def plot_spectrum(self, lim_on=20):
-        """
-        Plot the spectrum of the laser signal.
-        
-        Parameters:
-        lim_on (int): Limit for the x-axis around the modulation frequency.
-        """
         L_mod_fft = fft(self.laser)[1:self.N//2] * 2 / self.N
         freqs = fftfreq(len(self.t), self.dT)[1:self.N//2]
         

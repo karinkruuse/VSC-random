@@ -29,18 +29,18 @@ laser2 = LaserSignal.from_duration("SC2", wavelength=wl2, duration=duration, dT=
 laser2.generate_signal(mod_depth=0, f_mod=f_mod2)
 #laser2.plot_spectrum()
 
-
+"""
 f3 = 10 * 10**6 # MHz order
 wl3 = wl(f3)
 f_mod3 = 10 * 10**3
 
 laser3 = LaserSignal.from_duration("SC3", wavelength=wl3, duration=duration, dT=dT)
 laser3.generate_signal(mod_depth=0, f_mod=f_mod3)
-
+"""
 
 l1, t1 = laser1.get_signal()
 l2, t2 = laser2.get_signal()
-l3, t3 = laser3.get_signal()
+#l3, t3 = laser3.get_signal()
 
 N_to_delay = int(laser1.N / 5)
 delay = N_to_delay * dT
@@ -83,7 +83,7 @@ for i in range(n):
     phase12.append(phase_est)
 phase12 = np.unwrap(phase12)
 
-
+"""
 print("21")
 temp = l1[:-N_to_delay] + l2[N_to_delay:]
 PD21 = np.real(temp) ** 2 + np.imag(temp) ** 2
@@ -182,7 +182,7 @@ for i in range(n):
     phase31.append(phase_est)
 phase31 = np.unwrap(phase31)
 
-"""
+
 
 plot_PD = False
 if plot_PD:
@@ -200,7 +200,7 @@ if plot_PD:
     ax[1].grid()
     plt.show()
 
-"""
+
 # X0 = η12 + D12η21 − η13 − D13η31
 #N_to_delay = int(N_to_delay*1.6)
 X0 = phase12[N_to_delay:] + phase21[:-N_to_delay] - phase13[N_to_delay:] - phase31[:-N_to_delay]
@@ -217,3 +217,4 @@ plt.xlabel("Frequency (Hz)")
 plt.ylabel("Amplitude")
 plt.grid()
 plt.show()
+"""
