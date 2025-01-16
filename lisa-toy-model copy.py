@@ -79,14 +79,18 @@ gamma12 = alpha12 + (f_mod1 - f_mod2) / fADC
 gamma13 = alpha13 + (f_mod1 - f_mod3) / fADC
 gamma23 = alpha23 + (f_mod2 - f_mod3) / fADC
 
+diff1 = N_to_delay12 - N_to_delay13
+diff2 = N_to_delay23 - N_to_delay13
+print(diff1, diff2)
+
 # This is supposed to be like the PM measurements. 
 # In the beginning of the array are older values
-carrier12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] + alpha12 * q1[N_to_delay12:]
-carrier21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] + alpha12 * q2[N_to_delay12:]
+carrier12 = - l1[N_to_delay12 - diff1:] + l2[-diff1:-N_to_delay12] + alpha12 * q1[N_to_delay12 - diff1:]
+carrier21 = - l2[N_to_delay12 - diff1:] + l1[-diff1:-N_to_delay12] + alpha12 * q2[N_to_delay12 - diff1:]
 carrier13 = - l1[N_to_delay13:] + l3[:-N_to_delay13] + alpha13 * q1[N_to_delay13:]
 carrier31 = - l3[N_to_delay13:] + l1[:-N_to_delay13] + alpha13 * q3[N_to_delay13:]
-carrier23 = - l2[N_to_delay23:] + l3[:-N_to_delay23] + alpha23 * q2[N_to_delay23:]
-carrier32 = - l3[N_to_delay23:] + l2[:-N_to_delay23] + alpha23 * q3[N_to_delay23:]
+carrier23 = - l2[N_to_delay23 - diff2:] + l3[ - diff2:-N_to_delay23] + alpha23 * q2[N_to_delay23 - diff2:]
+carrier32 = - l3[N_to_delay23 - diff2:] + l2[ - diff2:-N_to_delay23] + alpha23 * q3[N_to_delay23 - diff2:]
 
 sb12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] - q1[N_to_delay12:] + q2[:-N_to_delay12] + gamma12 * q1[N_to_delay12:]
 sb21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] - q2[N_to_delay12:] + q1[:-N_to_delay12] + gamma12 * q2[N_to_delay12:]
@@ -97,8 +101,11 @@ sb32 = - l3[N_to_delay23:] + l2[:-N_to_delay23] - q3[N_to_delay23:] + q2[:-N_to_
 
 
 # Downconversion
-f_slow = 40 # Hz, still too much
+f_slow = 50 # Hz, still too much
 decimation_factor = int(fADC // f_slow)
+print(f"delay 12 {N_to_delay12} samples")
+print(f"delay 13 {N_to_delay13} samples")
+print(f"delay 32 {N_to_delay23} samples")
 print("decimating by", decimation_factor)
 t1_decimated = (t1[:-N_to_delay12])[::decimation_factor]  # Adjust time array accordingly
 N_to_delay12_2 = N_to_delay12 // decimation_factor
@@ -141,8 +148,14 @@ to_skip = 300
 
 # Bc im using the indices, I have to make sure the signals actually start at the same time
 # by using the difference of D_1213 and D1312
+# ie the relative delays should still stay correct
 # Also I currently know ITS NEGATIVE
 diff = N_to_delay12_2 - N_to_delay13_2
+print(diff)
+print(N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff, "0", len(carrier12_decimated))
+print(N_to_delay13_2 + N_to_delay12_2 - diff, - N_to_delay12_2, len(carrier21_decimated))
+print(N_to_delay13_2 - diff, - N_to_delay12_2 - N_to_delay12_2, len(carrier13_decimated))
+print(-diff, - N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2, len(carrier31_decimated))
 
 X1 = carrier12_decimated[N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff:] + carrier21_decimated[N_to_delay13_2 + N_to_delay12_2 - diff: - N_to_delay12_2 ] +\
      carrier13_decimated[N_to_delay13_2 - diff: - N_to_delay12_2 - N_to_delay12_2] + carrier31_decimated[-diff: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2] -\
