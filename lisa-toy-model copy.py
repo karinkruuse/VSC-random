@@ -80,17 +80,17 @@ gamma13 = alpha13 + (f_mod1 - f_mod3) / fADC
 gamma23 = alpha23 + (f_mod2 - f_mod3) / fADC
 
 diff1 = N_to_delay12 - N_to_delay13
-diff2 = N_to_delay23 - N_to_delay13
+diff2 = N_to_delay12 - N_to_delay23
 print(diff1, diff2)
 
 # This is supposed to be like the PM measurements. 
 # In the beginning of the array are older values
-carrier12 = - l1[N_to_delay12 - diff1:] + l2[-diff1:-N_to_delay12] + alpha12 * q1[N_to_delay12 - diff1:]
-carrier21 = - l2[N_to_delay12 - diff1:] + l1[-diff1:-N_to_delay12] + alpha12 * q2[N_to_delay12 - diff1:]
+carrier12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] + alpha12 * q1[N_to_delay12:]
+carrier21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] + alpha12 * q2[N_to_delay12:]
 carrier13 = - l1[N_to_delay13:] + l3[:-N_to_delay13] + alpha13 * q1[N_to_delay13:]
 carrier31 = - l3[N_to_delay13:] + l1[:-N_to_delay13] + alpha13 * q3[N_to_delay13:]
-carrier23 = - l2[N_to_delay23 - diff2:] + l3[ - diff2:-N_to_delay23] + alpha23 * q2[N_to_delay23 - diff2:]
-carrier32 = - l3[N_to_delay23 - diff2:] + l2[ - diff2:-N_to_delay23] + alpha23 * q3[N_to_delay23 - diff2:]
+carrier23 = - l2[N_to_delay23:] + l3[:-N_to_delay23] + alpha23 * q2[N_to_delay23:]
+carrier32 = - l3[N_to_delay23:] + l2[:-N_to_delay23] + alpha23 * q3[N_to_delay23:]
 
 sb12 = - l1[N_to_delay12:] + l2[:-N_to_delay12] - q1[N_to_delay12:] + q2[:-N_to_delay12] + gamma12 * q1[N_to_delay12:]
 sb21 = - l2[N_to_delay12:] + l1[:-N_to_delay12] - q2[N_to_delay12:] + q1[:-N_to_delay12] + gamma12 * q2[N_to_delay12:]
