@@ -6,9 +6,9 @@ import scipy.signal
 
 from elements.signal_generator import LaserSignal
 
-fADC = 1*10**4
-carrier_order = 3
-mod_order = 1
+fADC = 2*10**4
+carrier_order = 2.5
+mod_order = 0.5
 wl = lambda f: c / f
 
 # Helper function for FFT plots
@@ -185,23 +185,33 @@ X1_c = X1_c[to_skip:-to_skip]
 #L_mod_fft = fft(X0)[1:N//2] * 2 / N
 #freqs = fftfreq(N, dT)[1:N//2]
 # Plotting original and processed signals
-plt.figure(figsize=(12, 8))
 """
+plt.figure(figsize=(12, 8))
+
 ax = plt.subplot(2, 1, 1)
 plot_fft(ax, laser_signal1, laser1.dT, "Original Laser (L1)")
 
 ax = plt.subplot(2, 1, 2)
-temp = laser_signal2[:-N_to_delay] - laser_signal1[N_to_delay:]
+temp = laser_signal2[:-N_to_delay12] - laser_signal1[N_to_delay12:]
 PD12 = np.real(temp) ** 2 + np.imag(temp) ** 2
 plot_fft(ax, PD12, laser1.dT, "Photodetector 12 signal")
+plt.savefig("TDI_X1_w_clock.png", dpi=300)
+
+#plt.plot(X1)
+#plt.show()
 """
 
-plt.plot(X1)
-plt.show()
-
-
+plt.figure(figsize=(12, 8))
 print("Welching")	
-ax = plt.subplot(2, 1, 1)
+ax = plt.subplot(3, 1, 1)
+f, basic_psd_X2 = scipy.signal.welch(carrier12_decimated, fs = f_slow, nperseg= len(carrier12_decimated))
+ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
+ax.set_title(r'$s_{{12}}$')
+ax.set_xlabel("Frequency (Hz)")
+ax.set_ylabel("ASD [/sqrt(Hz)]")
+ax.grid()
+
+ax = plt.subplot(3, 1, 2)
 f, basic_psd_X2 = scipy.signal.welch(X1, fs = f_slow, nperseg= len(X1))
 ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
 ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black", linewidth=1)
@@ -210,7 +220,7 @@ ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel("ASD [/sqrt(Hz)]")
 ax.grid()
 
-ax = plt.subplot(2, 1, 2)
+ax = plt.subplot(3, 1, 3)
 f, basic_psd_X2 = scipy.signal.welch(X1_c, fs = f_slow, nperseg= len(X1_c))
 ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
 ax.set_title("TDI Signal (X1 with clock correction)")
@@ -220,5 +230,5 @@ ax.set_ylabel("ASD [/sqrt(Hz)]")
 ax.grid()
 
 plt.tight_layout()
-plt.show()
-#plt.savefig("TDI_X1_w_clock2.png", dpi=300)
+#plt.show()
+plt.savefig("TDI_X1_w_clock2.png", dpi=300)
