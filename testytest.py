@@ -7,14 +7,14 @@ duration = 0.05  # Signal duration in seconds (10 ms)
 t = np.linspace(0, duration, int(fs * duration), endpoint=False)
 
 signal_frequency = 1.e3  # Signal frequency (1 kHz)
-true_phase_offset = 0
-laser_noise = np.cumsum(np.random.normal(0, 0.005, len(t)))
+true_phase_offset = np.pi/8
+laser_noise = np.cumsum(np.random.normal(0, 0.0005, len(t)))
 signal = np.cos(2 * np.pi * signal_frequency * t + true_phase_offset + laser_noise)
 
 # PLL Parameters
-Kp = 2.2
-Ki = 8
-alpha = 0.1  # Filter smoothing factor
+Kp = 0.0
+Ki = 0.0
+alpha = 0.9  # Filter smoothing factor
 
 # Initialize PLL variables
 phase_est = 0
@@ -22,15 +22,16 @@ freq_est = 2 * np.pi * signal_frequency
 integrator = 0
 filtered_error = 0
 phase_estimates = []
+phase_errors = []
 
 # PLL loop
 for n in range(len(t)):
     # Generate reference signal
-    ref_signal = np.cos(phase_est)
+    ref_signal = np.sin(phase_est)
     
     # Phase detector
     phase_error = signal[n] * ref_signal
-    
+    phase_errors.append(phase_error)
     # Apply low-pass filter
     filtered_error = alpha * phase_error + (1 - alpha) * (filtered_error if n > 0 else 0)
     
@@ -39,12 +40,13 @@ for n in range(len(t)):
     control_signal = Kp * filtered_error + Ki * integrator
     
     # Update phase estimate
-    phase_est += (freq_est + control_signal) * (1 / fs)
+    phase_est += (freq_est + control_signal) / fs
     phase_estimates.append(phase_est)
 
 # Convert phase estimates to radians and unwrap
 phase_estimates = np.unwrap(phase_estimates)
-
+plt.plot(t, phase_errors)
+plt.show()
 # Plot results
 plt.figure(figsize=(12, 8))
 plt.plot(t, signal, label="Input Signal", alpha=0.6)
