@@ -3,23 +3,28 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.signal import welch
 from scipy.fft import fft, fftfreq
+from scipy.constants import c, hbar
+
+
+wl = 1064e-9
 
 # Fixed laser parameters
-gamma_c = 1 / 16e-9       # Cavity decay rate [1/s]
-gamma_2 = 1 / 0.005       # Upper state decay rate [1/s]
+# Oscillation condition is that the lifetime of the cavity << the lifetime of the upper state
+gamma_c = 1 / 16e-9       # Cavity decay rate [1/s], for diode t = 1.1e-12
+gamma_2 = 1 / 5e-3      # Upper state decay rate [1/s], for diode t = 3e-9
 K = 1                     # Gain coefficient
 beta = 1e-5               # Spontaneous emission factor
 N_th = gamma_c / K        # Threshold inversion
 R_th = gamma_2 * N_th     # Threshold pump rate
 
-pump_factors = [1.1, 100, 3000, 1e4]
+pump_factors = [1.01, 10, 1000, 10000]
 pump_labels = ["Pumpnig rate R_p = " + str(pump_factors[i]) + " R_th" for i in range(len(pump_factors))]	
 colors = ['navy', 'maroon', 'goldenrod', 'green']	
 
 
 # Time setup
-t_span = (0, 200e-6)  # 200 microseconds
-t_eval = np.linspace(*t_span, 10000)
+t_span = (0, 1e-3)
+t_eval = np.linspace(*t_span, 10000000)
 
 # Storage for the last (highest) simulation for RIN
 last_t = None
@@ -43,8 +48,10 @@ def rate_equations(t, y):
     return [dn_dt, dN_dt]
 
 
+
 for i, factor in enumerate(pump_factors):
     R_p = factor * R_th
+    print(f"Pump rate R_p = {R_p:.2e}")
 
     sol = solve_ivp(rate_equations, t_span, y0, t_eval=t_eval, method='RK45')
 
@@ -73,7 +80,7 @@ for i, factor in enumerate(pump_factors):
     ax3.grid(True)
     ax3.set_title(f"Phase Space: {pump_labels[i]}")
     
-    if factor == 3000:
+    if i == 2:
         last_t = sol.t
         last_n = sol.y[0]
 
@@ -82,13 +89,13 @@ fig.tight_layout()
 plt.show()
 
 
-show_RIN = False
+show_RIN = True
 if show_RIN:
     # RIN Spectrum (Welch + FFT) for highest pump case
     n_norm = last_n / np.mean(last_n)
     n_centered = n_norm - 1
     fs = 1 / (last_t[1] - last_t[0])
-    f_welch, Pxx = welch(n_centered, fs=fs, nperseg=1024, scaling='density')
+    f_welch, Pxx = welch(n_centered, fs=fs, nperseg=1e5, scaling='density')
     RIN_dBc_Hz_welch = 10 * np.log10(Pxx)
 
     N = len(n_centered)

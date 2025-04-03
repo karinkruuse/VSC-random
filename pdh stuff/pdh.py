@@ -18,7 +18,7 @@ N = len(t)
 print(N, "samples")
 
 # Mirror reflectivity and cavity parameters
-R = 0.995
+R = 0.995 # NOTICE THIS IS CAPITALIZED
 r = np.sqrt(R)
 T = 1 - R
 
