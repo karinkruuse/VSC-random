@@ -5,10 +5,11 @@ class FinesseGenerator:
     def add(self, line: str):
         self.lines.append(line)
 
-    def laser(self, name, P, f, phase=None, node=None):
+    def laser(self, name, P : float, node, 
+              f : float = 0, phase : float = None):
         self.add(f"l {name} {P} {f}" + (f" {phase}" if phase else "") + (f" {node}" if node else ""))
 
-    def space(self, name, L, n=None, node1=None, node2=None):
+    def space(self, name, L, node1, node2, n=1):
         self.add(f"s {name} {L}" + (f" {n}" if n else "") + (f" {node1} {node2}" if node1 and node2 else ""))
 
     def mirror(self, name, R, T, phi, node1, node2):
@@ -27,7 +28,7 @@ class FinesseGenerator:
     def beamsplitter(self, name, R, T, phi, alpha, n1, n2, n3, n4):
         self.add(f"bs {name} {R} {T} {phi} {alpha} {n1} {n2} {n3} {n4}")
 
-    def modulator(self, name, f, midx, order, mode, phase=None, n1=None, n2=None):
+    def modulator(self, name, f, midx, order, mode, n1, n2, phase=None):
         self.add(f"mod {name} {f} {midx} {order} {mode}" + (f" {phase}" if phase else "") + (f" {n1} {n2}" if n1 and n2 else ""))
 
     def photodiode(self, name, freqs=None, phases=None, nodes=None):
@@ -119,6 +120,9 @@ class FinesseGenerator:
     def print_noises(self):
         self.add("printnoises")
 
+    def get_lines(self):
+        return "\n".join(self.lines)
+
     def save(self, filename="custom_finesse.kat"):
         path = f"input_files/{filename}"
         with open(path, "w") as f:
@@ -126,39 +130,3 @@ class FinesseGenerator:
         return path
 
 
-# Instantiate and save
-finesse = FinesseGenerator()
-finesse.laser("L1", 1, 0, 0, "n1")
-finesse.space("s1", 0.5, node1="n1", node2="n2")
-finesse.mirror("M1", 0.99, 0.01, 0, "n2", "n3")
-finesse.beamsplitter("BS1", 0.5, 0.5, 0, 45, "n3", "n4", "n5", "n6")
-finesse.modulator("EOM1", 1e6, 0.3, 1, "pm", 0, "n6", "n7")
-finesse.photodiode("PD1", freqs=[1e6], phases=[0], nodes=["n7"])
-finesse.qnoised("QPD1", 1, [1e6, 0, "n7"])
-finesse.qshot("QS1", 1, 1e6, 0, ["n7"])
-finesse.bp("BP1", "x", "w0", ["n7"])
-finesse.cp("CAV1", "x", "length")
-finesse.gouy("GOUY1", "x", ["s1"])
-finesse.beam("CCD1", 1e6, ["n7"])
-finesse.fsig("SIG1", "M1", "pm", 1e6, 0)
-finesse.tem("L1", 0, 0, 1, 0)
-finesse.mask("PD1", 0, 0, 1)
-finesse.attr("M1", "Rcx", 2)
-finesse.gauss("G1", "M1", "n2", 0.5, 0)
-finesse.cav("CAV1", "M1", "n2", "M1", "n3")
-finesse.startnode("n1")
-finesse.phase(3)
-finesse.xaxis("L1", "P", "lin", 0, 1, 100)
-finesse.const("pi", 3.14159)
-finesse.variable("v1", 1)
-finesse.func("gain_func", "sin($x)")
-finesse.lock("LOCK1", "$v1", 0.1, 1e-6)
-finesse.tf("TF1", 1, 0, [("p", 10, 1), ("z", 100, 1)])
-finesse.trace(2)
-finesse.yaxis("abs:deg")
-finesse.scale(1.0)
-finesse.print_frequency()
-finesse.print_noises()
-
-# Save and return path
-finesse.save()
