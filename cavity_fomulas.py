@@ -12,20 +12,40 @@ multiplier = 5
 cavity_linewidth = multiplier * delta_nu_laser 
 print("Cavity linewidth is", cavity_linewidth / 1e3, "kHz")
 
-n = 1.0  
-FSR = c / (2 * n * L) 
+FSR = c / (2 * L) 
+print("FSR is", FSR/1e6, "MHz")
 
 finesse = FSR / cavity_linewidth
 print("Finesse is", finesse)
 
 a = - finesse/np.pi
 b = - 1
-c = finesse/np.pi
-R1 = (-b + np.sqrt(b**2 - 4*a*c))/(2*a) # this one seems to be the "wrong one" ie its always negative
-R2 = (-b - np.sqrt(b**2 - 4*a*c))/(2*a)
+d = finesse/np.pi
+R1 = (-b + np.sqrt(b**2 - 4*a*d))/(2*a) # this one seems to be the "wrong one" ie its always negative
+R2 = (-b - np.sqrt(b**2 - 4*a*d))/(2*a)
 print("Assuming r1 = r2 = r")
 print("r is", R2)
 
-# Whatever
-tau = 1 / cavity_linewidth
-finesse = 2 * np.pi * tau * FSR
+print("////////////////////////////////////")
+print("Second cavity")
+L2 = 200e-3  # Length of the cavity in meters
+print("Cavity length is", L2, "m") 
+
+
+multiplier = 5
+cavity_linewidth2 = multiplier * delta_nu_laser 
+print("Cavity linewidth is", cavity_linewidth2 / 1e3, "kHz")
+
+FSR2 = c / (2 * L2) 
+print("FSR is", FSR2/1e6, "MHz")
+
+finesse2 = FSR2 / cavity_linewidth2
+print("Finesse is", finesse2)
+
+a = - finesse2/np.pi
+b = - 1
+d = finesse2/np.pi
+R1 = (-b + np.sqrt(b**2 - 4*a*d))/(2*a) # this one seems to be the "wrong one" ie its always negative
+R2 = (-b - np.sqrt(b**2 - 4*a*d))/(2*a)
+print("Assuming r1 = r2 = r")
+print("r is", R2)

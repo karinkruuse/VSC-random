@@ -11,9 +11,9 @@ wavelength = 1064e-9
 f = c / wavelength
 
 # Time domain
-dT = 1 / f / 2.4
+dT = 1 / f / 2.2
 print(f"Sample spacing {np.round(dT*1e-15, 3)} fs")
-signal_length = 5000000 # random fking units
+signal_length = 12000000 # random units
 t = np.arange(0, signal_length * p / f, dT)
 N = len(t)
 print(N, "samples")
@@ -26,7 +26,7 @@ T = 1 - R
 # Geometry and cavity definition
 n = 1
 m = 1
-L = 1e5 * wavelength # wl on minigi 1e-6 m
+L = 2.5e5 * wavelength # wl on minigi 1e-6 m
 print("L is", L, "m")
 const = 2 * n * L
 fsr = c / (2 * L)
@@ -49,12 +49,11 @@ def reflection_coef(f):
     return -r * (ex - 1) / (1 - R * ex)
 
 # Frequency sweep for error signal (coarse)
-n_points_error = 50
+n_points_error = 150
 delta_f = 1.1 * fLO
 fs_error = np.linspace(f - delta_f, f + delta_f, n_points_error)
 print("Frequency range for error signal (THz)", np.round((fs_error[0])*1e-12, 6), np.round((fs_error[-1])*1e-12, 6))
 print("step size for the error signal", (fs_error[1] - fs_error[0])*1e-6, "MHz (this should be smaller than the mod frequency)")
-
 
 
 # Time-frequency variables
@@ -62,7 +61,7 @@ xf = fftfreq(N, dT)
 print("FFT frequency resolution is", np.round((xf[1] - xf[0]) * 1e-6, 3), "MHz (This has to be smaller than the modulating frequency)")
 error_signal = []
 
-L_mod = np.exp(1j * (p * f * t + LO))#L_mod = np.exp(1j * (p * f_i * t + LO + noise_L))
+L_mod = np.exp(1j * (p * f * t + LO)) #L_mod = np.exp(1j * (p * f_i * t + LO + noise_L))
 E0 = fft(L_mod)[1:N//2] * 2 / N
 freqs = xf[1:N//2]
 
