@@ -56,16 +56,22 @@ peak_diffs = []
 # Monte Carlo analysis of length sensitivity
 np.random.seed(0)
 N = 1000  # Number of random trials
-L1_center = 0.678678
-LR_center = 0.789789
+scaling = 1.2
+
+L1_center = 0.23114 * scaling
+LR_center = 0.25908 * scaling
+print("L1", L1_center, "LR", LR_center)
 FSR1 = fsr(L1_center)
 FSRR = fsr(LR_center)
 
 print("FSR1: ", FSR1/1e6, "MHz")
 print("FSRR: ", FSRR/1e6, "MHz")
 
-L1_samples = np.random.normal(loc=L1_center, scale=0.0005, size=N)
-LR_samples = np.random.normal(loc=LR_center, scale=0.0005, size=N)
+L1_samples = np.random.normal(loc=L1_center, scale=0.00001, size=N)
+LR_samples = np.random.normal(loc=LR_center, scale=0.00001, size=N)
+
+print(np.std(L1_samples)*1000, "mm, L1 std")
+print(np.std(LR_samples)*1000, "mm, LR std")
 
 good_counts = []
 
@@ -74,8 +80,8 @@ for L1_test, LR_test in zip(L1_samples, LR_samples):
     FSRR = fsr(LR_test)
     m1 = int(np.round(f0 / FSR1))
     mr = int(np.round(f0 / FSRR))
-    off1 = int(therm_tuning_range // FSR1)
-    offR = int(therm_tuning_range // FSRR)
+    off1 = np.ceil(therm_tuning_range // FSR1)
+    offR = np.ceil(therm_tuning_range // FSRR)
 
     f1_peaks = FSR1 * np.arange(m1 - off1, m1 + off1 + 1)
     fr_peaks = FSRR * np.arange(mr - offR, mr + offR + 1)
@@ -88,11 +94,11 @@ for L1_test, LR_test in zip(L1_samples, LR_samples):
         if idx < len(fr_peaks): idxs.append(idx)
         for i in idxs:
             diff = abs(f - fr_peaks[i]) / 1e6  # MHz
-            if 20 <= diff <= 60:
+            if 25 <= diff <= 60:
                 count += 1
     good_counts.append(count)
 
-# Visualize sampled cavity lengths
+"""
 fig, axs = plt.subplots(1, 2, figsize=(12, 4))
 
 axs[0].hist(L1_samples * 1e3, bins=40, color='maroon', edgecolor='black')
@@ -109,12 +115,12 @@ axs[1].grid()
 
 plt.tight_layout()
 plt.show()
-
-
-# Plot histogram of good beatnote counts
-plt.hist(good_counts, bins=30, edgecolor='black')
-plt.xlabel("Number of usable beatnotes (25–60 MHz)")
-plt.ylabel("Number of length combinations")
-plt.title("Monte Carlo: Effect of Cavity Length on Beatnote Usability")
-plt.grid()
-plt.show()
+"""
+bb = max(good_counts)
+plt.hist(good_counts, bins=np.arange(bb+1)-0.5, edgecolor='black')
+plt.xticks(range(10))
+plt.xlim([-1, 10])
+plt.xlabel("Number of usable beatnotes (25–60 MHz) in laser tuning range")
+plt.ylabel("Number of suitable peak pairs")
+plt.title("Number of length pairs: " +  str(N) + ", length std: "+ str(np.round(np.std(L1_samples)*1000, 4)) + "mm")
+plt.savefig("Histogram 1-3x UF lengths.png", dpi=350)

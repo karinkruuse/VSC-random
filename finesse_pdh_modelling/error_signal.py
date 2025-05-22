@@ -17,7 +17,7 @@ f_mod = 10e6
 print("f_mod: ", np.round(f_mod/1e6), "MHz")
 R = np.round(0.99986**2, 5)
 T = np.round(1 - R, 5) # otherwise it is 0.00014000000029
-L = 0.26
+L = 0.3
 
 FSR = c / (2 * L) 
 F = np.pi * np.sqrt(R) / (1 - R)
@@ -47,7 +47,7 @@ for i in [0.5, 10, 100, 1000]:
     code.space("s_cav", L, "n4", "n5")
     code.mirror("M2", R, T, 0, "n5", "n6")
 
-    code.fsig("cav_len_noise", "M2", i) # cavity length noise?
+    code.fsig("noise", "M2", i) # cavity length noise?
 
     code.photodiode("PDinphase", freqs=[f_mod], phases=[180], nodes=["n3"])                                  
 
@@ -62,10 +62,9 @@ for i in [0.5, 10, 100, 1000]:
     kat.parse(code.get_lines())
     out = kat.run()
 
-
     frequencies = f0 + out.x                # in Hz or offset units 
     error_signal = out["PDinphase"]    # assuming complex, just use real part
-    ax1.plot(frequencies, error_signal.real, label="Error Signal, can signal: " + str(i))
+    ax1.plot(frequencies, error_signal.real, label="Error Signal, cav signal: " + str(i))
 
 """
 mask = (frequencies >= (f0-linewidth/2)) & (frequencies <= (f0+linewidth/2))
@@ -77,6 +76,7 @@ dy_dx = np.gradient(y_range, x_range)
 #ax2 = ax1.twinx()
 #ax2.plot(x_range, dy_dx, color='red', linestyle='--', label='Derivative')
 ax1.axvspan(f0-linewidth/2, f0+linewidth/2, color='gray', alpha=0.3, label='shaded area')
+
 plt.grid()
 plt.show()
 
