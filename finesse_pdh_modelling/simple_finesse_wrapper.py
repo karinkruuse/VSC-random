@@ -122,6 +122,9 @@ class FinesseGenerator:
 
     def get_lines(self):
         return "\n".join(self.lines)
+    
+    def clean_lines(self):
+        self.lines = []
 
     def save(self, filename="custom_finesse.kat"):
         path = f"input_files/{filename}"
