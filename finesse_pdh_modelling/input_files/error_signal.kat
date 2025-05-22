@@ -5,6 +5,7 @@ s s1 1 1 n2 n3
 m M1 0.99972 0.00028 0 n3 n4
 s s_cav 0.26 1 n4 n5
 m M2 0.99972 0.00028 0 n5 n6
+fsig cav_len_noise M2 10 0
 pd1 PDinphase 10000000.0 180 n3
 xaxis L1 f lin -100000.0 100000.0 50000
 yaxis abs
