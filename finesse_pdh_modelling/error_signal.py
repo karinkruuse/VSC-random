@@ -1,10 +1,13 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.constants import c
-
+from scipy.interpolate import interp1d
 
 from pykat import finesse
 from pykat.commands import * 
 from simple_finesse_wrapper import FinesseGenerator
+
+from laser_noise_PSD import LaserFrequencyNoisePSD
 
 
 kat = finesse.kat()
@@ -28,18 +31,17 @@ code.space("s0", 1, "n0", "n1")
 code.modulator("EOM", f_mod, 0.15, 5, "pm", "n1", "n2")          
 code.space("s1", 1, "n2", "n3")   
 
+# Inject signals here for delta L noise
 code.mirror("M1", R, T, 0, "n3", "n4")
 code.space("s_cav", L, "n4", "n5")
 code.mirror("M2", R, T, 0, "n5", "n6")
 
-phase_shifts = np.arange(0, 90, 10)
-for p in phase_shifts:
-    code.photodiode("deg" + str(p), freqs=[f_mod], phases=[p], nodes=["n3"])                                  
+code.photodiode("PDinphase", freqs=[f_mod], phases=[180], nodes=["n3"])                                  
 
 #code.photodiode("quadrature", freqs=[f_mod], phases=[pha+180], nodes=["n3"])                           
 #code.photodiode("though",nodes=["n6"])         
 
-x_scaling = 0.05
+x_scaling = 0.01
 code.xaxis("L1", "f", "lin", -f_mod*x_scaling, f_mod*x_scaling, 50000)
 code.yaxis("abs")                 
 
@@ -47,4 +49,33 @@ code.save("error_signal.kat")
 kat.parse(code.get_lines())
 out = kat.run()
 
-out.plot()
+wl = 1064e-9
+actual_L = (0.26 // wl) * wl
+f0 = c / wl
+
+frequencies = f0 + out.x                # in Hz or offset units
+error_signal = out["PDinphase"]    # assuming complex, just use real part
+
+
+mask = (frequencies >= (f0-linewidth/2)) & (frequencies <= (f0+linewidth/2))
+x_range = frequencies[mask]
+y_range = error_signal[mask]
+dy_dx = np.gradient(y_range, x_range)
+# error_interp = interp1d(frequencies, error_signal, kind='cubic', bounds_error=False, fill_value="extrapolate")
+
+fig, ax1 = plt.subplots()
+ax1.plot(frequencies, error_signal.real, label="Error Signal")
+ax2 = ax1.twinx()
+ax2.plot(x_range, dy_dx, color='red', linestyle='--', label='Derivative')
+ax1.axvspan(f0-linewidth/2, f0+linewidth/2, color='gray', alpha=0.3, label='shaded area')
+plt.grid()
+plt.show()
+
+"""
+plt.loglog(f, np.sqrt(Pxx))
+plt.xlabel("Frequency [Hz]")
+plt.ylabel("ASD [Hz/√Hz]")
+plt.title("Laser Frequency Noise (1/f)")
+plt.grid(True, which="both")
+plt.show()
+"""
