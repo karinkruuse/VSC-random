@@ -59,8 +59,8 @@ class FinesseGenerator:
     def beam(self, name, f=None, nodes=None):
         self.add(f"beam {name}" + (f" {f}" if f else "") + (" " + " ".join(nodes) if nodes else ""))
 
-    def fsig(self, name, component, sig_type, f, phase, amp=None):
-        self.add(f"fsig {name} {component} {sig_type} {f} {phase}" + (f" {amp}" if amp else ""))
+    def fsig(self, name, component, f, phase=0, sig_type="phase", amp=None):
+        self.add(f"fsig {name} {component} " + (f"{sig_type} " if amp else "") + f"{f} {phase}" + (f" {amp}" if amp else ""))
 
     def tem(self, comp, n, m, factor, phase):
         self.add(f"tem {comp} {n} {m} {factor} {phase}")
