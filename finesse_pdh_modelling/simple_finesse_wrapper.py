@@ -71,6 +71,9 @@ class FinesseGenerator:
     def attr(self, comp, mode, val):
         self.add(f"attr {comp} {mode} {val}")
 
+    def maxtem(self, order : int=0):
+        self.add(f"maxtem {order}")
+
     def gauss(self, name, comp, node, w0, z, wy0=None, zy=None):
         line = f"gauss {name} {comp} {node} {w0} {z}"
         if wy0 and zy:
