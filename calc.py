@@ -23,7 +23,7 @@ print("gUF: ", gUF, "spot_size2: ", spot_size2)"""
 
 
 
-L = 0.33
+L = 0.3
 R = np.arange(L, 10*L, 0.1)
 wl = 1064e-9
 g = 1 - L/R
@@ -33,10 +33,14 @@ FSR = c / (2 * L) / 1e6
 offset1 = 2/np.pi*np.arccos(np.sqrt(g)) * FSR
 offset2 = 3/np.pi*np.arccos(np.sqrt(g)) * FSR
 offset3 = 4/np.pi*np.arccos(np.sqrt(g)) * FSR
-
+offset4 = 5/np.pi*np.arccos(np.sqrt(g)) * FSR
+print(1 - L)
 plt.plot(R, offset1, label="TEM01")
 plt.plot(R, offset2, label="TEM02")
 plt.plot(R, offset3, label="TEM03")
+plt.plot(R, offset4, label="TEM04")
+
+plt.vlines(1, 0, 5*FSR, color='gray', linestyle='--', label="L = 0.25 m")
 plt.xlabel("Radius of curvature [m]")
 plt.ylabel("Higher order mode offset [MHz]")
 plt.title("L = 0.33 m")
