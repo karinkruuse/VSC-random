@@ -35,7 +35,7 @@ for i, (year, label) in enumerate(events.items()):
 # Add arrow for current year (2025)
 ax.annotate("2025", 
             xy=(2025, 1), xytext=(2025, 1.15),
-            arrowprops=dict(facecolor="#667982", shrink=0.05, width=1, headwidth=8),
+            arrowprops=dict(facecolor="#667982", edgecolor="#667982", shrink=0.05, width=1, headwidth=8),
             ha='center', va='bottom',
             fontsize=10, fontname="Arial", color="#667982")
 
@@ -45,4 +45,4 @@ ax.set_xticks([])
 ax.set_yticks([])
 ax.axis("off")
 
-plt.show()
+plt.savefig("asdasd.png", dpi=400, bbox_inches='tight')
