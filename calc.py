@@ -24,3 +24,12 @@ print(f"delta_f = {delta_f/1e6} MHz")
 
 ratio = np.arccos(np.sqrt(g))/np.pi
 print(f"ratio = {ratio}")
+
+print("A little check", FSR/ delta_f)
+
+
+print("----------------------------------------------")
+S = (5/2)**2*np.pi
+h = 5
+V = S * h
+print("The volume is", V, "l")
