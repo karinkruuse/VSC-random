@@ -29,7 +29,7 @@ fs = 1          # Sampling frequency [Hz]
 T = 5_000_000   # Duration [s] (reduced for practicality)
 N = int(fs * T)
 
-amp = 0.1       # 100 mK fluctuation amplitude
+amp = 1       # 100 mK fluctuation amplitude
 noise = amp * np.random.randn(N)
 
 # Welch ASD
@@ -41,11 +41,11 @@ asd_welch = np.sqrt(psd_welch)
 # -------------------------------------------------
 # Shield parameters
 # -------------------------------------------------
-epsilon = 0.05
+epsilon = 0.1
 T = 294**3  # K^3, since later used in Stefan-Boltzmann approx
 c = 900     # J/(kg K) for Al
 
-height = 0.40  # m
+height = 0.50  # m
 thickness = 0.003  # m
 density_al = 2700  # kg/m^3
 
