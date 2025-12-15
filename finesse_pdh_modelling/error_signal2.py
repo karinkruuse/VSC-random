@@ -9,7 +9,7 @@ from simple_finesse_wrapper import FinesseGenerator
 kat = finesse.kat()
 code = FinesseGenerator()
 
-f_mod = 10e6
+f_mod = 10e5
 print("f_mod: ", np.round(f_mod/1e6), "MHz")
 R = np.round(0.99986**2, 5)
 T = np.round(1 - R, 5) # otherwise it is 0.00014000000029

@@ -25,7 +25,7 @@ f0 = c / wl
 fig, ax1 = plt.subplots()
 
 colors = ['gray', 'navy', 'maroon', 'red', 'purple']
-Ls = [0.26, 0.33] #
+Ls = [0.25, 0.3] #
 for i in range(2):
     L = Ls[i]
 
@@ -56,7 +56,7 @@ for i in range(2):
     code.photodiode("transmitted", freqs=[f_mod], phases=[0], nodes=["n4"])
 
     x_scaling = 0.01
-    code.xaxis("L1", "f", "lin", -f_mod*x_scaling, f_mod*x_scaling, 50000)
+    code.xaxis("L1", "f", "lin", -f_mod*x_scaling, f_mod*x_scaling, 5000)
     code.yaxis("abs")                 
 
     code.save("error_signal.kat")	
