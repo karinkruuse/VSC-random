@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 import re
 import numpy as np
 import pandas as pd
@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import welch
 
 # ========== USER CONFIG ==========
-file_path = r"data\Reflaser_20251215_140350.csv"  # single CSV with Input1=PD, Input2=ADC
+file_path = r"data\RefLaser_20251215_170824.csv"  # single CSV with Input1=PD, Input2=ADC
 gain_db = 0           # PDA100A2 setting (0,10,20,30,40,50,60,70)
 load_is_50_ohm = True  # True if DAQ is 50 Ω (Moku etc.)
 welch_nperseg = None   # None => auto
@@ -21,16 +21,16 @@ GAIN_50 = {0:0.75e3,10:2.38e3,20:0.75e4,30:2.38e4,40:0.75e5,50:2.38e5,60:0.75e6,
 GAIN_HZ = {0:1.51e3,10:4.75e3,20:1.5e4,30:4.75e4,40:1.51e5,50:4.75e5,60:1.5e6,70:4.75e6}
 
 def parse_fs(path):
-    fs = None
-    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+    fs = 10
+    """ with open(path, "r", encoding="utf-8", errors="ignore") as f:
         for line in f:
             if not line.startswith("#"):
                 break
-            m = re.search(r"Acquisition rate:\s*([0-9eE+\-\.]+)\s*Hz", line)
+            m = re.search(r"Acquisition rate:*([0-9eE+\-\.]+)\s*Hz", line)
             if m:
                 fs = float(m.group(1)); break
     if fs is None:
-        raise ValueError("Sampling rate not found in header.")
+        raise ValueError("Sampling rate not found in header.")"""
     return fs
 
 def read_moku_csv(path):
