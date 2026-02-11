@@ -54,6 +54,25 @@ wmin = 0.5 * df["Dmaj_um"].to_numpy(float)
 (w0M, z0M), (w0M_e, z0M_e) = pmaj, emaj
 (w0m, z0m), (w0m_e, z0m_e) = pmin, emin
 
+print(f"Wrote: {OUT_PNG}\n")
+
+zRM = np.pi*w0M**2/lambd
+theta_M = lambd/(np.pi*w0M)
+theta_m = lambd/(np.pi*w0m)
+print("Major axis fit:")
+print(f"  w0 = {w0M:.2f} ± {w0M_e:.2f} µm")
+print(f"  z0 = {z0M:.2f} ± {z0M_e:.2f} mm")
+print(f"  zR = {zRM:.2f}  mm")
+print(f"  θ = {theta_M:.2f} mrad")
+
+zRm = np.pi*w0m**2/lambd
+print("Minor axis fit:")
+print(f"  w0 = {w0m:.2f} ± {w0m_e:.2f} µm")
+print(f"  z0 = {z0m:.2f} ± {z0m_e:.2f} mm")
+print(f"  zR = {zRm:.2f}  mm")
+print(f"  θ = {theta_m:.2f} mrad")
+
+
 new_plot = True
 
 # ---- plot ----
@@ -103,20 +122,6 @@ if new_plot:
     plt.close(fig)
 
 
-print(f"Wrote: {OUT_PNG}\n")
 
-zRM = np.pi*w0M**2/lambd
-theta_M = lambd/(np.pi*w0M)
-theta_m = lambd/(np.pi*w0m)
-print("Major axis fit:")
-print(f"  w0 = {w0M:.2f} ± {w0M_e:.2f} µm")
-print(f"  z0 = {z0M:.2f} ± {z0M_e:.2f} mm")
-print(f"  zR = {zRM:.2f}  mm")
-print(f"  θ = {theta_M:.2f} mrad")
 
-zRm = np.pi*w0m**2/lambd
-print("Minor axis fit:")
-print(f"  w0 = {w0m:.2f} ± {w0m_e:.2f} µm")
-print(f"  z0 = {z0m:.2f} ± {z0m_e:.2f} mm")
-print(f"  zR = {zRm:.2f}  mm")
-print(f"  θ = {theta_m:.2f} mrad")
+
