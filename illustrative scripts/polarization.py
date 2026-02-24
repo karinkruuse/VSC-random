@@ -10,7 +10,7 @@ from matplotlib.animation import FuncAnimation
 
 theta_deg = 0.0  # fast axis angle (deg) from +x (fixed as you asked)
 alpha_start_deg = 0.0
-alpha_end_deg = 90.0*2
+alpha_end_deg = 90.0*3
 
 # animation controls
 FPS = 60
@@ -93,11 +93,3 @@ def update(frame):
 ani = FuncAnimation(fig, update, frames=NFRAMES, init_func=init, blit=True, interval=1000/FPS)
 
 plt.show()
-
-# ------------------------------------------------------------
-# To save (optional):
-#   MP4 (needs ffmpeg):
-#     ani.save("pol_hwp_theta0.mp4", fps=FPS, dpi=160)
-#   GIF:
-#     ani.save("pol_hwp_theta0.gif", fps=FPS)
-# ------------------------------------------------------------
