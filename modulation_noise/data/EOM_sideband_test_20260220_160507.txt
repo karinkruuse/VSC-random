@@ -1,0 +1,12 @@
+# % Moku:Pro Phasemeter
+# % Input A (on), set frequency 45.000 000 000 000 MHz, auto-acquire off, 100 kHz bandwidth
+# % Input B (on), set frequency 15.000 000 000 000 MHz, auto-acquire off, 1 kHz bandwidth
+# % Acquisition rate: 3.7252902985e+01 Hz
+# % Advanced settings: phase wrapping at Off, phase auto-reset at Off
+# % Output A (on) - Sine wave, 15.000 000 000 000 MHz, 750 mVpp, 0.000 000 deg, 0.000 0 V offset
+# % Output B (off) - Sine wave, 1.000 000 000 000 MHz, 500 mVpp, 0.000 000 deg, 0.000 0 V offset
+# % External 10 MHz clock
+# % Acquired 2026-02-20 T 16:05:07 +0100
+# % InputA: usb; InputB: lsb
+# % Time (s), Input A Set Frequency (Hz), Input A Frequency (Hz), Input A Phase (cyc), Input A I (V), Input A Q (V),
+# % Input B Set Frequency (Hz), Input B Frequency (Hz), Input B Phase (cyc), Input B I (V), Input B Q (V)
