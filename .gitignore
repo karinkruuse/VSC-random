@@ -2,3 +2,6 @@ __pycache__/
 finesse_pdh_modelling/input_files/*
 
 *.png
+*.csv
+*.li
+*.npy
