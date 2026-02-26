@@ -4,18 +4,6 @@ from scipy.optimize import least_squares
 
 
 
-# --- data (replace with yours) ---
-degrees = np.array([0, 20, 40, 60, 80, 100, 120, 140, 160, 180], dtype=float)
-# Need to check if white and read
-red_out = np.array([208, 181,  80,  66, 172, 218, 124,  51, 109, 208], dtype=float)  # OUT1 meter1
-
-# THIS Powermeter was accidentally set to 400 nm
-# and the responsivity for that is 2, but for IR its 4.
-white_out = 2*np.array([111, 119, 154, 161, 126, 108, 139, 164, 144, 110], dtype=float)  # OUT2 meter2
-
-
-
-
 
 # --- data (replace with yours) ---
 degrees = np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 110, 130, 150, 170, 180], dtype=float)
@@ -32,6 +20,18 @@ red_out = np.array([426,480,488,455,392,328,294,303,353,425,476,458,331,304,425]
 # the one with kapton, 25th of Feb, input on white
 white_out = np.array([135, 75,64,109,190,267,301,278,211,131,73,109,259,282,136], dtype=float)
 red_out = np.array([378,415,423,396,346,298,275,289,329,380,417,397,304,288,378], dtype=float)
+
+# --- data (replace with yours) ---
+degrees = np.array([0, 20, 40, 60, 80, 100, 120, 140, 160, 180], dtype=float)
+# Need to check if white and read
+red_out = np.array([208, 181,  80,  66, 172, 218, 124,  51, 109, 208], dtype=float)  # OUT1 meter1
+
+# THIS Powermeter was accidentally set to 400 nm
+# and the responsivity for that is 2, but for IR its 4.
+white_out = 2*np.array([111, 119, 154, 161, 126, 108, 139, 164, 144, 110], dtype=float)  # OUT2 meter2
+
+
+
 
 theta = np.deg2rad(degrees)
 
