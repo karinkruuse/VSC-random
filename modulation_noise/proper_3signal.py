@@ -158,7 +158,7 @@ ffd, Pffd = psd(df_UL, fs)
 # outputs
 # -----------------------
 out_psd_phase = DATA.with_name(stem + "_psd_phase.png")
-out_asd_phase = DATA.with_name(stem + "_asd_phase.png")
+out_asd_phase = DATA.with_name(stem + "_asd_phase.pdf")
 out_psd_freq  = DATA.with_name(stem + "_psd_freq.png")
 out_asd_freq  = DATA.with_name(stem + "_asd_freq.png")
 
@@ -188,15 +188,15 @@ plt.loglog(fC, S_req,
 plt.loglog(fC, np.sqrt(PC)*2*np.pi, label="Carrier phase", color="k")
 plt.loglog(fL, np.sqrt(PL)*2*np.pi, label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
 plt.loglog(fU, np.sqrt(PU)*2*np.pi, label="USB phase", color=c_purple, alpha=0.7, linewidth=0.6)
-plt.loglog(fM, np.sqrt(PM)*2*np.pi, label="theta_m = 0.5*(USB-LSB)", color="tab:blue")
-plt.loglog(fUC, np.sqrt(PUC)*2*np.pi, label="USB-Carrier (diag)", color=c_purple, alpha=0.35)
-plt.loglog(fCL, np.sqrt(PCL)*2*np.pi, label="Carrier-LSB (diag)", color=c_green, alpha=0.35)
+plt.loglog(fM, np.sqrt(PM)*2*np.pi, label=r'$\delta\phi_m = \frac{1}{2}(\mathrm{USB} - \mathrm{LSB})$', color="tab:blue")
+plt.loglog(fUC, np.sqrt(PUC)*2*np.pi, label="USB-Carrier", color=c_purple, alpha=0.35)
+plt.loglog(fCL, np.sqrt(PCL)*2*np.pi, label="Carrier-LSB", color=c_green, alpha=0.35)
 plt.xlabel("Fourier frequency (Hz)")
 plt.ylabel("ASD (rad/√Hz)")
 plt.grid(True, which="both", alpha=0.3)
 plt.legend()
 plt.tight_layout()
-plt.savefig(out_asd_phase, dpi=200)
+plt.savefig(out_asd_phase, dpi=400)
 plt.close()
 
 # Frequency PSD (Hz^2/Hz)
