@@ -1,0 +1,106 @@
+# ============================================================
+#  miniLISA Testbed Configuration
+# ============================================================
+#  All frequencies in Hz unless otherwise noted.
+#  "TBD" entries are commented out — fill in before use.
+#  LISA reference values are included as comments where they
+#  differ from the testbed.
+# ============================================================
+
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+# Inter-spacecraft and local beatnote range [Hz]
+# LISA: 5e6 -- 25e6  |  Testbed: same target band
+f_het_min = 5e6
+f_het_max = 25e6
+
+# Intermediate beatnote range (before delay line, testbed only) [Hz]
+# Must also accommodate 2*f_mod in this band
+f_inter_min = 25e6
+f_inter_max = 60e6
+
+# Maximum Doppler shift [Hz]
+# LISA: ±12e6  |  Testbed: ± few MHz (programmed)
+doppler_max = 2e6   # adjust as needed
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+# Clock sideband modulation frequency, left spacecraft [Hz]
+# LISA: 2.4e9  |  Testbed: ~9e9 -- 15e9
+f_mod_L = 9e9   # placeholder; set to your Moku output frequency
+
+# Clock sideband modulation frequency, right spacecraft [Hz]
+# LISA: 2.401e9 (differs from left by 1 MHz)
+# Testbed: not independently set — same as left in current concept
+# f_mod_R = 9.001e9   # uncomment if/when right side is implemented
+
+# Clock sideband offset = f_mod_R - f_mod_L [Hz]
+# Must equal 1 MHz in the LISA-faithful configuration
+delta_f_SB = 1e6
+
+# Phase modulation depth (dimensionless)
+# LISA: 0.12  |  Testbed: TBD
+# modulation_depth = 0.12
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+# Ultra-Stable Oscillator (USO) frequency [Hz]
+# LISA: 50e6 (= 3 * 2^24 Hz, per 2025 tech note)
+# Testbed: 10 MHz
+f_USO = 10e6
+
+# Phasemeter system clock / ADC sampling rate [Hz]
+# LISA: 80e6  |  Testbed: TBD (initially set by Moku)
+f_s = 80e6
+
+# Pilot tone frequency [Hz]
+# LISA: 37.5e6 (derived from GHz sideband chain)  |  Testbed: TBD
+# f_pilot_tone = 37.5e6
+
+# Science / telemetry output data rate after CIC downsampling [Hz]
+# LISA: 4  |  Testbed: TBD
+# Requires >= 3 CIC stages to suppress aliased laser noise
+# f_out = 4.0
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+# One-way light travel time [s]  (tau = L / c)
+# LISA: 8.33 s  |  Testbed: emulated electronically at same value
+tau = 8.33
+
+
+# ------------------------------------------------------------
+[ranging]
+# ------------------------------------------------------------
+
+# PRN ranging chip rate [Hz]
+# LISA: ~1e6 (chosen to match delta_f_SB)  |  Testbed: not yet implemented
+# f_PRN = 1e6
+
+# TDIR ranging tone frequency [Hz]  (testbed only)
+f_tone_TDIR = 0.125   # 1/8 Hz
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+# Gravitational wave / science measurement band [Hz]
+f_science_min = 1e-4   # 0.1 mHz
+f_science_max = 1.0    # 1 Hz
+
+# First TDI transfer-function null [Hz]  (f_null = 1 / (2*tau))
+# Should be ~60 mHz for tau = 8.33 s
+f_TDI_null = 0.060
