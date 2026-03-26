@@ -9,6 +9,14 @@ degrees = np.array([
     244, 245, 250, 255, 260, 270, 280, 290, 300, 310,
     320, 330, 340, 350, 360, 370, 380, 390, 400, 410
 ], dtype=float)
+# --- without kapton (label on fiber, NOT in optical path) ---
+P1_meas = np.array([
+     236, 238, 252, 259, 249, 199, 122, 48, 14.9, 37.6,
+     108.9, 189, 244, 245, 198, 119, 45, 12, 31, 95
+ ], dtype=float)
+P2_meas = np.array([
+     261, 260, 249, 247, 254, 286, 339, 388, 409, 389,
+     339, 284, 246, 240, 271, 325, 370, 388, 369, 326], dtype=float)
 # --- with kapton ---
 P1_meas = np.array([
     214, 219, 238, 247, 243, 205, 142, 81.6, 54.9, 72.8,
@@ -19,14 +27,6 @@ P2_meas = np.array([
     289, 248, 222, 222, 247, 286, 320, 333, 318, 286
 ], dtype=float)
 
-# --- without kapton (label on fiber, NOT in optical path) ---
-P1_meas = np.array([
-     236, 238, 252, 259, 249, 199, 122, 48, 14.9, 37.6,
-     108.9, 189, 244, 245, 198, 119, 45, 12, 31, 95
- ], dtype=float)
-P2_meas = np.array([
-     261, 260, 249, 247, 254, 286, 339, 388, 409, 389,
-     339, 284, 246, 240, 271, 325, 370, 388, 369, 326], dtype=float)
 
 
 
@@ -52,10 +52,10 @@ theta = np.deg2rad(degrees)
 
 def predict(theta, P0, Cs, Cf, alpha0, pdl, eps):
     phi     = theta + alpha0 / 2
-    cos2eps = np.cos(2 * eps)
+    cos2eps = np.cos(2 * 0)
     Ps = P0 * (1 + np.cos(4 * phi) * cos2eps) / 2
     Pf = P0 * (1 - np.cos(4 * phi) * cos2eps) / 2
-    Tf = 1.0 - pdl
+    Tf = 1- 0.17#1.0 - pdl
     P_signal = (1 - Cs) * Ps + (1 - Cf) * Tf * Pf
     P_tap    =       Cs  * Ps +       Cf  * Tf * Pf
     return P_signal, P_tap
@@ -135,14 +135,13 @@ print(f"  RMS residuals: Signal={rms_s:.2f} uW,  Tap={rms_t:.2f} uW")
 # =============================================================================
 c_purple = (130/255, 23/255, 112/255)
 c_green  = (41/255, 95/255, 36/255)
-c_blue   = (0.2, 0.4, 0.8)
+c_blue   = (0.3, 0.4, 0.7)
 
 th_f = np.linspace(theta.min(), theta.max(), 2000)
 s_fit, t_fit = predict(th_f, P0, Cs, Cf, alpha0, pdl, eps)
 
-fig, axes = plt.subplots(2, 1, figsize=(8, 8), sharex=True,
-                         gridspec_kw={"height_ratios": [3, 1]})
-ax = axes[0]
+fig, ax = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
+\
 ax.plot(degrees, P1_meas,                "o",  color=c_green,  label="Signal out (data)")
 ax.plot(degrees, P2_meas,                "o",  color=c_purple, label="Tap out (data)")
 ax.plot(np.rad2deg(th_f), s_fit,         "-",  color=c_green,  label="Signal fit")
@@ -152,6 +151,15 @@ ax.plot(np.rad2deg(th_f), s_fit + t_fit, "--", color=c_blue,   label="Signal+Tap
 ax.set_ylabel("Power (µW)")
 ax.grid(True)
 ax.legend(fontsize=8)
+
+
+txt = (f"$C_s={Cs:.3f}$,  $C_f={Cf:.3f}$\n"
+       f"PDL $= {-10*np.log10(Tf):.2f}$ dB")
+ax.text(0.7, 0.9, txt, transform=ax.transAxes, fontsize=9,
+        verticalalignment='bottom',
+        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.6))
+"""
+
 txt = (f"$C_s={Cs:.3f}$,  $C_f={Cf:.3f}$\n"
        f"PDL $= {-10*np.log10(Tf):.2f}$ dB\n"
        f"$\\epsilon = {np.rad2deg(eps):.2f}°$  "
@@ -159,7 +167,8 @@ txt = (f"$C_s={Cs:.3f}$,  $C_f={Cf:.3f}$\n"
 ax.text(0.02, 0.05, txt, transform=ax.transAxes, fontsize=9,
         verticalalignment='bottom',
         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.6))
-
+"""
+"""
 ax2 = axes[1]
 ax2.axhline(0, color="k", lw=0.8)
 ax2.plot(degrees, P1_meas - s_pred, "o", color=c_green,  label="Signal residual")
@@ -168,7 +177,7 @@ ax2.set_ylabel("Residual (µW)")
 ax2.set_xlabel("HWP angle θ (deg)")
 ax2.grid(True)
 ax2.legend(fontsize=8)
-
+"""
 plt.tight_layout()
-plt.savefig("fiber_polarization_fit.png", dpi=400)
+plt.savefig("fiber_w_kapton.png", dpi=400)
 print("Plot saved.")
