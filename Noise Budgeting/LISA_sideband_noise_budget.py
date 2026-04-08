@@ -78,7 +78,7 @@ sqrt_S_dark = I_dark * Z * np.ones_like(f)
 sqrt_S_amp_v = S_amp * np.ones_like(f)
 
 # 1f-RIN: additive voltage noise around f_het [V/sqrt(Hz)]
-sqrt_S_RIN1f = np.ones_like(f) * RIN_level / np.sqrt(2) * (E_ij/E_ji + E_ji/E_ij)
+sqrt_S_RIN1f = np.ones_like(f) * RIN_level * (E_ij/E_ji + E_ji/E_ij)
 
 # 2f-RIN: AM of sideband beatnote, couples at 2*f_het [V/sqrt(Hz)]
 sqrt_S_RIN2f = RIN_level * np.sqrt(2) / 4 * np.ones_like(f)
