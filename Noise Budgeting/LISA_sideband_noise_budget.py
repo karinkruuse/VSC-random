@@ -21,7 +21,7 @@ E_ij   = np.sqrt(1.75e-3)          # local E-field amplitude      [sqrt(W)]
 E_ji   = np.sqrt(585.62e-12)          # remote E-field amplitude     [sqrt(W)]
 m      = 0.53         # EOM modulation depth
 R      = 0.69          # photodiode responsivity      [A/W] (this includes the quantum efficiency)  
-eta    = 1          # heterodyne efficiency
+eta    = 0.8          # heterodyne efficiency
 
 # Frequencies
 f_het  = 18e6         # heterodyne beatnote freq     [Hz]
@@ -78,7 +78,7 @@ sqrt_S_dark = I_dark * Z * np.ones_like(f)
 sqrt_S_amp_v = S_amp * np.ones_like(f)
 
 # 1f-RIN: additive voltage noise around f_het [V/sqrt(Hz)]
-sqrt_S_RIN1f = np.ones_like(f) * RIN_level * (E_ij/E_ji + E_ji/E_ij)
+sqrt_S_RIN1f = np.ones_like(f) * R * Z *RIN_level * np.sqrt(E_ij**4 + E_ji**4)
 
 # 2f-RIN: AM of sideband beatnote, couples at 2*f_het [V/sqrt(Hz)]
 sqrt_S_RIN2f = RIN_level * np.sqrt(2) / 4 * np.ones_like(f)
@@ -99,13 +99,13 @@ sqrt_S_USO = S_q0 * f**(-3/2)
 def additive_to_phase(sqrt_S_V, A):
     return np.sqrt(2) * sqrt_S_V / A
 
-freq_scaling = f_het / nu_m / np.sqrt(2)
+freq_scaling = f_het / nu_m
 
 sp_shot  = additive_to_phase(sqrt_S_shot,  A_sb) * freq_scaling
 sp_dark  = additive_to_phase(sqrt_S_dark,  A_sb) * freq_scaling
 sp_amp   = additive_to_phase(sqrt_S_amp_v, A_sb) * freq_scaling
 sp_RIN1f = additive_to_phase(sqrt_S_RIN1f, A_sb) * freq_scaling
-sp_RIN2f = additive_to_phase(sqrt_S_RIN2f, A_sb) * freq_scaling
+sp_RIN2f = sqrt_S_RIN2f * freq_scaling
 sp_mod   = 2 * np.pi * nu_m * sqrt_S_M
 sp_USO   = 2 * np.pi * nu_m * sqrt_S_USO
 
@@ -213,7 +213,7 @@ ax.loglog(f, sd_tot,   'k--', lw=2, label='Total (RSS)')
 ax.loglog(f, sd_tot_ro, lw=3, label='Total readout noise', color='grey', alpha=0.7)
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Displacement noise ASD [m/√Hz]')
-ax.set_title(f'Displacement noise  (λ = {lam*1e9:.0f} nm,  x = φ·λ/4π)')
+ax.set_title(f'Displacement noise  (λ = {lam*1e9:.0f} nm,  x = φ·λ/2π)')
 ax.legend(fontsize=9)
 ax.grid(True, which='both', alpha=0.3)
 ax.set_xlim(f[0], f[-1])
