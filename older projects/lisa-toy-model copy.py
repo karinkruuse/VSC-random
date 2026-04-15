@@ -130,18 +130,6 @@ sb32_decimated = scipy.signal.decimate(sb32, decimation_factor, ftype='iir')
 
 
 
-
-
-print("decimating noises")
-l1_decimated = scipy.signal.decimate(l1, decimation_factor, ftype='iir')
-l2_decimated = scipy.signal.decimate(l2, decimation_factor, ftype='iir')
-l3_decimated = scipy.signal.decimate(l3, decimation_factor, ftype='iir')
-q1_decimated = scipy.signal.decimate(q1, decimation_factor, ftype='iir')
-q2_decimated = scipy.signal.decimate(q2, decimation_factor, ftype='iir')
-q3_decimated = scipy.signal.decimate(q3, decimation_factor, ftype='iir')
-
-
-
 #N_to_delay2 = int(laser1.N / 5.0001)
 #delay2 = N_to_delay2 * dT
 #print(f"Delay2: {delay2*1000} ms")
@@ -213,50 +201,32 @@ plt.savefig("TDI_X1_w_clock.png", dpi=300)
 #plt.show()
 """
 
-
 plt.figure(figsize=(12, 8))
-print("Welching")
-
-PSD_len = len(l1_decimated) // 4
+print("Welching")	
 ax = plt.subplot(3, 1, 1)
 f, basic_psd_X2 = scipy.signal.welch(carrier12_decimated, fs = f_slow, nperseg= len(carrier12_decimated))
-fffffff, laser_noise_PSD = scipy.signal.welch(l1_decimated, fs = f_slow, nperseg= PSD_len)
-fffffff, clock_noise_PSD = scipy.signal.welch(q2_decimated, fs = f_slow, nperseg= PSD_len)
-
-f_plot = f[2:]
-
-print("Clock noise for SC1 is 0 as we use that as the timing reference")
-ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label=r'$s_{12}$')
-ax.loglog(fffffff, np.sqrt(laser_noise_PSD), 'r--', lw=1, label=r'laser noise: $\sqrt{2}\cdot 2\pi S_\nu / f$')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
-ax.set_title(r'$s_{12}$')
+ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
+ax.set_title(r'$s_{{12}}$')
 ax.set_xlabel("Frequency (Hz)")
-ax.set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
-ax.legend(fontsize=7, loc='upper right')
+ax.set_ylabel("ASD [/sqrt(Hz)]")
 ax.grid()
 
 ax = plt.subplot(3, 1, 2)
 f, basic_psd_X2 = scipy.signal.welch(X1, fs = f_slow, nperseg= len(X1))
-f_plot = f[2:]
-ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label='X1')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
+ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
 ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black", linewidth=1)
 ax.set_title("TDI Signal (X1, not accounting for clock jitter)")
 ax.set_xlabel("Frequency (Hz)")
-ax.set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
-ax.legend(fontsize=7, loc='upper right')
+ax.set_ylabel("ASD [/sqrt(Hz)]")
 ax.grid()
 
 ax = plt.subplot(3, 1, 3)
 f, basic_psd_X2 = scipy.signal.welch(X1_c, fs = f_slow, nperseg= len(X1_c))
-f_plot = f[2:]
-ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label='X1 (clock-corrected)')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
+ax.loglog(f[2:], np.sqrt(basic_psd_X2)[2:])
 ax.set_title("TDI Signal (X1 with clock correction)")
 ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black", linewidth=1)
 ax.set_xlabel("Frequency (Hz)")
-ax.set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
-ax.legend(fontsize=7, loc='upper right')
+ax.set_ylabel("ASD [/sqrt(Hz)]")
 ax.grid()
 
 plt.tight_layout()

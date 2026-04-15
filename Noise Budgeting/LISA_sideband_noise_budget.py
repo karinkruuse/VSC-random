@@ -19,6 +19,7 @@ from scipy.special import j0, j1
 # Optical / interferometer
 E_ij   = np.sqrt(1.75e-3)          # local E-field amplitude      [sqrt(W)]
 E_ji   = np.sqrt(585.62e-12)          # remote E-field amplitude     [sqrt(W)]
+
 m      = 0.53         # EOM modulation depth
 R      = 0.69          # photodiode responsivity      [A/W] (this includes the quantum efficiency)  
 eta    = 0.8          # heterodyne efficiency
