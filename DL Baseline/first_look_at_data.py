@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # ── 1. Load ───────────────────────────────────────────────────────────────────
 
-npy_file = 'data/Delayline_11MHz_mix_UNDEL_DDS_20260416_162317.npy'
+npy_file = 'data/second/DL_baseline_20260417_154937.npy'
 
 data = np.load(npy_file)
 print(f"Shape: {data.shape}  |  dtype: {data.dtype}")
@@ -43,7 +43,7 @@ fig.suptitle('Moku:Pro Phasemeter — raw vs detrended', fontsize=12)
 
 for i, ch in enumerate(range(1, 5)):
     ax_p = axes[i, 0]
-    ax_p.plot(t, channels[ch]['phase'],           lw=0.6, label='raw')
+    #ax_p.plot(t, channels[ch]['phase'],           lw=0.6, label='raw')
     ax_p.plot(t, channels[ch]['phase_detrended'], lw=0.6, label='detrended', alpha=0.8)
     ax_p.set_ylabel(f'Ch{ch} phase (cyc)')
     ax_p.legend(fontsize=7)

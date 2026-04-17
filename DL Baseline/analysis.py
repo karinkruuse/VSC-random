@@ -1,114 +1,155 @@
 import numpy as np
-from scipy.signal import detrend
 import matplotlib.pyplot as plt
+from scipy.signal import detrend
+from pytdi.dsp import timeshift
+from scipy.signal import welch
 
-# ── 1. Load ───────────────────────────────────────────────────────────────────
+# ── CONFIG ────────────────────────────────────────────────────────────────
 filename = 'DL_baseline_20260417_154937'
-npy_file = f'data/second/{filename}.npy'
-data = np.load(npy_file)
+delay_s  = 3.9993
+
+# ── 1. LOAD ───────────────────────────────────────────────────────────────
+data = np.load(f'data/second/{filename}.npy')
 
 def col(name):
     return data[name].copy()
 
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
-print(f"Samples: {len(t)}  |  fs ≈ {fs:.4f} Hz  |  duration ≈ {t[-1]-t[0]:.1f} s")
 
-channels = {}
-for ch in range(1, 5):
+print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s")
+
+def load_channel(ch):
     pfx = f'Input {ch} '
-    channels[ch] = {
-        'set_f':  col(pfx + 'Set Frequency (Hz)'),
-        'freq':   col(pfx + 'Frequency (Hz)'),
-        'phase':  col(pfx + 'Phase (cyc)'),
-        'I':      col(pfx + 'I (V)'),
-        'Q':      col(pfx + 'Q (V)'),
+    return {
+        'freq':  col(pfx + 'Frequency (Hz)'),
+        'phase': col(pfx + 'Phase (cyc)'),
     }
 
-# ── 2. Throw away first 10000 s ───────────────────────────────────────────────
-to_burn = 0
-burn_idx = np.searchsorted(t, t[0] + to_burn)
-print(f"Discarding first {burn_idx} samples (≈ {to_burn} s)")
+channels = {ch: load_channel(ch) for ch in range(1, 5)}
 
-t = t[burn_idx:]
-for ch in range(1, 5):
-    for key in channels[ch]:
-        channels[ch][key] = channels[ch][key][burn_idx:]
+# ── 2. OPTIONAL INITIAL CROPPING ──────────────────────────────────────────
+def crop_time(t, data_dict, t_start=0, t_end=0):
+    i0 = np.searchsorted(t, t[0] + t_start)
+    i1 = np.searchsorted(t, t[-1] - t_end)
 
-# ── 3. Compute t_jitter (ch4_phase / ch4_freq) BEFORE any trimming ────────────
+    if i0 >= i1:
+        raise ValueError("Cropping removed entire dataset")
 
-t_jitter = channels[4]['phase'] / channels[4]['freq']   # undelayed, full length
+    sl = slice(i0, i1)
+    t_new = t[sl]
 
-delay_s       = 1.337
-delay_samples = int(round(delay_s * fs))
-print(f"Delay: {delay_s*1e3:.1f} ms = {delay_samples} samples at fs={fs:.4f} Hz")
-print("Synthetic delay length in seconds (includes rounding error):", delay_samples / fs)
+    out = {}
+    for ch in data_dict:
+        out[ch] = {k: v[sl] for k, v in data_dict[ch].items()}
 
-N_trim = len(t) - delay_samples
+    return t_new, out
 
-# ── 4. Delayed streams (drop first delay_samples) ─────────────────────────────
+t, channels = crop_time(t, channels)
 
-ch1_freq_delayed     = channels[1]['freq'] [delay_samples : delay_samples + N_trim]
-ch3_phase_delayed    = channels[3]['phase'][delay_samples : delay_samples + N_trim]
-t_jitter_delayed     = t_jitter            [delay_samples : delay_samples + N_trim]
+# ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
+t_jitter = channels[4]['phase'] / channels[4]['freq']
 
-# ── 5. Undelayed streams (trim from end) ──────────────────────────────────────
+delay_samples = delay_s * fs
+print(f"Delay: {delay_s:.3f} s = {delay_samples:.2f} samples")
 
-t_trim               = t                   [:N_trim]
-ch1_phase            = channels[1]['phase'][:N_trim]
-ch2_phase            = channels[2]['phase'][:N_trim]
-ch1_freq             = channels[1]['freq'] [:N_trim]
-ch2_freq             = channels[2]['freq'] [:N_trim]
-ch3_freq             = channels[3]['freq'] [:N_trim]
-t_jitter_undelayed   = t_jitter            [:N_trim]
+# ── 4. APPLY DELAYS ───────────────────────────────────────────────────────
+def apply_delay(x, tau):
+    return timeshift(x, -tau)
 
-print(f"Final array length: {N_trim} samples  |  duration ≈ {t_trim[-1]-t_trim[0]:.1f} s")
+ch3_phase_dly = apply_delay(channels[3]['phase'], delay_samples)
+ch3_freq_dly  = apply_delay(channels[3]['freq'],  delay_samples)
+tj_dly        = apply_delay(t_jitter,             delay_samples)
 
-# ── 6. Detrend all phases and jitters ─────────────────────────────────────────
+# ── 5. CROP AFTER TIMESHIFT (IMPORTANT) ───────────────────────────────────
+def crop_edges(t, arrays, n_crop):
+    sl = slice(n_crop, -n_crop)
+    t_new = t[sl]
+    arrays_new = [a[sl] for a in arrays]
+    return t_new, arrays_new
 
-ch1_phase_d         = detrend(ch1_phase,          type='linear')
-ch2_phase_d         = detrend(ch2_phase,          type='linear')
-ch3_phase_delayed_d = detrend(ch3_phase_delayed,  type='linear')
-t_jitter_ud         = detrend(t_jitter_undelayed, type='linear')
-t_jitter_d          = detrend(t_jitter_delayed,   type='linear')
+n_crop = int(np.ceil(abs(delay_samples))) + 2  # +2 for safety
 
-# ── 7. TDI-like combination ───────────────────────────────────────────────────
-# ch1_phase - delayed_ch3_phase - delayed_ch1_freq * (t_jitter_undelayed - t_jitter_delayed)
-# units: phase [cyc], freq [Hz], t_jitter [s] → freq * t_jitter [cyc] ✓
-
-tdi_combo = (
-      ch1_phase_d
-    - ch3_phase_delayed_d
-    + ch1_freq_delayed * (t_jitter_ud - t_jitter_d)
+t, (
+    ch1_phase,
+    ch3_phase_dly,
+    ch3_freq_dly,
+    tj,
+    tj_dly
+) = crop_edges(
+    t,
+    [
+        channels[1]['phase'],
+        ch3_phase_dly,
+        ch3_freq_dly,
+        t_jitter,
+        tj_dly
+    ],
+    n_crop
 )
 
-# ── 8. Plot ───────────────────────────────────────────────────────────────────
+print(f"Post-shift length: {len(t)} samples")
 
-fig, axes = plt.subplots(5, 1, figsize=(12, 14), sharex=True)
-fig.suptitle('Aligned streams and TDI combination', fontsize=12)
+# ── 6. DETREND ────────────────────────────────────────────────────────────
+ch1_phase_d = detrend(ch1_phase)
+ch3_phase_d = detrend(ch3_phase_dly)
+tj_d        = detrend(tj)
+tj_dly_d    = detrend(tj_dly)
 
-axes[0].plot(t_trim, ch1_phase_d,         lw=0.5, label='ch1 phase (undelayed)')
-axes[0].plot(t_trim, ch3_phase_delayed_d, lw=0.5, label='ch3 phase (delayed)',  alpha=0.8)
-axes[0].set_ylabel('Phase (cyc)')
-axes[0].legend(fontsize=8)
+# ── 7. TDI COMBINATION ────────────────────────────────────────────────────
+tdi = (
+    ch1_phase_d
+    - ch3_phase_d
+    - ch3_freq_dly * (tj_d - tj_dly_d)
+)
 
-axes[1].plot(t_trim, ch1_freq,         lw=0.5, label='ch1 freq (undelayed)')
-axes[1].plot(t_trim, ch1_freq_delayed, lw=0.5, label='ch1 freq (delayed)',  alpha=0.8)
-axes[1].set_ylabel('Freq (Hz)')
-axes[1].legend(fontsize=8)
+# ── 8. PLOT ───────────────────────────────────────────────────────────────
 
-axes[2].plot(t_trim, t_jitter_ud, lw=0.5, label='t_jitter (undelayed)')
-axes[2].plot(t_trim, t_jitter_d,  lw=0.5, label='t_jitter (delayed)',  alpha=0.8)
-axes[2].set_ylabel('t_jitter (s)')
-axes[2].legend(fontsize=8)
+"""
+fig, ax = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
 
-axes[3].plot(t_trim, t_jitter_ud - t_jitter_d, lw=0.5)
-axes[3].set_ylabel('Δt_jitter (s)')
+ax[0].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
+ax[0].plot(t, ch3_phase_d, lw=0.5, label='ch3 delayed')
+ax[0].legend()
 
-axes[4].plot(t_trim, tdi_combo, lw=0.5)
-axes[4].set_ylabel('TDI combo (cyc)')
-axes[4].set_xlabel('Time (s)')
+ax[1].plot(t, ch3_freq_dly * (tj_d - tj_dly_d), lw=0.5)
+ax[1].set_ylabel('Correction term')
+
+ax[2].plot(t, detrend(tdi), lw=0.5)
+ax[2].plot(t, ch3_phase_d, lw=0.5)
+ax[2].set_ylabel('TDI')
+ax[2].set_xlabel('Time (s)')
 
 plt.tight_layout()
-plt.savefig('moku_tdi.pdf', dpi=150)
+plt.show()
+
+"""
+# ── 9. ASD COMPUTATION ────────────────────────────────────────────────────
+def compute_asd(x, fs, nperseg=None):
+    if nperseg is None:
+        nperseg = min(len(x)//4, 2**14)
+    f, psd = welch(x, fs=fs, nperseg=nperseg, detrend='constant')
+    asd = np.sqrt(psd)
+    return f, asd
+
+# Use detrended signals
+f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
+f2, asd_ch3 = compute_asd(ch3_phase_d, fs)
+f3, asd_tdi = compute_asd(detrend(tdi), fs)
+
+# ── 10. ASD PLOT ──────────────────────────────────────────────────────────
+plt.figure(figsize=(8, 5))
+
+plt.loglog(f1, asd_ch1, lw=1, label='ch1 phase')
+plt.loglog(f2, asd_ch3, lw=1, label='ch3 delayed phase')
+plt.loglog(f3, asd_tdi, lw=1.5, label='TDI combo')
+
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('ASD (cyc / √Hz)')
+plt.title('Amplitude Spectral Density')
+
+plt.grid(True, which='both', ls='--', alpha=0.5)
+plt.legend()
+
+plt.tight_layout()
 plt.show()
