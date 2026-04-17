@@ -8,7 +8,7 @@ from elements.signal_generator import LaserSignal
 
 fADC = 2*10**4
 carrier_order = 4
-mod_order = 1
+mod_order = 2
 wl = lambda f: c / f
 
 # Helper function for FFT plots
@@ -112,46 +112,40 @@ t1_decimated = (t1[:-N_to_delay12])[::decimation_factor]  # Adjust time array ac
 N_to_delay12_2 = N_to_delay12 // decimation_factor
 N_to_delay23_2 = N_to_delay23 // decimation_factor
 N_to_delay13_2 = N_to_delay13 // decimation_factor
-carrier12_decimated = scipy.signal.decimate(carrier12, decimation_factor, ftype='iir')
-carrier21_decimated = scipy.signal.decimate(carrier21, decimation_factor, ftype='iir')
-carrier13_decimated = scipy.signal.decimate(carrier13, decimation_factor, ftype='iir')
-carrier31_decimated = scipy.signal.decimate(carrier31, decimation_factor, ftype='iir')
-carrier23_decimated = scipy.signal.decimate(carrier23, decimation_factor, ftype='iir')
-carrier32_decimated = scipy.signal.decimate(carrier32, decimation_factor, ftype='iir')
-
-
-print("decimating sidebands")
-sb12_decimated = scipy.signal.decimate(sb12, decimation_factor, ftype='iir')
-sb21_decimated = scipy.signal.decimate(sb21, decimation_factor, ftype='iir')
-sb13_decimated = scipy.signal.decimate(sb13, decimation_factor, ftype='iir')
-sb31_decimated = scipy.signal.decimate(sb31, decimation_factor, ftype='iir')
-sb23_decimated = scipy.signal.decimate(sb23, decimation_factor, ftype='iir')
-sb32_decimated = scipy.signal.decimate(sb32, decimation_factor, ftype='iir')
 
 
 
+down = decimation_factor
+up = 1
+carrier12_decimated = scipy.signal.resample_poly(carrier12, up, down)
+carrier21_decimated = scipy.signal.resample_poly(carrier21, up, down)
+carrier13_decimated = scipy.signal.resample_poly(carrier13, up, down)
+carrier31_decimated = scipy.signal.resample_poly(carrier31, up, down)
+carrier23_decimated = scipy.signal.resample_poly(carrier23, up, down)
+carrier32_decimated = scipy.signal.resample_poly(carrier32, up, down)
+
+sb12_decimated = scipy.signal.resample_poly(sb12, up, down)
+sb21_decimated = scipy.signal.resample_poly(sb21, up, down)
+sb13_decimated = scipy.signal.resample_poly(sb13, up, down)
+sb31_decimated = scipy.signal.resample_poly(sb31, up, down)
+sb23_decimated = scipy.signal.resample_poly(sb23, up, down)
+sb32_decimated = scipy.signal.resample_poly(sb32, up, down)
+
+l1_decimated = scipy.signal.resample_poly(l1, up, down)
+l2_decimated = scipy.signal.resample_poly(l2, up, down)
+l3_decimated = scipy.signal.resample_poly(l3, up, down)
+q1_decimated = scipy.signal.resample_poly(q1, up, down)
+q2_decimated = scipy.signal.resample_poly(q2, up, down)
+q3_decimated = scipy.signal.resample_poly(q3, up, down)
 
 
-print("decimating noises")
-l1_decimated = scipy.signal.decimate(l1, decimation_factor, ftype='iir')
-l2_decimated = scipy.signal.decimate(l2, decimation_factor, ftype='iir')
-l3_decimated = scipy.signal.decimate(l3, decimation_factor, ftype='iir')
-q1_decimated = scipy.signal.decimate(q1, decimation_factor, ftype='iir')
-q2_decimated = scipy.signal.decimate(q2, decimation_factor, ftype='iir')
-q3_decimated = scipy.signal.decimate(q3, decimation_factor, ftype='iir')
-
-
-
-#N_to_delay2 = int(laser1.N / 5.0001)
-#delay2 = N_to_delay2 * dT
-#print(f"Delay2: {delay2*1000} ms")
 
 Q12 = carrier12_decimated
-Q23 = carrier23_decimated - alpha23*(carrier21_decimated - sb21_decimated)/(alpha12 + 1 - gamma12)
-Q31 = carrier31_decimated - alpha13*(carrier31_decimated - sb31_decimated)/(alpha13 + 1 - gamma13)
 Q13 = carrier13_decimated
 Q21 = carrier21_decimated - alpha12*(carrier21_decimated - sb21_decimated)/(alpha12 + 1 - gamma12)
-Q32 = carrier32_decimated - alpha23*(carrier31_decimated - sb31_decimated)/(alpha13 + 1 - gamma13)
+Q31 = carrier31_decimated - alpha13*(carrier31_decimated - sb31_decimated)/(alpha13 + 1 - gamma13)
+Q23 = carrier23_decimated - alpha23*(carrier23_decimated - sb23_decimated)/(alpha23 + 1 - gamma23)
+Q32 = carrier32_decimated - alpha23*(carrier32_decimated - sb32_decimated)/(alpha23 + 1 - gamma23)
 
 
 #X0 = carrier12_decimated[N_to_delay12_2:] + carrier21_decimated[:-N_to_delay12_2] - carrier13_decimated[N_to_delay13_2:] - carrier31_decimated[:-N_to_delay13_2]
@@ -187,31 +181,76 @@ X1_c = Q12[N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff:] + Q21[N_to_
      Q12[N_to_delay12_2: - N_to_delay13_2 - N_to_delay13_2] - Q21[: - N_to_delay13_2 - N_to_delay12_2 - N_to_delay13_2]
 X1_c = X1_c[to_skip:-to_skip]
 
-#X0_c = Q12[N_to_delay2:] + Q21[:-N_to_delay2] - Q13[N_to_delay2:] - Q31[:-N_to_delay2]
-#X0_c = X0_c[to_skip:-to_skip]
-#plt.plot(t1[N_to_delay+N_to_delay2:], X0)
-#plt.grid()
-#plt.show()
 
-#N = len(X0)
-#L_mod_fft = fft(X0)[1:N//2] * 2 / N
-#freqs = fftfreq(N, dT)[1:N//2]
-# Plotting original and processed signals
-"""
-plt.figure(figsize=(12, 8))
 
-ax = plt.subplot(2, 1, 1)
-plot_fft(ax, laser_signal1, laser1.dT, "Original Laser (L1)")
+# ── Laser-only signals ────────────────────────────────────────────────────────
+carrier12_l = - l1[N_to_delay12-diff1:] + l2[-diff1:-N_to_delay12]
+carrier21_l = - l2[N_to_delay12-diff1:] + l1[-diff1:-N_to_delay12]
+carrier13_l = - l1[N_to_delay13-diff2:] + l3[-diff2:-N_to_delay13]
+carrier31_l = - l3[N_to_delay13-diff2:] + l1[-diff2:-N_to_delay13]
+carrier23_l = - l2[N_to_delay23:] + l3[:-N_to_delay23]
+carrier32_l = - l3[N_to_delay23:] + l2[:-N_to_delay23]
 
-ax = plt.subplot(2, 1, 2)
-temp = laser_signal2[:-N_to_delay12] - laser_signal1[N_to_delay12:]
-PD12 = np.real(temp) ** 2 + np.imag(temp) ** 2
-plot_fft(ax, PD12, laser1.dT, "Photodetector 12 signal")
-plt.savefig("TDI_X1_w_clock.png", dpi=300)
+print(len(carrier12_l), len(carrier13_l), len(carrier23_l))
+# ── TDI X1 without decimation, using full-rate delay indices ──────────────────
+# Total delay offset for each arm of X1
+offset_arm1 = N_to_delay13 + N_to_delay12 + N_to_delay12 - diff1  # 204000
+offset_arm2 = N_to_delay12 + N_to_delay13 + N_to_delay13          # 202000
+offset = max(offset_arm1, offset_arm2)                             # 204000
+extra = offset - offset_arm2                                       # 2000
 
-#plt.plot(X1)
-#plt.show()
-"""
+X1_laser_nd = carrier12_l[offset:] + \
+              carrier21_l[offset - N_to_delay12: -N_to_delay12] + \
+              carrier13_l[offset - N_to_delay12 - N_to_delay12: -N_to_delay12 - N_to_delay12] + \
+              carrier31_l[offset - N_to_delay13 - N_to_delay12 - N_to_delay12: -N_to_delay13 - N_to_delay12 - N_to_delay12] - \
+              carrier13_l[offset:] - \
+              carrier31_l[offset - N_to_delay13: -N_to_delay13] - \
+              carrier12_l[offset - N_to_delay13 - N_to_delay13: -N_to_delay13 - N_to_delay13] - \
+              carrier21_l[offset - N_to_delay13 - N_to_delay13 - N_to_delay12: -N_to_delay13 - N_to_delay13 - N_to_delay12]
+X1_laser_nd = X1_laser_nd[to_skip:-to_skip]
+
+# ── TDI X1 with decimation ────────────────────────────────────────────────────
+carrier12_l_d = scipy.signal.resample_poly(carrier12_l, 1, decimation_factor)
+carrier21_l_d = scipy.signal.resample_poly(carrier21_l, 1, decimation_factor)
+carrier13_l_d = scipy.signal.resample_poly(carrier13_l, 1, decimation_factor)
+carrier31_l_d = scipy.signal.resample_poly(carrier31_l, 1, decimation_factor)
+carrier23_l_d = scipy.signal.resample_poly(carrier23_l, 1, decimation_factor)
+carrier32_l_d = scipy.signal.resample_poly(carrier32_l, 1, decimation_factor)
+
+
+X1_laser_d = carrier12_l_d[N_to_delay13_2 + N_to_delay12_2 + N_to_delay12_2 - diff:] + \
+             carrier21_l_d[N_to_delay13_2 + N_to_delay12_2 - diff: -N_to_delay12_2] + \
+             carrier13_l_d[N_to_delay13_2 - diff: -N_to_delay12_2 - N_to_delay12_2] + \
+             carrier31_l_d[-diff: -N_to_delay13_2 - N_to_delay12_2 - N_to_delay12_2] - \
+             carrier13_l_d[N_to_delay12_2 + N_to_delay13_2 + N_to_delay13_2:] - \
+             carrier31_l_d[N_to_delay12_2 + N_to_delay13_2: -N_to_delay13_2] - \
+             carrier12_l_d[N_to_delay12_2: -N_to_delay13_2 - N_to_delay13_2] - \
+             carrier21_l_d[: -N_to_delay13_2 - N_to_delay12_2 - N_to_delay13_2]
+X1_laser_d = X1_laser_d[to_skip:-to_skip]
+
+# ── Plot ──────────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+f_nd, psd_nd = scipy.signal.welch(X1_laser_nd, fs=fADC, nperseg=len(X1_laser_nd)//4)
+f_d,  psd_d  = scipy.signal.welch(X1_laser_d,  fs=f_slow, nperseg=len(X1_laser_d)//4)
+
+axes[0].loglog(f_nd[2:], np.sqrt(psd_nd)[2:], label='X1 laser only')
+axes[0].set_title("Laser-only TDI (no decimation)")
+axes[0].set_xlabel("Frequency (Hz)")
+axes[0].set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
+axes[0].legend()
+axes[0].grid()
+
+axes[1].loglog(f_d[2:], np.sqrt(psd_d)[2:], label='X1 laser only (decimated)')
+axes[1].set_title("Laser-only TDI (decimated)")
+axes[1].set_xlabel("Frequency (Hz)")
+axes[1].set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
+axes[1].legend()
+axes[1].grid()
+
+plt.tight_layout()
+plt.savefig("TDI_laser_only.png", dpi=300)
+plt.show()
 
 
 plt.figure(figsize=(12, 8))
@@ -226,9 +265,10 @@ fffffff, clock_noise_PSD = scipy.signal.welch(q2_decimated, fs = f_slow, nperseg
 f_plot = f[2:]
 
 print("Clock noise for SC1 is 0 as we use that as the timing reference")
+print("Limiting factor currently seems to be the decimation")
 ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label=r'$s_{12}$')
 ax.loglog(fffffff, np.sqrt(laser_noise_PSD), 'r--', lw=1, label=r'laser noise: $\sqrt{2}\cdot 2\pi S_\nu / f$')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
+ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2)/ fADC *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
 ax.set_title(r'$s_{12}$')
 ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
@@ -239,7 +279,7 @@ ax = plt.subplot(3, 1, 2)
 f, basic_psd_X2 = scipy.signal.welch(X1, fs = f_slow, nperseg= len(X1))
 f_plot = f[2:]
 ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label='X1')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
+ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2)/ fADC *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
 ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black", linewidth=1)
 ax.set_title("TDI Signal (X1, not accounting for clock jitter)")
 ax.set_xlabel("Frequency (Hz)")
@@ -248,12 +288,12 @@ ax.legend(fontsize=7, loc='upper right')
 ax.grid()
 
 ax = plt.subplot(3, 1, 3)
-f, basic_psd_X2 = scipy.signal.welch(X1_c, fs = f_slow, nperseg= len(X1_c))
+f, basic_psd_X2_c = scipy.signal.welch(X1_c, fs = f_slow, nperseg= len(X1_c))
 f_plot = f[2:]
-ax.loglog(f_plot, np.sqrt(basic_psd_X2)[2:], label='X1 (clock-corrected)')
-ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2) *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
+ax.loglog(f_plot, np.sqrt(basic_psd_X2_c)[2:], label='X1 (clock-corrected)')
+ax.loglog(fffffff, 2 * np.pi * abs(f1 - f2)/ fADC *np.sqrt(clock_noise_PSD), 'g--', lw=1, label=r'clock noise: $2\pi|f_1-f_2|\,S_q$')
 ax.set_title("TDI Signal (X1 with clock correction)")
-ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2)), np.max(np.sqrt(basic_psd_X2)[2:]), color="black", linewidth=1)
+ax.vlines(1/delay13, np.min(np.sqrt(basic_psd_X2_c)), np.max(np.sqrt(basic_psd_X2_c)[2:]), color="black", linewidth=1)
 ax.set_xlabel("Frequency (Hz)")
 ax.set_ylabel(r"ASD [rad/$\sqrt{\mathrm{Hz}}$]")
 ax.legend(fontsize=7, loc='upper right')
