@@ -5,8 +5,8 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DL_baseline_20260417_154937'
-delay_s  = 3.9993
+filename = 'Delay_line_clock_ref_in_input_4_pilot_in_input_2_20260421_132555'
+delay_s  = 3.9978856181
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/second/{filename}.npy')
@@ -45,10 +45,19 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
     return t_new, out
 
-t, channels = crop_time(t, channels)
+duration = t[-1] - t[0]
+print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
+start_time = 7.5 * 60 * 60
+end_time = 13 * 60 * 60
+t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
-t_jitter = channels[4]['phase'] / channels[4]['freq']
+DDS_signal_nr = 2
+print(f"Measuring timing jitters from channel {DDS_signal_nr}")
+t_jitter = channels[DDS_signal_nr]['phase'] / channels[DDS_signal_nr]['freq']
+
+f0 = channels[4]['freq'].mean()
+print(f"Reference frequency (ch4 mean): {f0:.6f} Hz")
 
 delay_samples = delay_s * fs
 print(f"Delay: {delay_s:.3f} s = {delay_samples:.2f} samples")
@@ -68,10 +77,12 @@ def crop_edges(t, arrays, n_crop):
     arrays_new = [a[sl] for a in arrays]
     return t_new, arrays_new
 
-n_crop = int(np.ceil(abs(delay_samples))) + 2  # +2 for safety
+n_crop = int(np.ceil(abs(delay_samples))) + 55  # +2 for safety
 
 t, (
     ch1_phase,
+    ch1_freq,          # <-- add this
+    ch3_phase,
     ch3_phase_dly,
     ch3_freq_dly,
     tj,
@@ -80,6 +91,8 @@ t, (
     t,
     [
         channels[1]['phase'],
+        channels[1]['freq'],   # <-- add this
+        channels[3]['phase'],
         ch3_phase_dly,
         ch3_freq_dly,
         t_jitter,
@@ -96,60 +109,78 @@ ch3_phase_d = detrend(ch3_phase_dly)
 tj_d        = detrend(tj)
 tj_dly_d    = detrend(tj_dly)
 
+
+
 # ── 7. TDI COMBINATION ────────────────────────────────────────────────────
 tdi = (
     ch1_phase_d
     - ch3_phase_d
-    - ch3_freq_dly * (tj_d - tj_dly_d)
+    - ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
 )
 
-# ── 8. PLOT ───────────────────────────────────────────────────────────────
+if (False):
+    # ── 8. PLOT ───────────────────────────────────────────────────────────────
+    fig, ax = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
 
-"""
-fig, ax = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
 
-ax[0].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
-ax[0].plot(t, ch3_phase_d, lw=0.5, label='ch3 delayed')
-ax[0].legend()
+    ax[0].plot(t, ch3_freq_dly * (tj_d - tj_dly_d), lw=0.5, label='ch3 freq * jitter')
+    ax[0].plot(t, ch1_freq * (tj_d - tj_dly_d), lw=0.5, label='ch1 freq * jitter')
+    ax[0].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
+    ax[0].set_ylabel('Comparison of clock jitter cancelling')
+    ax[0].legend(loc='upper right')
 
-ax[1].plot(t, ch3_freq_dly * (tj_d - tj_dly_d), lw=0.5)
-ax[1].set_ylabel('Correction term')
+    ax[1].plot(t, detrend(tdi), lw=0.5, label='TDI combo')
+    ax[1].plot(t, ch3_phase_d, lw=0.5, label='ch3 phase')
+    ax[1].set_ylabel('TDI vs ch3 phase to be subtracted')
+    ax[1].set_xlabel('Time (s)')
+    ax[1].legend(loc='upper right')
 
-ax[2].plot(t, detrend(tdi), lw=0.5)
-ax[2].plot(t, ch3_phase_d, lw=0.5)
-ax[2].set_ylabel('TDI')
-ax[2].set_xlabel('Time (s)')
+    ax[2].plot(t, ch1_freq, lw=0.5, label='ch1 freq')
+    ax[2].plot(t, ch3_freq_dly, lw=0.5, label='ch3 freq (delayed)', alpha=0.8)
+    ax[2].set_ylabel('Frequency (Hz)')
+    ax[2].set_xlabel('Time (s)')
+    ax[2].legend(loc='upper right') 
 
-plt.tight_layout()
-plt.show()
 
-"""
+    plt.tight_layout()
+    plt.savefig(f'plots/{filename}_debug_tdi.png', dpi=300)
+    #plt.show()
+
+
+
 # ── 9. ASD COMPUTATION ────────────────────────────────────────────────────
-def compute_asd(x, fs, nperseg=None):
+def compute_asd(x, fs, fmin=5e-3, nperseg=None):
+    if fmin is not None:
+        nperseg = int(fs / fmin)
+
     if nperseg is None:
         nperseg = min(len(x)//4, 2**14)
+
+    # safety clamp
+    nperseg = min(nperseg, len(x))
+
     f, psd = welch(x, fs=fs, nperseg=nperseg, detrend='constant')
     asd = np.sqrt(psd)
     return f, asd
 
 # Use detrended signals
 f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
-f2, asd_ch3 = compute_asd(ch3_phase_d, fs)
+f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
 
 # ── 10. ASD PLOT ──────────────────────────────────────────────────────────
 plt.figure(figsize=(8, 5))
 
 plt.loglog(f1, asd_ch1, lw=1, label='ch1 phase')
-plt.loglog(f2, asd_ch3, lw=1, label='ch3 delayed phase')
 plt.loglog(f3, asd_tdi, lw=1.5, label='TDI combo')
+plt.loglog(f2, asd_ch3, lw=1, label='ch3 phase')
 
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')
-plt.title('Amplitude Spectral Density')
+plt.title('Amplitude Spectral Density, delay = {:.8f} s\ncut: {} s from start, {} s from end'.format(delay_s, start_time, end_time))
 
 plt.grid(True, which='both', ls='--', alpha=0.5)
 plt.legend()
 
 plt.tight_layout()
-plt.show()
+plt.savefig(f'plots/{filename}_TDI1_asd.png', dpi=300)
