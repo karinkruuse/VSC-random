@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 from scipy.signal import detrend, welch, csd, coherence
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename           = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
+filename           = 'DownstairsTest_20260423_170536'
 
 fmin               = 1e-4
 fmax               = 1
 
 segment_duration_s = 0.5 * 60 * 60   # segment length in seconds
-PT_channel         = 4
-start_time         = 15 * 60 * 60
+PT_channel         = 2
+start_time         = 0 * 60 * 60
 end_time           = 0  * 60 * 60
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
@@ -76,8 +76,7 @@ fig2.suptitle('ch1 phase vs timing jitter — coherence analysis per segment')
 
 
 for seg_idx in range(n_segs):
-    if seg_idx != 35:
-        continue
+
 
     i0 = seg_idx * seg_samples
     i1 = i0 + seg_samples

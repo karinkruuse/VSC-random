@@ -5,8 +5,8 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_170536'
-delay_s  = 3.9990392852
+filename = 'DL_baseline_20260417_154937'
+delay_s  = 3.9990879
 DDS_signal_nr = 2
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -87,7 +87,7 @@ t, (
     ch3_phase_dly,
     ch3_freq_dly,
     tj,
-    tj_dly
+    tj_dly,ch4_phase
 ) = crop_edges(
     t,
     [
@@ -97,7 +97,8 @@ t, (
         ch3_phase_dly,
         ch3_freq_dly,
         t_jitter,
-        tj_dly
+        tj_dly,
+        channels[4]['phase'],
     ],
     n_crop
 )
@@ -105,6 +106,7 @@ t, (
 print(f"Post-shift length: {len(t)} samples")
 
 # ── 6. DETREND ────────────────────────────────────────────────────────────
+ch4_phase_d = detrend(ch4_phase)
 ch1_phase_d = detrend(ch1_phase)
 ch3_phase_d = detrend(ch3_phase_dly)
 tj_d        = detrend(tj)
@@ -166,6 +168,7 @@ def compute_asd(x, fs, fmin=9e-4, nperseg=None):
     return f, asd
 
 # Use detrended signals
+f0, asd_ch4 = compute_asd(ch4_phase_d, fs)
 f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
 f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
@@ -173,10 +176,10 @@ f3, asd_tdi = compute_asd(detrend(tdi), fs)
 # ── 10. ASD PLOT ──────────────────────────────────────────────────────────
 plt.figure(figsize=(8, 5))
 
-plt.loglog(f1, asd_ch1, lw=1, label='ch1 phase')
+plt.loglog(f1, asd_ch1, lw=2, label='ch1 phase', alpha=0.8)
 plt.loglog(f3, asd_tdi, lw=1.5, label='TDI combo')
 plt.loglog(f2, asd_ch3, lw=1, label='ch3 phase')
-
+plt.loglog(f0, asd_ch4, lw=1, label='ch4 phase')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')
 plt.title('Amplitude Spectral Density, delay = {:.8f} s\nDuration used: {:.1f} h\ncut: {} s from start, {} s from end'.format(delay_s, (duration - end_time - start_time)/3600, start_time, end_time))
