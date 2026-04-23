@@ -5,9 +5,9 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_150448'
-delay_s  = 3.99902
-DDS_signal_nr = 4
+filename = 'DownstairsTest_20260423_170536'
+delay_s  = 3.9990392852
+DDS_signal_nr = 2
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
 

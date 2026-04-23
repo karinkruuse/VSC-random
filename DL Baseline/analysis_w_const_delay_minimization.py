@@ -5,7 +5,7 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_150448'
+filename = 'DownstairsTest_20260423_170536'
 delay_s_init = 3.999
 
 fmin = 1e-4
@@ -104,7 +104,7 @@ def compute_tdi(delay_s):
     # --- TDI
     tdi = (
         ch1_phase_d
-        + ch3_phase_d
+        - ch3_phase_d
         - ch3_freq_dly * (tj_d - tj_dly_d)
     )
 
