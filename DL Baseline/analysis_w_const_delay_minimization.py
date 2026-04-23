@@ -5,16 +5,16 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delay_line_clock_ref_in_input_4_pilot_in_input_2_20260421_132555'
-delay_s_init = 3.9989
+filename = 'DownstairsTest_20260423_150448'
+delay_s_init = 3.999
 
-fmin = 1e-3
-fmax = 1.0
-
-search_width = 1e-2
+fmin = 1e-4
+fmax = 1
+PT_channel = 2
+search_width = 2e-3
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
-data = np.load(f'data/second/{filename}.npy')
+data = np.load(f'data/{filename}.npy')
 
 def col(name):
     return data[name].copy()
@@ -22,10 +22,10 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
-start_time = 20 * 60 * 60
-end_time   = 0.5 * 60 * 60
+start_time = 0 * 60 * 60
+end_time   = 0 * 60 * 60
 
-print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s")
+print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 
 def load_channel(ch):
     pfx = f'Input {ch} '
@@ -56,7 +56,12 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNAL ─────────────────────────────────────────────────────
-t_jitter = channels[2]['phase'] / channels[2]['freq']
+
+print("Computing jitter from channel {}".format(PT_channel))
+print("CHECK IF THIS IS TRUE")
+t_jitter = channels[PT_channel]['phase'] / channels[PT_channel]['freq']
+
+print(np.mean(channels[4]['freq']), len(channels[4]['freq']))
 
 # ── 4. GLOBAL FIXES (CRITICAL) ────────────────────────────────────────────
 
@@ -99,7 +104,7 @@ def compute_tdi(delay_s):
     # --- TDI
     tdi = (
         ch1_phase_d
-        - ch3_phase_d
+        + ch3_phase_d
         - ch3_freq_dly * (tj_d - tj_dly_d)
     )
 
@@ -110,22 +115,20 @@ def tdi_cost(delay_s):
 
     tdi = compute_tdi(delay_s)
 
-    f, psd = welch(
-        tdi,
-        fs=fs,
-        nperseg=nperseg_fixed,
-        detrend='constant'
-    )
+    # PSD
+    nperseg = min(int(fs / fmin), len(tdi))
+    f, psd = welch(tdi, fs=fs, nperseg=nperseg, detrend='constant')
 
+
+
+    # frequency band selection
     mask = (f >= fmin)
     if fmax is not None:
         mask &= (f <= fmax)
 
-    # ---- IMPORTANT: keep low frequencies, but stabilize slightly
-    # very mild weighting (does NOT kill low-f, just avoids domination)
-    weight = 1 + 0.0 * f[mask]
 
-    cost = np.trapezoid(psd[mask] * weight, f[mask])
+    # integrate PSD → total power
+    cost = np.trapezoid(psd[mask], f[mask])
 
     return cost
 
@@ -134,7 +137,7 @@ result = minimize_scalar(
     tdi_cost,
     bounds=(delay_s_init - search_width, delay_s_init + search_width),
     method='bounded',
-    options={'xatol': 1e-9, 'maxiter': 400}
+    options={'xatol': 1e-9, 'maxiter': 500}
 )
 
 delay_opt = result.x
@@ -143,7 +146,7 @@ print(f"\nInitial delay:  {delay_s_init:.10f} s")
 print(f"Optimal delay:  {delay_opt:.10f} s")
 
 # ── 8. COST LANDSCAPE (TURN THIS ON IF CONFUSED) ───────────────────────────
-if True:
+if False:
     delays = np.linspace(delay_s_init - search_width, delay_s_init + search_width, 40)
     costs = [tdi_cost(d) for d in delays]
 

@@ -29,7 +29,7 @@ filename = os.path.splitext(os.path.basename(npy_file))[0]
 print(f'Loading: {npy_file}')
 
 
-
+fmin = 1e-4
 
 """Actual data loading and initial processing starts here"""
 data = np.load(npy_file)
@@ -133,7 +133,7 @@ fig_asd.suptitle(f'ASD:{filename}', fontsize=12)
 for i, ch in enumerate(range(1, 5)):
     # Phase ASD
     ax_ph = axes_asd[0]
-    f_ph, psd_ph = welch(channels[ch]['phase_detrended'], fs=fs, nperseg=min(len(t)//4, 4096))
+    f_ph, psd_ph = welch(channels[ch]['phase_detrended'], fs=fs, nperseg=min(int(fs / fmin), len(t)))
     asd_ph = np.sqrt(psd_ph)
     ax_ph.loglog(f_ph[1:], asd_ph[1:], lw=0.8, label=f'Ch{ch}')
     ax_ph.set_xlabel('Fourier Frequency (Hz)')
@@ -145,7 +145,7 @@ for i, ch in enumerate(range(1, 5)):
     ax_fr = axes_asd[1]
     freq = channels[ch]['freq']
     freq_mean = np.mean(freq)
-    f_fr, psd_fr = welch(freq - freq_mean, fs=fs, nperseg=min(len(t)//4, 4096))
+    f_fr, psd_fr = welch(freq - freq_mean, fs=fs, nperseg=min(int(fs / fmin), len(t)))
     asd_fr = np.sqrt(psd_fr)
     ax_fr.loglog(f_fr[1:], asd_fr[1:], lw=0.8, label=f'Ch{ch}')
     ax_fr.set_xlabel('Fourier Frequency (Hz)')

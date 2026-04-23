@@ -4,12 +4,10 @@ from scipy.signal import detrend, welch
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
+filename = 'Delay_line_clock_ref_in_input_4_pilot_in_input_2_20260421_132555'
 print(f"Processing file: {filename}")
 
-
-
-tau0   = 3.9987446427
+tau0   = 3.9988968047
 print(f"Initial guess: tau0={tau0:.6f} s, taudot={9999999:.1e} s/s")
 
 fmin = 5e-4
@@ -24,7 +22,7 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 duration = t[-1] - t[0]
-print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {duration:.1f} s")
+print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {duration:.1f} s or {duration/3600:.2f} hours")
 
 def load_channel(ch):
     pfx = f'Input {ch} '
@@ -44,13 +42,22 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
     sl = slice(i0, i1)
     return t[sl], {ch: {k: v[sl] for k, v in data_dict[ch].items()} for ch in data_dict}
 
-start_time = 15 * 60 * 60
-end_time = 1 * 60 * 60
+start_time = 7.4 * 60 * 60
+end_time = 7 * 60 * 60
 print(f"Cropping data: start_time={start_time:.1f} s, end_time={ t[-1] - end_time:.1f} s")
 t, channels = crop_time(t, channels, start_time, end_time)
 
+data_check = False
+if data_check:
+    plt.plot(t, channels[1]['phase'], label='Ch1 phase')
+    plt.plot(t, channels[3]['phase'], label='Ch3 phase')    
+    plt.legend()
+    plt.show()
+
 # ── 3. DERIVED SIGNAL ─────────────────────────────────────────────────────
-t_jitter = channels[4]['phase'] / channels[4]['freq']
+PT_channel = 2
+print("Computing jitter from channel {}".format(PT_channel))
+t_jitter = channels[PT_channel]['phase'] / channels[PT_channel]['freq']
 
 # ── 4. HELPERS ────────────────────────────────────────────────────────────
 def crop_edges(t, arrays, n_crop):
@@ -93,13 +100,14 @@ tdi1 = (
 
 # ── 5. COMPUTE TDI2 ────────────────────────────────────────────────────────
 
-f0 = 41666036.83770017 # np.mean(channels[4]['freq'])
-board_clk_fluctuations = channels[4]['freq'] - f0
-tau_correction = board_clk_fluctuations * tau0 / f0
-
-#plt.plot(t, tau_correction)
-#plt.show()
-fit = 1.59e3
+f0 = 10000001.91833843 # np.mean(channels[4]['freq'])
+board_clk_fluctuations = f0 -channels[4]['freq']
+tau_correction = np.cumsum(board_clk_fluctuations * tau0 / f0)
+if False:
+    plt.plot(t, board_clk_fluctuations)
+    plt.plot(t, tau_correction)
+    plt.show()
+fit = 4.143e-03
 tau_t       = tau0 + fit * tau_correction
 tau_samples = tau_t * fs                   # samples, NOT INTEGER
 
@@ -135,10 +143,10 @@ print(f"\ntau0   = {tau0:.10f} s")
 #print(f"taudot = {taudot:.3e} s/s")
 
 plt.figure(figsize=(8, 5))
-plt.loglog(f_ch1, asd_ch1, lw=1.0, alpha=0.7, label='Ch1 phase')
+#plt.loglog(f_ch1, asd_ch1, lw=1.0, alpha=0.7, label='Ch1 phase')
 plt.loglog(f_ch3, asd_ch3, lw=1.0, alpha=0.7, label='Ch3 phase (delayed)')
-plt.loglog(f,     asd,     lw=1.5,             label=f'TDI  τ₀={tau0:.6f} s, τ̇=crazy s/s')
-plt.loglog(f1,     asd1,     lw=1.0, ls='--', label=f'TDI1 τ={tau0:.6f} s', alpha=0.4)
+plt.loglog(f,     asd,     lw=1.5, c='green', label=f'TDI  τ₀={tau0:.6f} s, τ̇=crazy s/s')
+plt.loglog(f1,     asd1,     lw=1.0, c='red', label=f'TDI1 τ={tau0:.6f} s', alpha=0.4)
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')
 plt.title(f'TDI ASD\noverall duration: {duration:.1f} s\nseconds cut from start/end: {start_time:.1f}s, {end_time:.1f}s')

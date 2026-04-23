@@ -5,11 +5,11 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delay_line_clock_ref_in_input_4_pilot_in_input_2_20260421_132555'
-delay_s  = 3.9978856181
-
+filename = 'DownstairsTest_20260423_150448'
+delay_s  = 3.99902
+DDS_signal_nr = 4
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
-data = np.load(f'data/second/{filename}.npy')
+data = np.load(f'data/{filename}.npy')
 
 def col(name):
     return data[name].copy()
@@ -30,6 +30,7 @@ channels = {ch: load_channel(ch) for ch in range(1, 5)}
 
 # ── 2. OPTIONAL INITIAL CROPPING ──────────────────────────────────────────
 def crop_time(t, data_dict, t_start=0, t_end=0):
+    print(f"Cropping: removing {t_start} s from start and {t_end} s from end")
     i0 = np.searchsorted(t, t[0] + t_start)
     i1 = np.searchsorted(t, t[-1] - t_end)
 
@@ -47,12 +48,12 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
-start_time = 7.5 * 60 * 60
-end_time = 13 * 60 * 60
+start_time = 0 * 60 * 60
+end_time = 0 * 60 * 60
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
-DDS_signal_nr = 2
+
 print(f"Measuring timing jitters from channel {DDS_signal_nr}")
 t_jitter = channels[DDS_signal_nr]['phase'] / channels[DDS_signal_nr]['freq']
 
@@ -77,7 +78,7 @@ def crop_edges(t, arrays, n_crop):
     arrays_new = [a[sl] for a in arrays]
     return t_new, arrays_new
 
-n_crop = int(np.ceil(abs(delay_samples))) + 55  # +2 for safety
+n_crop = int(np.ceil(abs(delay_samples))) + 5  # +2 for safety
 
 t, (
     ch1_phase,
@@ -144,12 +145,12 @@ if (False):
 
     plt.tight_layout()
     plt.savefig(f'plots/{filename}_debug_tdi.png', dpi=300)
-    #plt.show()
+    plt.show()
 
 
 
 # ── 9. ASD COMPUTATION ────────────────────────────────────────────────────
-def compute_asd(x, fs, fmin=5e-3, nperseg=None):
+def compute_asd(x, fs, fmin=9e-4, nperseg=None):
     if fmin is not None:
         nperseg = int(fs / fmin)
 
@@ -158,6 +159,7 @@ def compute_asd(x, fs, fmin=5e-3, nperseg=None):
 
     # safety clamp
     nperseg = min(nperseg, len(x))
+    print(f"Using nperseg = {nperseg} for ASD computation, length of data = {len(x)}")
 
     f, psd = welch(x, fs=fs, nperseg=nperseg, detrend='constant')
     asd = np.sqrt(psd)
@@ -177,7 +179,7 @@ plt.loglog(f2, asd_ch3, lw=1, label='ch3 phase')
 
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')
-plt.title('Amplitude Spectral Density, delay = {:.8f} s\ncut: {} s from start, {} s from end'.format(delay_s, start_time, end_time))
+plt.title('Amplitude Spectral Density, delay = {:.8f} s\nDuration used: {:.1f} h\ncut: {} s from start, {} s from end'.format(delay_s, (duration - end_time - start_time)/3600, start_time, end_time))
 
 plt.grid(True, which='both', ls='--', alpha=0.5)
 plt.legend()

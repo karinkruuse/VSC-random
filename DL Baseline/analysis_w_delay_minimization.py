@@ -5,7 +5,7 @@ from scipy.optimize import minimize
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
+filename = 'DownstairsTest_20260423_150448'
 print(f"Processing file: {filename}")
 
 
@@ -16,7 +16,7 @@ fmin = 5e-4
 fmax = 0.1
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
-data = np.load(f'data/second/{filename}.npy')
+data = np.load(f'data/{filename}.npy')
 
 def col(name):
     return data[name].copy()
@@ -53,10 +53,12 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
     return t_new, out
 
-t, channels = crop_time(t, channels, t_start=15*60*60, t_end=0)
+t, channels = crop_time(t, channels, t_start=7.4 * 60 * 60, t_end=7 * 60 * 60)
 
 # ── 3. DERIVED SIGNAL ─────────────────────────────────────────────────────
-t_jitter = channels[4]['phase'] / channels[4]['freq']
+PT_channel = 2
+print("Computing jitter from channel {}".format(PT_channel))
+t_jitter = channels[PT_channel]['phase'] / channels[PT_channel]['freq']
 
 # ── 4. HELPERS ────────────────────────────────────────────────────────────
 def crop_edges(t, arrays, n_crop):
@@ -77,10 +79,10 @@ def compute_asd(x, fs, fmin):
 def compute_tdi(params):
     tau0, tau_dot = params
 
-    f0 = 41666036.83770017 # np.mean(channels[4]['freq'])
+    f0 = 10000001.91833843 # np.mean(channels[4]['freq'])
     board_clk_fluctuations = channels[4]['freq'] - f0
 
-    tau_t       = tau0 + tau_dot * board_clk_fluctuations * tau0 / f0
+    tau_t       = tau0 + tau_dot * np.cumsum(board_clk_fluctuations * tau0 / f0)
     tau_samples = tau_t * fs               # samples
 
     # --- TDI-consistent delay
@@ -147,7 +149,7 @@ result = minimize(
         'initial_simplex': np.array([[tau0_init, 0.0],
                                      [tau0_init + 1e-4, 0.0],
                                      [tau0_init, 0.5]]),
-        'xatol': 1e-9, 'fatol': 1e-12, 'maxiter': 400
+        'xatol': 1e-9, 'fatol': 1e-12, 'maxiter': 500
     }
 )
 
