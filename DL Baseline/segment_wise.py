@@ -6,7 +6,7 @@ from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
 filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
-delay_s_init = 3.9989879870
+delay_s_init = 3.9990
 
 fmin = 1e-4
 fmax = 1
@@ -185,9 +185,11 @@ fig, axes = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
 
 # -- top panel: estimated delay
 ax = axes[0]
-ax.plot(t_mids, delays_opt, 'o-', color='C0', ms=6, lw=1.5, label='opt delay per segment')
+ax.yaxis.set_major_formatter(plt.matplotlib.ticker.ScalarFormatter(useOffset=False))
+ax.ticklabel_format(style='plain', axis='y')
+ax.plot(t_mids, delays_opt, 'o-', color='C0', ms=6, lw=1.5, label='minimized delay')
 #ax.axhline(delay_s_init, color='k', ls='--', lw=1, label=f'init = {delay_s_init} s')
-ax.axhline(np.mean(delays_opt), color='C1', ls=':', lw=1.2, label=f'mean opt = {np.mean(delays_opt):.10f} s')
+#ax.axhline(np.mean(delays_opt), color='C1', ls=':', lw=1.2, label=f'mean opt = {np.mean(delays_opt):.10f} s')
 ax.set_ylabel('Delay (s)')
 ax.set_title(f'Segmented delay optimisation — {segment_duration_s/3600:.1f} h segments')
 ax.legend(fontsize=8)
@@ -222,7 +224,7 @@ for i, r in enumerate(seg_results):
 
 ax.set_xlabel('Frequency (Hz)')
 ax.set_ylabel('ASD (cyc / √Hz)')
-ax.set_title(f'TDI ASD per segment (optimal delay) — {segment_duration_s/3600:.1f} h segments')
+ax.set_title(f'ASD per segment — {segment_duration_s/3600:.1f} h segments')
 ax.set_xlim(fmin, fmax)
 ax.grid(True, which='both', ls='--', alpha=0.4)
 #ax.legend(fontsize=7, loc='upper right')
