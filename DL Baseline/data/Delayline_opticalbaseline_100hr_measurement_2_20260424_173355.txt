@@ -1,0 +1,15 @@
+# % Moku:Pro Phasemeter
+# % Input 1 (on), DC, 300 MHz, 50 Ohm, 400 mVpp, set frequency 20.999 998 175 038 MHz, auto-acquire on, 100 kHz bandwidth
+# % Input 2 (on), DC, 300 MHz, 50 Ohm, 400 mVpp, set frequency 41.666 031 100 000 MHz, auto-acquire off, 100 kHz bandwidth
+# % Input 3 (on), DC, 300 MHz, 50 Ohm, 4 Vpp, set frequency 20.999 998 133 626 MHz, auto-acquire off, 100 kHz bandwidth
+# % Input 4 (off), DC, 300 MHz, 50 Ohm, 4 Vpp, set frequency 10.000 001 055 439 MHz, auto-acquire on, 100 kHz bandwidth
+# % Acquisition rate: 3.7252902985e+01 Hz
+# % Advanced settings: phase wrapping at Off, phase auto-reset at Off
+# % Output 1 (off) - Sine wave, 30.000 000 000 000 MHz, 500 mVpp, 0.000 000 deg, 0.000 0 V offset
+# % Output 2 (off) - Sine wave, 30.000 000 000 000 MHz, 500 mVpp, 2.000 000 deg, 0.000 0 V offset
+# % Output 3 (off) - Sine wave, 1.000 000 000 000 MHz, 500 mVpp, 0.000 000 deg, 0.000 0 V offset
+# % Output 4 (off) - Sine wave, 11.000 000 000 000 MHz, 500 mVpp, 0.000 000 deg, 0.000 0 V offset
+# % External 10 MHz clock
+# % Acquired 2026-04-24 T 17:33:55 +0200
+# % ch1: delayed; ch2: pilot; ch3: undelayed
+# % Time (s), Input 1 Set Frequency (Hz), Input 1 Frequency (Hz), Input 1 Phase (cyc), Input 1 I (V), Input 1 Q (V), Input 2 Set Frequency (Hz), Input 2 Frequency (Hz), Input 2 Phase (cyc), Input 2 I (V), Input 2 Q (V), Input 3 Set Frequency (Hz), Input 3 Frequency (Hz), Input 3 Phase (cyc), Input 3 I (V), Input 3 Q (V)

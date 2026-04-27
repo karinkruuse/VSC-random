@@ -1,17 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import detrend, welch, csd, coherence
+from scipy.signal import detrend, welch, csd
+from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename           = 'DownstairsTest_20260423_170536'
-
-fmin               = 1e-4
-fmax               = 1
-
-segment_duration_s = 0.5 * 60 * 60   # segment length in seconds
-PT_channel         = 2
-start_time         = 0 * 60 * 60
-end_time           = 0  * 60 * 60
+filename   = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
+delay_s    = 3.9989879870
+PT_channel = 2
+fmin       = 1e-4
+fmax       = 1
+start_time = 0  * 60 * 60
+end_time   = 2  * 60 * 60
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -21,176 +20,124 @@ def col(name):
 
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
+print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {(t[-1]-t[0])/3600:.2f} h")
 
-print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
-
-def load_channel(ch):
+channels = {}
+for ch in [1, 2, 3]:
     pfx = f'Input {ch} '
-    return {
+    channels[ch] = {
         'freq':  col(pfx + 'Frequency (Hz)'),
         'phase': col(pfx + 'Phase (cyc)'),
     }
 
-channels_full = {ch: load_channel(ch) for ch in range(1, 5)}
+# ── 2. CROP ───────────────────────────────────────────────────────────────
+i0 = np.searchsorted(t, t[0]  + start_time)
+i1 = np.searchsorted(t, t[-1] - end_time)
+sl = slice(i0, i1)
 
-# ── 2. INITIAL CROPPING ───────────────────────────────────────────────────
-def crop_time(t, data_dict, t_start=0, t_end=0):
-    print(f"Cropping: removing {t_start} s from start and {t_end} s from end")
-    i0 = np.searchsorted(t, t[0] + t_start)
-    i1 = np.searchsorted(t, t[-1] - t_end)
-    if i0 >= i1:
-        raise ValueError("Cropping removed entire dataset")
-    sl = slice(i0, i1)
-    t_new = t[sl]
-    out = {}
-    for ch in data_dict:
-        out[ch] = {k: v[sl] for k, v in data_dict[ch].items()}
-    return t_new, out
+t = t[sl]
+for ch in channels:
+    channels[ch] = {k: v[sl] for k, v in channels[ch].items()}
 
-t_full, channels_full = crop_time(t, channels_full, start_time, end_time)
-print(f"After cropping: {len(t_full)} samples | duration ≈ {(t_full[-1]-t_full[0])/3600:.2f} hours")
+print(f"After crop: {len(t)} samples | duration ≈ {(t[-1]-t[0])/3600:.2f} h")
 
-# ── 3. SEGMENT DEFINITIONS ────────────────────────────────────────────────
-seg_samples = int(segment_duration_s * fs)
-n_segs      = len(t_full) // seg_samples
-nperseg     = int(fs / fmin)
+# ── 3. SIGNALS ────────────────────────────────────────────────────────────
+nperseg = int(fs / fmin)
 
-print(f"Segment length: {segment_duration_s/3600:.2f} h ({seg_samples} samples) | Segments: {n_segs}")
+t_jitter  = channels[PT_channel]['phase'] / channels[PT_channel]['freq']
 
-# ── 4. SEGMENT LOOP ───────────────────────────────────────────────────────
-cmap   = plt.get_cmap('viridis')
-colors = [cmap(i / max(n_segs - 1, 1)) for i in range(n_segs)]
+# detrend for spectral analysis
+ch1 = detrend(channels[1]['phase'], type='linear')
+ch3 = detrend(channels[3]['phase'], type='linear')
+tj  = detrend(t_jitter,             type='linear')
 
-# Storage for per-segment scalars (integrated coherence)
-t_mids          = []
-mean_coh_13     = []   # ch1 vs ch3 phase
-mean_coh_1j     = []   # ch1 vs jitter
+# ── 4. TDI COMBO ──────────────────────────────────────────────────────────
+n_crop        = int(np.ceil(abs(delay_s * fs))) + 3
+delay_samples = delay_s * fs
 
-# We'll accumulate lines into the axes as we go
-fig1, axes1 = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
-fig1.suptitle('ch1 phase vs ch3 phase — coherence analysis per segment')
+ch3_phase_dly = timeshift(channels[3]['phase'], -delay_samples)
+ch3_freq_dly  = timeshift(channels[3]['freq'],  -delay_samples)
+tj_dly        = timeshift(t_jitter,             -delay_samples)
 
-fig2, axes2 = plt.subplots(2, 1, figsize=(10, 10), sharex=True)
-fig2.suptitle('ch1 phase vs timing jitter — coherence analysis per segment')
+sc = slice(n_crop, -n_crop)
+ch1_d     = detrend(channels[1]['phase'][sc], type='linear')
+ch3_d     = detrend(ch3_phase_dly[sc],        type='linear')
+tj_diff_d = detrend(t_jitter[sc] - tj_dly[sc], type='linear')
 
+tdi = ch1_d - ch3_d - ch3_freq_dly[sc] * tj_diff_d
 
+# ── 5. SPECTRA ────────────────────────────────────────────────────────────
+nperseg_tdi = min(nperseg, len(tdi))
 
-for seg_idx in range(n_segs):
+# raw signals (no delay) — for reference ASDs only
+f,   S_11 = welch(ch1, fs=fs, nperseg=nperseg)
+_,   S_33 = welch(ch3, fs=fs, nperseg=nperseg)
 
+f_t, S_tdi = welch(tdi, fs=fs, nperseg=nperseg_tdi, detrend='constant')
 
-    i0 = seg_idx * seg_samples
-    i1 = i0 + seg_samples
-    sl = slice(i0, i1)
+# ── informed spectral estimator ───────────────────────────────────────────
+# Give the estimator the same signals TDI actually uses:
+#   - ch3_delayed  : ch3 after the delay has been applied
+#   - tj_diff      : (tj - tj_delayed), the jitter difference term
+# These are already computed and cropped above (ch1_d, ch3_d, tj_diff_d).
+# Using them means the cross-spectra see the delay-corrected signals,
+# so the estimator doesn't have to learn the delay implicitly.
 
-    channels_seg = {
-        ch: {k: v[sl] for k, v in channels_full[ch].items()}
-        for ch in channels_full
-    }
+nperseg_sc = min(nperseg, len(ch1_d))
 
-    t_mid_h = (t_full[i0] + t_full[i1 - 1]) / 2 / 3600
-    t_mids.append(t_mid_h)
+f_s, S_11s  = welch(ch1_d,    fs=fs, nperseg=nperseg_sc)
+_,   S_33s  = welch(ch3_d,    fs=fs, nperseg=nperseg_sc)
+_,   S_dds  = welch(tj_diff_d, fs=fs, nperseg=nperseg_sc)   # jitter difference
 
-    # ── signals (detrended) ───────────────────────────────────────────────
-    ch1_phase = detrend(channels_seg[1]['phase'], type='linear')
-    ch3_phase = detrend(channels_seg[3]['phase'], type='linear')
-    t_jitter  = channels_seg[PT_channel]['phase'] / channels_seg[PT_channel]['freq']
-    jitter    = detrend(t_jitter, type='linear')
+_,   S_13s  = csd(ch1_d, ch3_d,    fs=fs, nperseg=nperseg_sc)  # ch1 vs ch3_delayed
+_,   S_1ds  = csd(ch1_d, tj_diff_d, fs=fs, nperseg=nperseg_sc) # ch1 vs jitter diff
+_,   S_3ds  = csd(ch3_d, tj_diff_d, fs=fs, nperseg=nperseg_sc) # ch3_del vs jitter diff
 
-    nperseg_use = min(nperseg, len(ch1_phase))
-    label       = f"t={t_mid_h:.1f}h"
-    c           = colors[seg_idx]
+# simple two-signal floor: ch1 vs ch3_delayed only
+S_n1_simple = np.abs(S_11s - np.abs(S_13s))
 
-    # ══════════════════════════════════════════════════════════════════════
-    # ANALYSIS A: ch1 phase  vs  ch3 phase
-    # ══════════════════════════════════════════════════════════════════════
-    f,  S_11   = welch(ch1_phase, fs=fs, nperseg=nperseg_use)
-    _,  S_33   = welch(ch3_phase, fs=fs, nperseg=nperseg_use)
-    _,  S_13   = csd(ch1_phase, ch3_phase, fs=fs, nperseg=nperseg_use)
-    #_,  gam2   = coherence(ch1_phase, ch3_phase, fs=fs, nperseg=nperseg_use)
+# partial coherence: jointly remove ch3_delayed AND jitter_diff from ch1
+# Residual = S_11 - v^H C^{-1} v
+# where v = [S_13s, S_1ds]  and  C = [[S_33s, S_3ds], [S_3ds*, S_dds]]
+det_C = S_33s * S_dds - np.abs(S_3ds)**2
+det_C = np.maximum(det_C.real, 1e-300)
 
-    # uncorrelated noise floor estimates
-    S_uncorr_1 = np.abs(S_11 - np.abs(S_13))
-    S_uncorr_3 = np.abs(S_33 - np.abs(S_13))
+coherent_power = (
+    np.abs(S_13s)**2 * S_dds.real
+    - 2 * np.real(S_13s * S_3ds * np.conj(S_1ds))
+    + np.abs(S_1ds)**2 * S_33s.real
+) / det_C
 
-    fmask = (f >= fmin) & (f <= fmax)
+S_n1_partial = np.abs(S_11s.real - coherent_power)
 
-    axes1[0].loglog(f[fmask], np.sqrt(S_11[fmask]), color="black", lw=0.8, alpha=0.5, label=label)
-    axes1[0].loglog(f[fmask], np.sqrt(S_uncorr_1[fmask]), color=c, lw=0.8, alpha=0.8, label=label)
-    axes1[1].loglog(f[fmask], np.sqrt(S_33[fmask]), color="black", lw=0.8, alpha=0.5, label=label)
-    axes1[1].loglog(f[fmask], np.sqrt(S_uncorr_3[fmask]), color=c, lw=0.8, alpha=0.8, label=label)
-    #axes1[2].semilogx(f[fmask], gam2[fmask],              color=c, lw=0.8, alpha=0.8, label=label)
+# ── jitter contribution to TDI ────────────────────────────────────────────
+ch3_freq_mean    = np.mean(ch3_freq_dly[sc])
+f_j, S_tj_diff   = welch(tj_diff_d, fs=fs, nperseg=nperseg_tdi, detrend='constant')
+S_jitter_contrib = ch3_freq_mean**2 * S_tj_diff
 
-    #mean_coh_13.append(np.mean(gam2[fmask]))
+fm  = (f   >= fmin) & (f   <= fmax)
+fmt = (f_t >= fmin) & (f_t <= fmax)
+fmj = (f_j >= fmin) & (f_j <= fmax)
+fms = (f_s >= fmin) & (f_s <= fmax)
 
-    # ══════════════════════════════════════════════════════════════════════
-    # ANALYSIS B: ch1 phase  vs  timing jitter
-    # ══════════════════════════════════════════════════════════════════════
-    _,  S_jj   = welch(jitter,    fs=fs, nperseg=nperseg_use)
-    _,  S_1j   = csd(ch1_phase, jitter, fs=fs, nperseg=nperseg_use)
-    _,  gam2_j = coherence(ch1_phase, jitter, fs=fs, nperseg=nperseg_use)
+# ── 6. PLOT ──────────────────────────────────────────────────────────────
+fig, ax = plt.subplots(figsize=(10, 6))
 
-    S_uncorr_j = np.abs(S_jj - np.abs(S_1j))
-    S_uncorr_1j = np.abs(S_11 - np.abs(S_1j))
+ax.loglog(f[fm],    np.sqrt(S_11[fm]),                color='C0', lw=1.2,          label='ch1 phase ASD (raw)')
+ax.loglog(f[fm],    np.sqrt(S_33[fm]),                color='C1', lw=1.2,          label='ch3 phase ASD (raw)')
+ax.loglog(f_t[fmt], np.sqrt(S_tdi[fmt]),              color='C3', lw=1.8,          label='TDI residual ASD')
+ax.loglog(f_j[fmj], np.sqrt(S_jitter_contrib[fmj]),  color='C4', lw=1.2, ls=':',  label='jitter contrib to TDI  (f̅ch3² · S_Δtj)')
+ax.loglog(f_s[fms], np.sqrt(S_n1_simple[fms]),        color='C6', lw=1.2, ls='--', label='floor: ch1 vs ch3_delayed only')
+ax.loglog(f_s[fms], np.sqrt(S_n1_partial[fms]),       color='C5', lw=1.5, ls='--', label='floor: ch1 vs ch3_delayed + jitter_diff (partial coherence)')
 
-    axes2[0].loglog(f[fmask], np.sqrt(S_11[fmask]),       color="black", lw=0.8, alpha=0.5, label=label)
-    axes2[0].loglog(f[fmask], np.sqrt(S_uncorr_1j[fmask]), color=c, lw=0.8, alpha=0.8, label=label)
-    axes2[1].loglog(f[fmask], np.sqrt(S_uncorr_j[fmask]), color=c, lw=0.8, alpha=0.8, label=label)
-    axes2[1].loglog(f[fmask], np.sqrt(S_33[fmask]), color="black", lw=0.8, alpha=0.5, label=label)
-    #axes2[2].semilogx(f[fmask], gam2_j[fmask],            color=c, lw=0.8, alpha=0.8, label=label)
+ax.set_xlabel('Frequency (Hz)')
+ax.set_ylabel('ASD (cyc / √Hz)')
+ax.set_title(f'Noise analysis — {filename}')
+ax.set_xlim(fmin, fmax)
+ax.grid(True, which='both', ls='--', alpha=0.4)
+ax.legend()
 
-    mean_coh_1j.append(np.mean(gam2_j[fmask]))
-
-    print(f"Seg {seg_idx+1}/{n_segs}  t={t_mid_h:.2f}h  " )
-
-# ── 5. DRESS FIGURE 1 (ch1 vs ch3) ───────────────────────────────────────
-axes1[0].set_ylabel('ASD uncorr ch1\n(cyc/√Hz)')
-axes1[1].set_ylabel('ASD uncorr ch3\n(cyc/√Hz)')
-
-for ax in axes1:
-    ax.grid(True, which='both', ls='--', alpha=0.4)
-    ax.set_xlim(fmin, fmax)
-
-sm1 = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=t_mids[0], vmax=t_mids[-1]))
-sm1.set_array([])
-##fig1.colorbar(sm1, ax=axes1, label='Segment midpoint (h)')
-fig1.tight_layout()
-fig1.savefig(f'plots/{filename}_coherence_ch1_ch3.png', dpi=300)
-print(f"Saved → plots/{filename}_coherence_ch1_ch3.png")
-
-# ── 6. DRESS FIGURE 2 (ch1 vs jitter) ────────────────────────────────────
-axes2[0].set_ylabel('ASD ch1 phase\n(cyc/√Hz)')
-axes2[1].set_ylabel('ASD uncorr jitter\n(s/√Hz)')
-
-for ax in axes2:
-    ax.grid(True, which='both', ls='--', alpha=0.4)
-    ax.set_xlim(fmin, fmax)
-
-sm2 = plt.cm.ScalarMappable(cmap=cmap, norm=plt.Normalize(vmin=t_mids[0], vmax=t_mids[-1]))
-sm2.set_array([])
-#fig2.colorbar(sm2, ax=axes2, label='Segment midpoint (h)')
-fig2.tight_layout()
-fig2.savefig(f'plots/{filename}_coherence_ch1_jitter.png', dpi=300)
-print(f"Saved → plots/{filename}_coherence_ch1_jitter.png")
+plt.tight_layout()
+plt.savefig(f'plots/{filename}_noise_analysis.png', dpi=300)
+print(f"Saved → plots/{filename}_noise_analysis.png")
 plt.show()
-# ── 7. SUMMARY: MEAN COHERENCE OVER TIME ─────────────────────────────────
-"""
-t_mids       = np.array(t_mids)
-mean_coh_13  = np.array(mean_coh_13)
-mean_coh_1j  = np.array(mean_coh_1j)
-
-fig3, ax3 = plt.subplots(figsize=(9, 4))
-ax3.plot(t_mids, mean_coh_13, 'o-', label='ch1 vs ch3 phase',   lw=1.5)
-ax3.plot(t_mids, mean_coh_1j, 's-', label='ch1 vs jitter',      lw=1.5)
-ax3.set_xlabel('Time (h)')
-ax3.set_ylabel('Mean coherence γ²')
-ax3.set_title(f'Band-averaged coherence over time  [{fmin:.0e} – {fmax:.0e} Hz]')
-ax3.set_ylim(0, 1.05)
-ax3.axhline(1, color='k', lw=0.5, ls='--')
-ax3.legend()
-ax3.grid(True, ls='--', alpha=0.5)
-fig3.tight_layout()
-fig3.savefig(f'plots/{filename}_coherence_summary.png', dpi=300)
-print(f"Saved → plots/{filename}_coherence_summary.png")
-
-"
-"""

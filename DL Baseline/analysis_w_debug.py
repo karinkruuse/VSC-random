@@ -5,9 +5,10 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_170536'
-delay_s  = 3.9990450502
+filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
+delay_s  = 3.9991208434
 DDS_signal_nr = 2
+nr_of_channels = 3
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
 
@@ -26,7 +27,7 @@ def load_channel(ch):
         'phase': col(pfx + 'Phase (cyc)'),
     }
 
-channels = {ch: load_channel(ch) for ch in range(1, 5)}
+channels = {ch: load_channel(ch) for ch in range(1, nr_of_channels + 1)}
 
 # ── 2. OPTIONAL INITIAL CROPPING ──────────────────────────────────────────
 def crop_time(t, data_dict, t_start=0, t_end=0):
@@ -48,8 +49,8 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
-start_time = 0 * 60 * 60
-end_time = 0 * 60 * 60
+start_time = 24 * 60 * 60
+end_time = 2 * 60 * 60
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
@@ -57,8 +58,8 @@ t, channels = crop_time(t, channels, start_time, end_time)
 print(f"Measuring timing jitters from channel {DDS_signal_nr}")
 t_jitter = channels[DDS_signal_nr]['phase'] / channels[DDS_signal_nr]['freq']
 
-f0 = channels[4]['freq'].mean()
-print(f"Reference frequency (ch4 mean): {f0:.6f} Hz")
+#f0 = channels[4]['freq'].mean()
+#print(f"Reference frequency (ch4 mean): {f0:.6f} Hz")
 
 delay_samples = delay_s * fs
 print(f"Delay: {delay_s:.3f} s = {delay_samples:.2f} samples")
@@ -87,7 +88,8 @@ t, (
     ch3_phase_dly,
     ch3_freq_dly,
     tj,
-    tj_dly,ch4_phase
+    tj_dly,
+    #ch4_phase
 ) = crop_edges(
     t,
     [
@@ -98,7 +100,7 @@ t, (
         ch3_freq_dly,
         t_jitter,
         tj_dly,
-        channels[4]['phase'],
+        #channels[4]['phase'],
     ],
     n_crop
 )
@@ -106,7 +108,7 @@ t, (
 print(f"Post-shift length: {len(t)} samples")
 
 # ── 6. DETREND ────────────────────────────────────────────────────────────
-ch4_phase_d = detrend(ch4_phase)
+#ch4_phase_d = detrend(ch4_phase)
 ch1_phase_d = detrend(ch1_phase)
 ch3_phase_d = detrend(ch3_phase_dly)
 tj_d        = detrend(tj)
@@ -168,7 +170,7 @@ def compute_asd(x, fs, fmin=9e-4, nperseg=None):
     return f, asd
 
 # Use detrended signals
-f0, asd_ch4 = compute_asd(ch4_phase_d, fs)
+#f0, asd_ch4 = compute_asd(ch4_phase_d, fs)
 f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
 f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
@@ -179,6 +181,8 @@ plt.figure(figsize=(8, 5))
 plt.loglog(f3, asd_tdi, lw=1.5, label='Residual Noise')
 plt.loglog(f1, asd_ch1, lw=2, label='Delayed Signal (ch1)', alpha=0.8)
 plt.loglog(f2, asd_ch3, lw=1, label='Pure Signal (ch3)', alpha=0.7)
+
+
 #plt.loglog(f0, asd_ch4, lw=1, label='ch4 phase')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')

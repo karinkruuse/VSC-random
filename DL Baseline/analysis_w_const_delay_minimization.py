@@ -5,13 +5,14 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_170536'
+filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
 delay_s_init = 3.999
 
 fmin = 1e-4
 fmax = 1
 PT_channel = 2
 search_width = 2e-3
+nr_of_channels = 3
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -22,8 +23,8 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
-start_time = 0 * 60 * 60
-end_time   = 0 * 60 * 60
+start_time = 24 * 60 * 60
+end_time   = 2 * 60 * 60
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 
@@ -34,7 +35,7 @@ def load_channel(ch):
         'phase': col(pfx + 'Phase (cyc)'),
     }
 
-channels = {ch: load_channel(ch) for ch in range(1, 5)}
+channels = {ch: load_channel(ch) for ch in range(1, nr_of_channels + 1)}
 
 # ── 2. INITIAL CROPPING ───────────────────────────────────────────────────
 def crop_time(t, data_dict, t_start=0, t_end=0):
@@ -61,7 +62,7 @@ print("Computing jitter from channel {}".format(PT_channel))
 print("CHECK IF THIS IS TRUE")
 t_jitter = channels[PT_channel]['phase'] / channels[PT_channel]['freq']
 
-print(np.mean(channels[4]['freq']), len(channels[4]['freq']))
+#print(np.mean(channels[4]['freq']), len(channels[4]['freq']))
 
 # ── 4. GLOBAL FIXES (CRITICAL) ────────────────────────────────────────────
 

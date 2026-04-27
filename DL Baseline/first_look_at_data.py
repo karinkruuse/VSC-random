@@ -30,6 +30,7 @@ print(f'Loading: {npy_file}')
 
 
 fmin = 1e-4
+nr_of_channels = 3
 
 """Actual data loading and initial processing starts here"""
 data = np.load(npy_file)
@@ -57,7 +58,7 @@ t_abs = [t_start + timedelta(seconds=float(dt - t[0])) for dt in t]
 # ── 2. Extract timestamps, frequencies, phases ────────────────────────────────
 
 channels = {}
-for ch in range(1, 5):
+for ch in range(1, nr_of_channels + 1):
     pfx = f'Input {ch} '
     channels[ch] = {
         'set_f':  col(pfx + 'Set Frequency (Hz)'),
@@ -69,18 +70,21 @@ for ch in range(1, 5):
 
 # ── 3. Detrend ────────────────────────────────────────────────────────────────
 
-for ch in range(1, 5):
+for ch in range(1, nr_of_channels + 1):
     channels[ch]['phase_detrended'] = detrend(channels[ch]['phase'], type='linear')
 
 # ── 4. Quick sanity plot ──────────────────────────────────────────────────────
 
-fig, axes = plt.subplots(4, 2, figsize=(15, 10))
+N = 8600000
+M = 0#10000
+
+fig, axes = plt.subplots(nr_of_channels, 2, figsize=(15, 10))
 fig.suptitle(f'{filename}', fontsize=12)
 
-for i, ch in enumerate(range(1, 5)):
+for i, ch in enumerate(range(1, nr_of_channels + 1)):
     ax_p = axes[i, 0]
     #ax_p.plot(t_abs, channels[ch]['phase'],           lw=0.6, label='raw')
-    ax_p.plot(t_abs, channels[ch]['phase_detrended'], lw=0.6, label='detrended', alpha=0.8)
+    ax_p.plot(t_abs[M:N], channels[ch]['phase_detrended'][M:N], lw=0.6, label='detrended', alpha=0.8)
     ax_p.set_ylabel(f'Ch{ch} phase (cyc)')
     ax_p.grid(True, ls='--', alpha=0.5)
     #ax_p.legend(fontsize=7)
@@ -88,7 +92,7 @@ for i, ch in enumerate(range(1, 5)):
     ax_f = axes[i, 1]
     freq = channels[ch]['freq']
     freq_mean = np.mean(freq)
-    ax_f.plot(t_abs, freq - freq_mean, lw=0.6, label=f'mean removed: {freq_mean/1e6:.6f} MHz')
+    ax_f.plot(t_abs[M:N], freq[M    :N] - freq_mean, lw=0.6, label=f'mean removed: {freq_mean/1e6:.6f} MHz')
     ax_f.set_ylabel(f'Ch{ch} freq (Hz)')
     ax_f.grid(True, ls='--', alpha=0.5)
     ax_f.legend(fontsize=7)
@@ -130,7 +134,7 @@ from scipy.signal import welch
 fig_asd, axes_asd = plt.subplots(2, 1, figsize=(9, 8))
 fig_asd.suptitle(f'ASD:{filename}', fontsize=12)
  
-for i, ch in enumerate(range(1, 5)):
+for i, ch in enumerate(range(1, nr_of_channels + 1)):
     # Phase ASD
     ax_ph = axes_asd[0]
     f_ph, psd_ph = welch(channels[ch]['phase_detrended'], fs=fs, nperseg=min(int(fs / fmin), len(t)))
