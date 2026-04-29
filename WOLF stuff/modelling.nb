@@ -1,0 +1,166 @@
+(* ::Package:: *)
+
+(* modelling.nb *)
+(* Translated from modelling.ipynb *)
+
+
+(* ── Delay operator (renamed from D to avoid conflict with built-in) ───────── *)
+
+Delay[expr_, tau_] := expr /. t -> t - tau
+
+
+(* ── Time variable ───────────────────────────────────────────────────────────── *)
+
+t
+
+
+(* ── Delay parameters as symbols ─────────────────────────────────────────────── *)
+
+tau12 /: ToString[tau12] = "\[Tau]12";
+tau21 /: ToString[tau21] = "\[Tau]21";
+tau13 /: ToString[tau13] = "\[Tau]13";
+tau31 /: ToString[tau31] = "\[Tau]31";
+tau23 /: ToString[tau23] = "\[Tau]23";
+tau32 /: ToString[tau32] = "\[Tau]32";
+
+
+(* ── Laser angular frequencies ──────────────────────────────────────────────── *)
+
+(* omega1, omega2, omega3    : physical laser frequencies        *)
+(* omega1m, omega2m, omega3m : sideband offsets                 *)
+
+
+(* ── Abstract time-dependent functions ─────────────────────────────────────── *)
+
+(* phi1, phi2, phi3          : laser phase noise per spacecraft  *)
+(* q1, q2, q3               : clock noise per spacecraft        *)
+(* epsilonA, epsilonB, epsilonC : board jitter                  *)
+(* omegaDDSA, omegaDDSB, omegaDDSC : DDS frequencies           *)
+
+
+(* ── Spacecraft lookup table ─────────────────────────────────────────────────
+   sc[i] = {phi_i, q_i, omega_i, omegam_i, epsilon_i, omegaDDS_i}          *)
+
+sc[1] = {phi1, q1, omega1, omega1m, epsilonA, omegaDDSA};
+sc[2] = {phi2, q2, omega2, omega2m, epsilonB, omegaDDSB};
+sc[3] = {phi3, q3, omega3, omega3m, epsilonC, omegaDDSC};
+
+tauLookup = <|
+  {1,2} -> tau12, {2,1} -> tau21,
+  {1,3} -> tau13, {3,1} -> tau31,
+  {2,3} -> tau23, {3,2} -> tau32
+|>;
+
+links = {{1,2},{2,1},{1,3},{3,1},{2,3},{3,2}};
+
+
+(* ── Flags ───────────────────────────────────────────────────────────────────── *)
+
+includePhi         = True;
+includeClockNoise  = True;
+includeBoardJitter = True;
+
+
+(* ── Build eta, etaSB, r, etaU, DDS ─────────────────────────────────────────── *)
+
+Do[
+  {i, j} = link;
+  {phiI, qI, omI, ommI, epsI, omegaDDSI} = sc[i];
+  {phiJ, qJ, omJ, ommJ, epsJ, omegaDDSJ} = sc[j];
+  tIJ = tauLookup[{i,j}];
+
+  phiTerms = If[includePhi, phiJ[t - tIJ] - phiI[t], 0];
+
+  clockTermsC  = If[includeClockNoise, -(omJ - omI) * qI[t], 0];
+  clockTermsSB = If[includeClockNoise,
+    -(omJ - omI + ommJ - ommI) * qI[t] - ommI * qI[t] + ommJ * qJ[t - tIJ], 0];
+
+  boardTermsC  = If[includeBoardJitter, omJ  * (epsI[t] - epsI[t - tIJ]), 0];
+  boardTermsSB = If[includeBoardJitter, (omJ + ommJ) * (epsI[t] - epsI[t - tIJ]), 0];
+
+  eta[i,j]   = Expand[phiTerms + clockTermsC  + boardTermsC];
+  etaSB[i,j] = Expand[phiTerms + clockTermsSB + boardTermsSB];
+  r[i,j]     = Simplify[(eta[i,j] - etaSB[i,j]) / ommJ];
+  etaU[i,j]  = phiJ[t - tIJ] - omJ * qI[t] + omJ * (epsI[t] - epsI[t - tIJ]);
+  DDS[i,j]   = -omegaDDSI * qJ[t] + omegaDDSI * epsI[t];
+
+, {link, links}]
+
+
+(* ── TDI 1 delay polynomials ────────────────────────────────────────────────── *)
+
+P12[expr_] :=   expr                  - Delay[expr, tau13 + tau31]
+P21[expr_] :=   Delay[expr, tau12]    - Delay[expr, tau12 + tau13 + tau31]
+P13[expr_] := -(expr                  - Delay[expr, tau12 + tau21])
+P31[expr_] := -(Delay[expr, tau13]    - Delay[expr, tau13 + tau12 + tau21])
+
+
+(* ── X1 ─────────────────────────────────────────────────────────────────────── *)
+
+X1 = Simplify[
+  P13[eta[1,3] + Delay[eta[3,1], tau13]]
++ P12[eta[1,2] + Delay[eta[2,1], tau12]]
+];
+
+Print["X1 = ", X1]
+
+
+(* ── R variables (TDI 1, Vallisneri) ────────────────────────────────────────── *)
+
+R[1,2] = -(r[1,3] + Delay[r[3,1], tau13]);
+R[1,3] =   r[1,2] + Delay[r[2,1], tau12];
+R[2,1] =   r[1,2] - r[1,3] - Delay[r[3,1], tau13] - Delay[r[1,2], tau13 + tau31];
+R[3,1] =  -r[1,3] + r[1,2] + Delay[r[2,1], tau12] + Delay[r[1,3], tau12 + tau21];
+R[2,3] = 0;
+R[3,2] = 0;
+
+
+(* ── Beatnote coefficients (a_ij = omega_i - omega_j, b_ij = 0) ─────────────── *)
+
+aCoeff[1,2] = omega1 - omega2;  aCoeff[2,1] = omega2 - omega1;
+aCoeff[1,3] = omega1 - omega3;  aCoeff[3,1] = omega3 - omega1;
+aCoeff[2,3] = omega2 - omega3;  aCoeff[3,2] = omega3 - omega2;
+
+
+(* ── Clock-jitter correction (b=0 simplification of eq. 6) ──────────────────── *)
+
+(* triplets (i,j,k): i is receiver, j and k are the two links from i *)
+triplets = {{1,2,3}, {2,1,3}, {3,1,2}};
+
+correction = 0;
+Do[
+  {i, j, k} = triplet;
+  correction += aCoeff[i,j] * R[i,j] + aCoeff[i,k] * R[i,k];
+, {triplet, triplets}]
+
+X1c = Simplify[X1 - correction];
+
+Print["X1 (uncorrected) = ", X1]
+Print["correction       = ", Simplify[-correction]]
+Print["X1c (corrected)  = ", X1c]
+
+
+(* ── Collect corrected X1 over epsilon variables ─────────────────────────────── *)
+
+x1cc = Collect[X1c / omega1, {epsilonA[_], epsilonB[_], epsilonC[_]}];
+Print["X1c / omega1 = ", x1cc]
+
+
+(* ── Print all eta, r, DDS variables ────────────────────────────────────────── *)
+
+Do[
+  {i,j} = link;
+  Print["\[Eta]_", i, j, " = ", eta[i,j]];
+  Print["\[Eta]^SB_", i, j, " = ", etaSB[i,j]];
+  Print["r_", i, j, " = ", r[i,j]];
+  Print["\[Eta]^DDS_", i, j, " = ", Simplify[DDS[i,j] / sc[i][[6]]]];
+  Print["--------------------"]
+, {link, links}]
+
+
+(* ── Check corrected r ───────────────────────────────────────────────────────── *)
+
+check = Simplify[
+  r[1,2] + DDS[1,2]/sc[1][[6]] - Delay[DDS[1,3]/sc[1][[6]], tau12]
+];
+Print["r^c_12 = ", check]

@@ -1,0 +1,248 @@
+(* ::Package:: *)
+
+(* modelling.nb *)
+(* Translated from modelling.ipynb *)
+
+
+(* ── Delay operator (renamed from D to avoid conflict with built-in) ───────── *)
+
+Delay[expr_, tau_] := expr /. t -> t - tau
+
+
+(* ── Time variable ───────────────────────────────────────────────────────────── *)
+
+t
+
+
+(* ── Delay parameters as symbols ─────────────────────────────────────────────── *)
+
+tau12 /: ToString[tau12] = "\[Tau]12";
+tau21 /: ToString[tau21] = "\[Tau]21";
+tau13 /: ToString[tau13] = "\[Tau]13";
+tau31 /: ToString[tau31] = "\[Tau]31";
+tau23 /: ToString[tau23] = "\[Tau]23";
+tau32 /: ToString[tau32] = "\[Tau]32";
+
+
+(* ── Laser angular frequencies ──────────────────────────────────────────────── *)
+
+(* omega1, omega2, omega3    : physical laser frequencies        *)
+(* omega1m, omega2m, omega3m : sideband offsets                 *)
+
+
+(* ── Abstract time-dependent functions ─────────────────────────────────────── *)
+
+(* phi1, phi2, phi3          : laser phase noise per spacecraft  *)
+(* q1, q2, q3               : clock noise per spacecraft        *)
+(* epsilonA, epsilonB, epsilonC : board jitter                  *)
+(* omegaDDSA, omegaDDSB, omegaDDSC : DDS frequencies           *)
+
+
+(* ── Spacecraft lookup table ─────────────────────────────────────────────────
+   sc[i] = {phi_i, q_i, omega_i, omegam_i, epsilon_i, omegaDDS_i}          *)
+
+sc[1] = {phi1, q1, omega1, omega1m, epsilonA, omegaDDSA};
+sc[2] = {phi2, q2, omega2, omega2m, epsilonB, omegaDDSB};
+sc[3] = {phi3, q3, omega3, omega3m, epsilonC, omegaDDSC};
+
+tauLookup = <|
+  {1,2} -> tau12, {2,1} -> tau21,
+  {1,3} -> tau13, {3,1} -> tau31,
+  {2,3} -> tau23, {3,2} -> tau32
+|>;
+
+links = {{1,2},{2,1},{1,3},{3,1},{2,3},{3,2}};
+
+
+(* ── Flags ───────────────────────────────────────────────────────────────────── *)
+
+includePhi         = True;
+includeClockNoise  = True;
+includeBoardJitter = False;
+
+
+(* ── Build eta, etaSB, r, etaU, DDS ─────────────────────────────────────────── *)
+
+Do[
+  {i, j} = link;
+  {phiI, qI, omI, ommI, epsI, omegaDDSI} = sc[i];
+  {phiJ, qJ, omJ, ommJ, epsJ, omegaDDSJ} = sc[j];
+  tIJ = tauLookup[{i,j}];
+
+  phiTerms = If[includePhi, phiJ[t - tIJ] - phiI[t], 0];
+
+  clockTermsC  = If[includeClockNoise, -(omJ - omI) * qI[t], 0];
+  clockTermsSB = If[includeClockNoise,
+    -(omJ - omI + ommJ - ommI) * qI[t] - ommI * qI[t] + ommJ * qJ[t - tIJ], 0];
+
+  boardTermsC  = If[includeBoardJitter, omJ  * (epsI[t] - epsI[t - tIJ]), 0];
+  boardTermsSB = If[includeBoardJitter, (omJ + ommJ) * (epsI[t] - epsI[t - tIJ]), 0];
+
+  eta[i,j]   = Expand[phiTerms + clockTermsC  + boardTermsC];
+  etaSB[i,j] = Expand[phiTerms + clockTermsSB + boardTermsSB];
+  r[i,j]     = Simplify[(eta[i,j] - etaSB[i,j]) / ommJ];
+  etaU[i,j]  = phiJ[t - tIJ] - omJ * qI[t] + omJ * (epsI[t] - epsI[t - tIJ]);
+  DDS[i,j]   = -omegaDDSI * qJ[t] + omegaDDSI * epsI[t];
+
+, {link, links}]
+
+
+(* ── TDI 1 delay polynomials ────────────────────────────────────────────────── *)
+
+P12[expr_] :=   expr                  - Delay[expr, tau13 + tau31]
+P21[expr_] :=   Delay[expr, tau12]    - Delay[expr, tau12 + tau13 + tau31]
+P13[expr_] := -(expr                  - Delay[expr, tau12 + tau21])
+P31[expr_] := -(Delay[expr, tau13]    - Delay[expr, tau13 + tau12 + tau21])
+
+
+(* ── X1 ─────────────────────────────────────────────────────────────────────── *)
+
+X1 = Simplify[
+  P13[eta[1,3] + Delay[eta[3,1], tau13]]
++ P12[eta[1,2] + Delay[eta[2,1], tau12]]
+];
+
+Print["X1 = ", X1]
+
+
+(* ── R variables (TDI 1, Vallisneri) ────────────────────────────────────────── *)
+
+R[1,2] = -(r[1,3] + Delay[r[3,1], tau13]);
+R[1,3] =   r[1,2] + Delay[r[2,1], tau12];
+R[2,1] =   r[1,2] - r[1,3] - Delay[r[3,1], tau13] - Delay[r[1,2], tau13 + tau31];
+R[3,1] =  -r[1,3] + r[1,2] + Delay[r[2,1], tau12] + Delay[r[1,3], tau12 + tau21];
+R[2,3] = 0;
+R[3,2] = 0;
+
+
+(* ── Beatnote coefficients (a_ij = omega_i - omega_j, b_ij = 0) ─────────────── *)
+
+aCoeff[1,2] = omega1 - omega2;  aCoeff[2,1] = omega2 - omega1;
+aCoeff[1,3] = omega1 - omega3;  aCoeff[3,1] = omega3 - omega1;
+aCoeff[2,3] = omega2 - omega3;  aCoeff[3,2] = omega3 - omega2;
+
+
+(* ── Clock-jitter correction (b=0 simplification of eq. 6) ──────────────────── *)
+
+(* triplets (i,j,k): i is receiver, j and k are the two links from i *)
+triplets = {{1,2,3}, {2,1,3}, {3,1,2}};
+
+correction = 0;
+Do[
+  {i, j, k} = triplet;
+  correction += aCoeff[i,j] * R[i,j] + aCoeff[i,k] * R[i,k];
+, {triplet, triplets}]
+
+X1c = Simplify[X1 + correction];
+
+Print["X1 (uncorrected) = ", X1]
+Print["correction       = ", Simplify[-correction]]
+Print["X1c (corrected)  = ", X1c]
+
+
+(* ── Collect corrected X1 over epsilon variables ─────────────────────────────── *)
+
+x1cc = Collect[X1c / omega1, {epsilonA[_], epsilonB[_], epsilonC[_]}];
+Print["X1c / omega1 = ", x1cc]
+
+
+(* ── Print all eta, r, DDS variables ────────────────────────────────────────── *)
+
+Do[
+  {i,j} = link;
+  Print["\[Eta]_", i, j, " = ", eta[i,j]];
+  Print["\[Eta]^SB_", i, j, " = ", etaSB[i,j]];
+  Print["r_", i, j, " = ", r[i,j]];
+  Print["\[Eta]^DDS_", i, j, " = ", Simplify[DDS[i,j] / sc[i][[6]]]];
+  Print["--------------------"]
+, {link, links}]
+
+
+(* ── Check corrected r ───────────────────────────────────────────────────────── *)
+
+check = Simplify[
+  r[1,2] + DDS[1,2]/sc[1][[6]] - Delay[DDS[1,3]/sc[1][[6]], tau12]
+];
+Print["r^c_12 = ", check]
+
+
+(* ══════════════════════════════════════════════════════════════════════════════ *)
+(* FREQUENCY DOMAIN PSD ESTIMATION                                               *)
+(* ══════════════════════════════════════════════════════════════════════════════ *)
+
+(* ── Equal armlength assumption for PSD (Hartwig: OK for estimating PSD) ─────
+   All delays -> d, delay operator -> multiplication by Exp[-I omega d]        *)
+
+\[Omega] (* Fourier frequency variable *)
+d       (* common armlength / light travel time *)
+
+(* Fourier transform of Delay[expr, tau]: multiply by Exp[-I omega tau]
+   We represent each eta_ij in the frequency domain as a transfer function
+   acting on the noise sources.                                                 *)
+
+(* Substitute equal arms into the P polynomials — Fourier domain versions *)
+P12f[\[Omega]_] :=  1 - Exp[-2 I \[Omega] d]
+P21f[\[Omega]_] := (1 - Exp[-2 I \[Omega] d]) * Exp[-I \[Omega] d]
+P13f[\[Omega]_] := -(1 - Exp[-2 I \[Omega] d])
+P31f[\[Omega]_] := -(1 - Exp[-2 I \[Omega] d]) * Exp[-I \[Omega] d]
+
+
+(* ── Clock noise PSD of X1 (eq. 2 from document, sum over all links) ────────
+   S^X_q(omega) = Sum_ij |P_ij_tilde * N_ij_tilde|^2
+   For clock noise: eta_ij contributes aCoeff[i,j] * q_i in frequency domain.
+   With equal arms and uncorrelated clocks of equal PSD Sq:                    *)
+
+(* Fourier-domain coefficients for clock noise contribution per link *)
+Pf[1,2][\[Omega]_] := P12f[\[Omega]];
+Pf[2,1][\[Omega]_] := P21f[\[Omega]];
+Pf[1,3][\[Omega]_] := P13f[\[Omega]];
+Pf[3,1][\[Omega]_] := P31f[\[Omega]];
+Pf[2,3][\[Omega]_] := 0;
+Pf[3,2][\[Omega]_] := 0;
+
+(* Clock noise PSD: collect contributions per spacecraft clock q_i.
+   Each q_i enters X1 via links (i,j) and (i,k) with coefficient
+   (P_ij_tilde * a_ij + P_ik_tilde * a_ik).                                    *)
+
+(* Coefficients per spacecraft in the Fourier domain *)
+coeff1[\[Omega]_] := Pf[1,2][\[Omega]] * aCoeff[1,2] + Pf[1,3][\[Omega]] * aCoeff[1,3]
+coeff2[\[Omega]_] := Pf[2,1][\[Omega]] * aCoeff[2,1] + Pf[2,3][\[Omega]] * aCoeff[2,3]
+coeff3[\[Omega]_] := Pf[3,1][\[Omega]] * aCoeff[3,1] + Pf[3,2][\[Omega]] * aCoeff[3,2]
+
+(* PSD assuming uncorrelated clocks of equal PSD Sq *)
+SX1q[\[Omega]_] := (
+    Abs[coeff1[\[Omega]]]^2
+  + Abs[coeff2[\[Omega]]]^2
+  + Abs[coeff3[\[Omega]]]^2
+) * Sq
+
+SX1q[\[Omega]_] = FullSimplify[SX1q[\[Omega]],
+  Assumptions -> {\[Omega] \[Element] Reals, d > 0,
+                   omega1 \[Element] Reals, omega2 \[Element] Reals, omega3 \[Element] Reals}];
+
+Print["S^X1_q(omega) = ", SX1q[\[Omega]]]
+
+
+(* ── Plot PSD transfer function (normalised by Sq) ──────────────────────────
+   Use numeric beatnote values matching Hartwig fig. 13.1 setup:
+   a12 = 5 MHz, a13 = -6 MHz, a21 = -5 MHz, a31 = 6 MHz (in rad/s * 2pi)
+   d = 8.3 s (LISA armlength / c)                                              *)
+
+numRules = {
+  omega1 -> 0,          (* set omega1 as reference *)
+  omega2 -> -2 Pi * 5 * 10^6,
+  omega3 ->  2 Pi * 6 * 10^6,
+  d      -> 8.3,
+  Sq     -> 1           (* normalise *)
+};
+
+SX1qNum[\[Omega]_] := SX1q[\[Omega]] /. numRules;
+
+Plot[
+  SX1qNum[2 Pi f],
+  {f, 10^-4, 1},
+  ScalingFunctions -> {"Log", "Log"},
+  PlotLabel -> "Clock noise PSD transfer function |X1|^2 / Sq",
+  AxesLabel -> {"f (Hz)", "S^X1_q / Sq"},
+  PlotStyle -> Blue
+]
