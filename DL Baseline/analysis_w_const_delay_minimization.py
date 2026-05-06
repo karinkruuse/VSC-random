@@ -5,8 +5,8 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260428_103448'
-delay_s_init = 3.999
+filename = 'DownstairsTest_20260429_124133'
+delay_s_init = 4.1
 
 fmin = 1e-4
 fmax = 1
@@ -24,7 +24,7 @@ t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
 start_time = 0 * 60 * 60
-end_time   = 0 * 60 * 60
+end_time   = 54 * 60 * 60
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 

@@ -4,13 +4,13 @@ from scipy.signal import detrend, welch, csd
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename   = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
-delay_s    = 3.9989879870
+filename   = 'DownstairsTest_20260429_124133'
+delay_s    = 4.1
 PT_channel = 2
-fmin       = 1e-4
-fmax       = 1
+fmin       = 5e-4
+fmax       = 10
 start_time = 0  * 60 * 60
-end_time   = 2  * 60 * 60
+end_time   = 18 * 60 * 60 # like how much to crop from the end
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -126,8 +126,8 @@ fig, ax = plt.subplots(figsize=(10, 6))
 ax.loglog(f[fm],    np.sqrt(S_11[fm]),                color='C0', lw=1.2,          label='ch1 phase ASD (raw)')
 ax.loglog(f[fm],    np.sqrt(S_33[fm]),                color='C1', lw=1.2,          label='ch3 phase ASD (raw)')
 ax.loglog(f_t[fmt], np.sqrt(S_tdi[fmt]),              color='C3', lw=1.8,          label='TDI residual ASD')
-ax.loglog(f_j[fmj], np.sqrt(S_jitter_contrib[fmj]),  color='C4', lw=1.2, ls=':',  label='jitter contrib to TDI  (f̅ch3² · S_Δtj)')
-ax.loglog(f_s[fms], np.sqrt(S_n1_simple[fms]),        color='C6', lw=1.2, ls='--', label='floor: ch1 vs ch3_delayed only')
+#ax.loglog(f_j[fmj], np.sqrt(S_jitter_contrib[fmj]),  color='C4', lw=1.2, ls=':',  label='jitter contrib to TDI  (f̅ch3² · S_Δtj)')
+#ax.loglog(f_s[fms], np.sqrt(S_n1_simple[fms]),        color='C6', lw=1.2, ls='--', label='floor: ch1 vs ch3_delayed only')
 ax.loglog(f_s[fms], np.sqrt(S_n1_partial[fms]),       color='C5', lw=1.5, ls='--', label='floor: ch1 vs ch3_delayed + jitter_diff (partial coherence)')
 
 ax.set_xlabel('Frequency (Hz)')
