@@ -5,7 +5,7 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
+filename = 'DownstairsTest_20260428_103448'
 delay_s_init = 3.999
 
 fmin = 1e-4
@@ -23,8 +23,8 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
-start_time = 24 * 60 * 60
-end_time   = 2 * 60 * 60
+start_time = 0 * 60 * 60
+end_time   = 0 * 60 * 60
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 

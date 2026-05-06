@@ -5,8 +5,8 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
-delay_s  = 3.9991208434
+filename = 'DownstairsTest_20260428_103448'
+delay_s  = 4.000999899
 DDS_signal_nr = 2
 nr_of_channels = 3
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
@@ -49,8 +49,8 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
-start_time = 24 * 60 * 60
-end_time = 2 * 60 * 60
+start_time = 0 * 60 * 60
+end_time = 0 * 60 * 60
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────

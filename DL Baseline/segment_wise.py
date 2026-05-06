@@ -5,8 +5,8 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
-delay_s_init = 3.9990737053
+filename = 'DownstairsTest_20260428_103448'
+delay_s_init = 4.000999899
 
 fmin = 1e-4
 fmax = 1
@@ -16,7 +16,7 @@ search_width = 1e-3
 segment_duration_s = 1 * 60 * 60   # segment length in seconds (1 hour)
 PT_channel = 2
 start_time = 0 * 60 * 60
-end_time   = 2 * 60 * 60
+end_time   = 0 * 60 * 60
 
 nr_of_channels = 3
 

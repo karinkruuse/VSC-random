@@ -30,7 +30,7 @@ print(f'Loading: {npy_file}')
 
 
 fmin = 1e-4
-nr_of_channels = 3
+nr_of_channels = 4
 
 """Actual data loading and initial processing starts here"""
 data = np.load(npy_file)
