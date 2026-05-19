@@ -5,14 +5,19 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
+<<<<<<< HEAD
 filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
 delay_s_init = 3.999
+=======
+filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
+delay_s_init = 3.99945
+>>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
 
 fmin = 1e-4
 fmax = 1
-PT_channel = 2
+PT_channel = 4
 search_width = 2e-3
-nr_of_channels = 3
+nr_of_channels = 4
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -23,8 +28,13 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
+<<<<<<< HEAD
 start_time = 24 * 60 * 60
 end_time   = 2 * 60 * 60
+=======
+start_time = 0 * 60 * 60
+end_time   = 22.5 * 60 * 60
+>>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 
@@ -161,15 +171,15 @@ if False:
     plt.savefig(f'plots/{filename}_delay_scan.png', dpi=200)
 
 # ── 9. FINAL ASD ──────────────────────────────────────────────────────────
-def compute_asd(x):
+def compute_asd(x, nperseg=nperseg_fixed):
     f, psd = welch(x, fs=fs, nperseg=nperseg_fixed, detrend='constant')
     return f, np.sqrt(psd)
 
 tdi_opt  = compute_tdi(delay_opt)
 tdi_init = compute_tdi(delay_s_init)
 
-f, asd_opt  = compute_asd(tdi_opt)
-_, asd_init = compute_asd(tdi_init)
+f, asd_opt  = compute_asd(tdi_opt, nperseg=int(fs / 1e-3))
+_, asd_init = compute_asd(tdi_init, nperseg=int(fs / 1e-3))
 
 plt.figure(figsize=(8,5))
 plt.loglog(f, asd_init, label=f'init = {delay_s_init:.10f} s', alpha=0.7)
