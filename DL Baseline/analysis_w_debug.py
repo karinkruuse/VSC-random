@@ -5,17 +5,10 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-<<<<<<< HEAD
-filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
-delay_s  = 3.9991208434
-DDS_signal_nr = 2
-nr_of_channels = 3
-=======
 filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
 delay_s  = 3.9990972327
 DDS_signal_nr = 4
 nr_of_channels = 4
->>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
 
@@ -56,13 +49,8 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
-<<<<<<< HEAD
-start_time = 24 * 60 * 60
-end_time = 2 * 60 * 60
-=======
 start_time = 0 * 60 * 60
 end_time = 22.5 * 60 * 60
->>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
