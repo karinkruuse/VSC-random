@@ -12,24 +12,27 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.special import j0, j1
+from pathlib import Path
+from config_loader import load_config
+cfg = load_config(Path(__file__).parent / "lisa_config.toml")
 
 # ─────────────────────────────────────────────
-# Parameters  (edit here)
+# Parameters  (from lisa_config.toml)
 # ─────────────────────────────────────────────
 # Optical / interferometer
-E_ij   = np.sqrt(1.75e-3)          # local E-field amplitude      [sqrt(W)]
-E_ji   = np.sqrt(585.62e-12)          # remote E-field amplitude     [sqrt(W)]
+E_ij   = np.sqrt(cfg.instrument.P_local)   # local E-field amplitude  [sqrt(W)]
+E_ji   = np.sqrt(cfg.instrument.P_remote)  # remote E-field amplitude [sqrt(W)]
 
-m      = 0.53         # EOM modulation depth
-R      = 0.69          # photodiode responsivity      [A/W] (this includes the quantum efficiency)  
-eta    = 0.8          # heterodyne efficiency
+m      = cfg.instrument.m    # EOM modulation depth
+R      = cfg.instrument.R    # photodiode responsivity [A/W]
+eta    = cfg.instrument.eta  # heterodyne efficiency
 
 # Frequencies
-f_het  = 18e6         # heterodyne beatnote freq     [Hz]
-nu_m   = 2.4e9        # EOM modulation frequency     [Hz]
+f_het  = cfg.beatnote.f_het    # heterodyne beatnote freq [Hz]
+nu_m   = cfg.modulation.nu_m   # EOM modulation frequency [Hz]
 
-# Photodetectod transimpedance amplifier
-C_pd = 10e-12
+# Photodetector transimpedance amplifier
+C_pd = cfg.instrument.C_pd
 Z = 1/(2*np.pi*C_pd*f_het)  # [V/A]
 
 # Noise floors
@@ -46,7 +49,8 @@ f_corner_M = 1.5e-2   # corner frequency             [Hz]
 S_q0 = 1e-14          # USO timing noise coefficient [s/sqrt(Hz) at 1 Hz]
 
 # Frequency axis (science band)
-f = np.logspace(-4, 1, 2000)   # 0.1 mHz to 10 Hz
+f = np.logspace(np.log10(cfg.science_band.f_science_min),
+                np.log10(cfg.science_band.f_science_max), 2000)
 
 # ─────────────────────────────────────────────
 # Bessel function amplitudes
@@ -86,6 +90,7 @@ sqrt_S_RIN2f = RIN_level * np.sqrt(2) / 4 * np.ones_like(f)
 
 # Modulation noise [s/sqrt(Hz)]
 sqrt_S_M = S_M0 * np.sqrt(1 + (f_corner_M / f)**2)
+sqrt_S_ro = 600/2/np.pi*1e-6 * np.sqrt(1+(0.7e-3/f)**4)
 
 # USO clock noise [s/sqrt(Hz)]
 sqrt_S_USO = S_q0 * f**(-3/2)
@@ -108,7 +113,7 @@ sp_amp   = additive_to_phase(sqrt_S_amp_v, A_sb) * freq_scaling
 sp_RIN1f = additive_to_phase(sqrt_S_RIN1f, A_sb) * freq_scaling
 sp_RIN2f = sqrt_S_RIN2f * freq_scaling
 sp_mod   = 2 * np.pi * nu_m * sqrt_S_M
-sp_USO   = 2 * np.pi * nu_m * sqrt_S_USO
+sp_USO   = 2 * np.pi * f_het * sqrt_S_USO
 
 # Total RSS
 sp_tot = np.sqrt(sp_shot**2 + sp_dark**2 + sp_amp**2 +
@@ -173,7 +178,8 @@ ax.loglog(f, sp_RIN2f, label='2f-RIN',           color=colors[4])
 ax.loglog(f, sp_mod,   label='Modulation noise', color=colors[5])
 ax.loglog(f, sp_USO,   label='USO noise',        color=colors[6])
 ax.loglog(f, sp_tot_ro,label='Total readout noise',        color='grey', lw=2,alpha=0.7)
-ax.loglog(f, sp_tot,   'k--', lw=2, label='Total (RSS)')
+ax.loglog(f, sqrt_S_ro,   'k--', lw=2, label='readout limit')
+
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Phase noise ASD [rad/√Hz]')
 ax.set_title('Converted to phase noise')
@@ -197,6 +203,7 @@ sd_mod   = sp_mod   * phase_to_disp
 sd_USO   = sp_USO   * phase_to_disp
 sd_tot   = sp_tot   * phase_to_disp
 sd_tot_ro   = sp_tot_ro   * phase_to_disp
+sd_ro =  sqrt_S_ro * phase_to_disp
 
 plt.tight_layout()
 plt.savefig('outputs/sideband_noise_budget.png', dpi=150, bbox_inches='tight')
@@ -210,7 +217,7 @@ ax.loglog(f, sd_RIN1f, label='1f-RIN',           color=colors[3])
 ax.loglog(f, sd_RIN2f, label='2f-RIN',           color=colors[4])
 ax.loglog(f, sd_mod,   label='Modulation noise', color=colors[5])
 ax.loglog(f, sd_USO,   label='USO noise',        color=colors[6])
-ax.loglog(f, sd_tot,   'k--', lw=2, label='Total (RSS)')
+ax.loglog(f, sd_ro,   'k--', lw=2, label='readout limit')
 ax.loglog(f, sd_tot_ro, lw=3, label='Total readout noise', color='grey', alpha=0.7)
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Displacement noise ASD [m/√Hz]')

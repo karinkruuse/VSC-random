@@ -1,0 +1,90 @@
+# ============================================================
+#  LISA Configuration
+# ============================================================
+#  Parameters for the real LISA satellite constellation.
+#  All frequencies in Hz unless otherwise noted.
+#  Reference: LISA Mission L3 proposal, Hartwig thesis,
+#             and 2025 LISA tech notes.
+# ============================================================
+
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+# Inter-spacecraft beatnote range [Hz]
+f_het_min = 5e6
+f_het_max = 25e6
+
+# Operating heterodyne beatnote frequency [Hz]
+f_het = 18e6
+
+# Maximum Doppler shift [Hz]
+doppler_max = 12e6
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+# EOM clock sideband modulation frequency [Hz]
+# Left spacecraft (SC1); right differs by delta_f_SB
+nu_m = 2.4e9
+
+# Sideband offset = nu_m_right - nu_m_left [Hz]
+# Must equal 1 MHz in the LISA-faithful configuration
+delta_f_SB = 1e6
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+# Ultra-Stable Oscillator (USO) frequency [Hz]
+# = 3 * 2^24 Hz per 2025 LISA tech note
+f_USO = 50331648.0
+
+# Phasemeter system clock / ADC sampling rate [Hz]
+f_s = 80e6
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+# One-way light travel time [s]  (tau = L / c,  L = 2.5e9 m)
+tau = 8.33
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+# Gravitational wave / science measurement band [Hz]
+f_science_min = 1e-4   # 0.1 mHz
+f_science_max = 1.0    # 1 Hz
+
+# First TDI transfer-function null [Hz]  (f_null = 1 / (2*tau))
+f_TDI_null = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+# EOM modulation depth (dimensionless)
+m   = 0.53
+
+# Photodiode responsivity [A/W]  (includes quantum efficiency)
+R   = 0.69
+
+# Heterodyne efficiency (fringe visibility)
+eta = 0.8
+
+# Photodetector capacitance [F]  (sets transimpedance Z at f_het)
+C_pd = 10e-12
+
+# Optical powers at the photodetector [W]
+# Local beam (~1.75 mW after splitting); remote beam (~0.6 nW after 2.5e9 m propagation)
+P_local  = 1.75e-3
+P_remote = 585.62e-12

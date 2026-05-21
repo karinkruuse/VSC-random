@@ -13,6 +13,8 @@ V_beat = 2*R*Z*E*E # beatnote voltage amplitude [V]
 # frequency axis
 f = np.logspace(-4, 8, 10000)
 
+#Delete or fix — wrong laser noise mode
+
 # ── INPUT noise ASDs ──────────────────────────────────────────────────────────
 # Laser phase noise [rad/√Hz]: 1/f^0.5 slope
 S_phi   = 30* (1 + (0.002/f)**4)/f
@@ -73,6 +75,8 @@ plt.rcParams.update({
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 7), facecolor=BG)
 fig.patch.set_facecolor(BG)
+
+print("Claude said about this file: Delete or fix — wrong laser noise mode")
 
 for ax in (ax1, ax2):
     ax.set_facecolor(BG2)

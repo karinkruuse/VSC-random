@@ -26,27 +26,25 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from scipy.special import j0, j1
+from config_loader import cfg
 
 # ─────────────────────────────────────────────
-# Parameters  (edit here)
+# Parameters  (from minilisa_config.toml)
 # ─────────────────────────────────────────────
 # Optical powers
-P_i   = 4e-3     # SC laser power at PD         [W]
-P_REF = 4e-3     # reference laser power at PD  [W]  (placeholder, set as needed)
+E_i   = np.sqrt(cfg.instrument.P_i)    # SC laser E-field amplitude  [sqrt(W)]
+E_REF = np.sqrt(cfg.instrument.P_REF)  # reference laser E-field amplitude [sqrt(W)]
 
-E_i   = np.sqrt(P_i)
-E_REF = np.sqrt(P_REF)
-
-m      = 0.53        # EOM modulation depth
-R      = 0.69        # photodiode responsivity       [A/W]
-eta    = 0.8         # heterodyne efficiency
+m      = cfg.instrument.m    # EOM modulation depth
+R      = cfg.instrument.R    # photodiode responsivity [A/W]
+eta    = cfg.instrument.eta  # heterodyne efficiency
 
 # Frequencies
-f_het  = 10e6        # heterodyne beatnote freq      [Hz]  (SC laser - REF)
-nu_m   = 11e6        # EOM modulation frequency      [Hz]
+f_het  = cfg.beatnote.f_het    # heterodyne beatnote freq [Hz]
+nu_m   = cfg.modulation.nu_m   # EOM modulation frequency [Hz]
 
 # Photodetector transimpedance
-C_pd = 10e-12
+C_pd = cfg.instrument.C_pd
 Z = 1 / (2 * np.pi * C_pd * f_het)   # [V/A]
 
 # Noise floors
@@ -64,8 +62,14 @@ S_q0 = 1e-14         # USO timing noise coefficient  [s/sqrt(Hz) at 1 Hz]
 # Wavelength
 lam = 1064e-9        # [m]
 
+
+
 # Frequency axis
-f = np.logspace(-4, 1, 2000)   # 0.1 mHz to 10 Hz
+f = np.logspace(np.log10(cfg.science_band.f_science_min),
+                np.log10(cfg.science_band.f_science_max), 2000)
+
+sqrt_S_ro = 600/2/np.pi*1e-6 * np.sqrt(1+(0.7e-3/f)**4) / 2.4e9*nu_m
+
 
 # ─────────────────────────────────────────────
 # Bessel factors
@@ -160,8 +164,8 @@ sp_dark  = additive_to_phase(sqrt_S_dark,   A_sb) * freq_scaling * np.sqrt(2)
 sp_amp   = additive_to_phase(sqrt_S_amp_v,  A_sb) * freq_scaling * np.sqrt(2)
 sp_RIN1f = additive_to_phase(sqrt_S_RIN1f,  A_sb) * freq_scaling   # doubling already in sqrt_S_RIN1f
 sp_RIN2f = sqrt_S_RIN2f * freq_scaling                              # doubling already in sqrt_S_RIN2f
-sp_mod   = 2 * np.pi * nu_m * sqrt_S_M * np.sqrt(2)   # two independent EOMs
-sp_USO   = 2 * np.pi * nu_m * sqrt_S_USO * np.sqrt(2) # two independent USOs
+sp_mod   = 2 * np.pi * nu_m * sqrt_S_M
+sp_USO   = 2 * np.pi * f_het * sqrt_S_USO 
 
 # Totals
 sp_tot = np.sqrt(sp_shot**2 + sp_dark**2 + sp_amp**2 +
@@ -204,7 +208,7 @@ sd_mod    = sp_mod    * phase_to_disp
 sd_USO    = sp_USO    * phase_to_disp
 sd_tot    = sp_tot    * phase_to_disp
 sd_tot_ro = sp_tot_ro * phase_to_disp
-
+sd_ro = sqrt_S_ro * phase_to_disp
 # ─────────────────────────────────────────────
 # Plotting
 # ─────────────────────────────────────────────
@@ -243,7 +247,7 @@ ax.loglog(f, sp_RIN2f,   label='2f-RIN',            color=colors[4])
 ax.loglog(f, sp_mod,     label='Modulation noise',  color=colors[5])
 ax.loglog(f, sp_USO,     label='USO noise',         color=colors[6])
 ax.loglog(f, sp_tot_ro,  color='grey', lw=2, alpha=0.7, label='Total readout noise')
-ax.loglog(f, sp_tot,     'k--', lw=2, label='Total (RSS)')
+ax.loglog(f, sqrt_S_ro,     'k--', lw=2, label='readout limit')
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Phase noise ASD [rad/√Hz]')
 ax.set_title('Converted to phase noise (both PDs)')
@@ -264,7 +268,7 @@ ax.loglog(f, sd_RIN2f,   label='2f-RIN',            color=colors[4])
 ax.loglog(f, sd_mod,     label='Modulation noise',  color=colors[5])
 ax.loglog(f, sd_USO,     label='USO noise',         color=colors[6])
 ax.loglog(f, sd_tot_ro,  color='grey', lw=3, alpha=0.7, label='Total readout noise')
-ax.loglog(f, sd_tot,     'k--', lw=2, label='Total (RSS)')
+ax.loglog(f, sd_ro,     'k--', lw=2, label='readout limit')
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Displacement noise ASD [m/√Hz]')
 ax.set_title(f'Displacement noise  (λ = {lam*1e9:.0f} nm,  x = φ·λ/2π)')

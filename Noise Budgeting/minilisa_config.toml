@@ -26,14 +26,17 @@ f_inter_max = 60e6
 # LISA: ±12e6  |  Testbed: ± few MHz (programmed)
 doppler_max = 2e6   # adjust as needed
 
+# Operating heterodyne beatnote frequency [Hz]
+f_het = 10e6
+
 
 # ------------------------------------------------------------
 [modulation]
 # ------------------------------------------------------------
 
-# Clock sideband modulation frequency, left spacecraft [Hz]
-# LISA: 2.4e9  |  Testbed: ~9e9 -- 15e9
-f_mod_L = 9e9   # placeholder; set to your Moku output frequency
+# EOM modulation (sideband) frequency [Hz]
+# LISA: 2.4e9  |  Testbed: MHz-range (set to match your EOM drive)
+nu_m = 11e6
 
 # Clock sideband modulation frequency, right spacecraft [Hz]
 # LISA: 2.401e9 (differs from left by 1 MHz)
@@ -104,3 +107,24 @@ f_science_max = 1.0    # 1 Hz
 # First TDI transfer-function null [Hz]  (f_null = 1 / (2*tau))
 # Should be ~60 mHz for tau = 8.33 s
 f_TDI_null = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+# EOM modulation depth (dimensionless)
+m   = 0.53
+
+# Photodiode responsivity [A/W]  (includes quantum efficiency)
+R   = 0.69
+
+# Heterodyne efficiency (fringe visibility)
+eta = 0.8
+
+# Photodetector capacitance [F]  (sets transimpedance Z at f_het)
+C_pd = 10e-12
+
+# Optical powers at the photodetector [W]  (placeholders — update from power budget)
+P_i   = 4e-3     # SC laser power
+P_REF = 4e-3     # reference laser power
