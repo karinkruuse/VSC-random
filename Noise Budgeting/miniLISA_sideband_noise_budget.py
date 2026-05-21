@@ -67,7 +67,7 @@ lam = 1064e-9        # [m]
 # Frequency axis
 f = np.logspace(np.log10(cfg.science_band.f_science_min),
                 np.log10(cfg.science_band.f_science_max), 2000)
-
+print(f"miniLISA vs LISA modulation freq ratio:= {nu_m/2.4e9:.5f}")
 sqrt_S_ro = 600/2/np.pi*1e-6 * np.sqrt(1+(0.7e-3/f)**4) / 2.4e9*nu_m
 
 
@@ -164,7 +164,7 @@ sp_dark  = additive_to_phase(sqrt_S_dark,   A_sb) * freq_scaling * np.sqrt(2)
 sp_amp   = additive_to_phase(sqrt_S_amp_v,  A_sb) * freq_scaling * np.sqrt(2)
 sp_RIN1f = additive_to_phase(sqrt_S_RIN1f,  A_sb) * freq_scaling   # doubling already in sqrt_S_RIN1f
 sp_RIN2f = sqrt_S_RIN2f * freq_scaling                              # doubling already in sqrt_S_RIN2f
-sp_mod   = 2 * np.pi * nu_m * sqrt_S_M
+sp_mod   = 2 * np.pi * (f_het + nu_m) * sqrt_S_M
 sp_USO   = 2 * np.pi * f_het * sqrt_S_USO 
 
 # Totals

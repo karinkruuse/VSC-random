@@ -27,7 +27,7 @@ f_inter_max = 60e6
 doppler_max = 2e6   # adjust as needed
 
 # Operating heterodyne beatnote frequency [Hz]
-f_het = 10e6
+f_het = 18e6
 
 
 # ------------------------------------------------------------
