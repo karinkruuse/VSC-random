@@ -50,7 +50,7 @@ Z = 1 / (2 * np.pi * C_pd * f_het)   # [V/A]
 # Noise floors
 I_dark    = 1e-12    # dark current ASD              [A/sqrt(Hz)]
 S_amp     = 2e-9     # amplifier voltage noise ASD   [V/sqrt(Hz)]
-RIN_level = 1e-8     # laser RIN ASD (all lasers)    [1/sqrt(Hz)]
+RIN_level = 1e-8    # laser RIN ASD (all lasers)    [1/sqrt(Hz)]
 
 # Modulation noise: sqrt(S_M(f)) = S_M0 * sqrt(1 + (f_corner/f)^2)
 S_M0       = 1e-14   # floor                         [s/sqrt(Hz)]
@@ -214,67 +214,29 @@ sd_ro = sqrt_S_ro * phase_to_disp
 # ─────────────────────────────────────────────
 colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 
-fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(10, 6))
 fig.suptitle('miniLISA Sideband Readout Noise Budget', fontsize=14, fontweight='bold')
 
-# ── Left: natural units ──────────────────────
-ax = axes[0]
-ax.loglog(f, sqrt_S_shot,    label='Shot noise', color=colors[0])
-ax.loglog(f, sqrt_S_dark,    label='Dark noise', color=colors[1])
-ax.loglog(f, sqrt_S_amp_v,   label='Amp noise',  color=colors[2])
-ax.loglog(f, sqrt_S_RIN1f,   label='1f-RIN',     color=colors[3])
-ax.loglog(f, sqrt_S_RIN2f,   label='2f-RIN',     color=colors[4])
-ax2 = ax.twinx()
-ax2.loglog(f, sqrt_S_M,   '--', label='Mod noise [s/√Hz]', color=colors[5])
-ax2.loglog(f, sqrt_S_USO, '--', label='USO [s/√Hz]',       color=colors[6])
-ax2.set_ylabel('Timing noise ASD [s/√Hz]', color='grey')
-ax2.tick_params(axis='y', labelcolor='grey')
-ax2.legend(loc='lower left', fontsize=9)
-ax.set_xlabel('Fourier frequency [Hz]')
-ax.set_ylabel('Voltage noise ASD [V/√Hz]')
-ax.set_title('Natural units (single PD)')
-ax.legend(loc='upper right', fontsize=9)
-ax.grid(True, which='both', alpha=0.3)
-ax.set_xlim(f[0], f[-1])
-
-# ── Right: phase noise ───────────────────────
-ax = axes[1]
 ax.loglog(f, sp_shot,    label='Shot noise',        color=colors[0])
 ax.loglog(f, sp_dark,    label='Dark noise',        color=colors[1])
 ax.loglog(f, sp_amp,     label='Amp noise',         color=colors[2])
 ax.loglog(f, sp_RIN1f,   label='1f-RIN',            color=colors[3])
 ax.loglog(f, sp_RIN2f,   label='2f-RIN',            color=colors[4])
-ax.loglog(f, sp_mod,     label='Modulation noise',  color=colors[5])
-ax.loglog(f, sp_USO,     label='USO noise',         color=colors[6])
+#ax.loglog(f, sp_mod,     label='Modulation noise',  color=colors[5])
+#ax.loglog(f, sp_USO,     label='USO noise',         color=colors[6])
 ax.loglog(f, sp_tot_ro,  color='grey', lw=2, alpha=0.7, label='Total readout noise')
-ax.loglog(f, sqrt_S_ro,     'k--', lw=2, label='readout limit')
+ax.loglog(f, sqrt_S_ro,  'k--', lw=2, label='readout limit')
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Phase noise ASD [rad/√Hz]')
-ax.set_title('Converted to phase noise (both PDs)')
 ax.legend(fontsize=9)
 ax.grid(True, which='both', alpha=0.3)
 ax.set_xlim(f[0], f[-1])
+
+ax2 = ax.twinx()
+ax2.set_yscale('log')
+ax2.set_ylim(np.array(ax.get_ylim()) * phase_to_disp)
+ax2.set_ylabel('Displacement noise ASD [m/√Hz]')
 
 plt.tight_layout()
-plt.savefig('outputs/miniLISA_sideband_noise_budget.png', dpi=150, bbox_inches='tight')
-
-# ── Displacement noise ───────────────────────
-fig2, ax = plt.subplots(figsize=(8, 6))
-ax.loglog(f, sd_shot,    label='Shot noise',        color=colors[0])
-ax.loglog(f, sd_dark,    label='Dark noise',        color=colors[1])
-ax.loglog(f, sd_amp,     label='Amp noise',         color=colors[2])
-ax.loglog(f, sd_RIN1f,   label='1f-RIN',            color=colors[3])
-ax.loglog(f, sd_RIN2f,   label='2f-RIN',            color=colors[4])
-ax.loglog(f, sd_mod,     label='Modulation noise',  color=colors[5])
-ax.loglog(f, sd_USO,     label='USO noise',         color=colors[6])
-ax.loglog(f, sd_tot_ro,  color='grey', lw=3, alpha=0.7, label='Total readout noise')
-ax.loglog(f, sd_ro,     'k--', lw=2, label='readout limit')
-ax.set_xlabel('Fourier frequency [Hz]')
-ax.set_ylabel('Displacement noise ASD [m/√Hz]')
-ax.set_title(f'Displacement noise  (λ = {lam*1e9:.0f} nm,  x = φ·λ/2π)')
-ax.legend(fontsize=9)
-ax.grid(True, which='both', alpha=0.3)
-ax.set_xlim(f[0], f[-1])
-fig2.tight_layout()
-fig2.savefig('outputs/miniLISA_sideband_noise_budget_displacement.png', dpi=150, bbox_inches='tight')
+plt.savefig('outputs/miniLISA_sideband_noise_budget.png', dpi=300, bbox_inches='tight')
 print("Plots saved.")

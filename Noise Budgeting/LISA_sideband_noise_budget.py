@@ -142,52 +142,6 @@ for name, arr in [
     print(f"  {name:<12} {arr[idx]:.2e}")
 
 # ─────────────────────────────────────────────
-# Plotting
-# ─────────────────────────────────────────────
-colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
-fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-fig.suptitle('Sideband Readout Noise Budget', fontsize=14, fontweight='bold')
-
-# ── Left: natural units ──────────────────────
-ax = axes[0]
-ax.loglog(f, sqrt_S_shot,  label='Shot noise', color=colors[0])
-ax.loglog(f, sqrt_S_dark,  label='Dark noise', color=colors[1])
-ax.loglog(f, sqrt_S_amp_v, label='Amp noise',  color=colors[2])
-ax.loglog(f, sqrt_S_RIN1f, label='1f-RIN',     color=colors[3])
-ax.loglog(f, sqrt_S_RIN2f, label='2f-RIN',     color=colors[4])
-ax2 = ax.twinx()
-ax2.loglog(f, sqrt_S_M,   '--', label='Mod noise [s/√Hz]', color=colors[5])
-ax2.loglog(f, sqrt_S_USO, '--', label='USO [s/√Hz]',       color=colors[6])
-ax2.set_ylabel('Timing noise ASD [s/√Hz]', color='grey')
-ax2.tick_params(axis='y', labelcolor='grey')
-ax2.legend(loc='lower left', fontsize=9)
-ax.set_xlabel('Fourier frequency [Hz]')
-ax.set_ylabel('Voltage noise ASD [V/√Hz]')
-ax.set_title('Natural units')
-ax.legend(loc='upper right', fontsize=9)
-ax.grid(True, which='both', alpha=0.3)
-ax.set_xlim(f[0], f[-1])
-
-# ── Right: phase noise ───────────────────────
-ax = axes[1]
-ax.loglog(f, sp_shot,  label='Shot noise',       color=colors[0])
-ax.loglog(f, sp_dark,  label='Dark noise',       color=colors[1])
-ax.loglog(f, sp_amp,   label='Amp noise',        color=colors[2])
-ax.loglog(f, sp_RIN1f, label='1f-RIN',           color=colors[3])
-ax.loglog(f, sp_RIN2f, label='2f-RIN',           color=colors[4])
-ax.loglog(f, sp_mod,   label='Modulation noise', color=colors[5])
-ax.loglog(f, sp_USO,   label='USO noise',        color=colors[6])
-ax.loglog(f, sp_tot_ro,label='Total readout noise',        color='grey', lw=2,alpha=0.7)
-ax.loglog(f, sqrt_S_ro,   'k--', lw=2, label='readout limit')
-
-ax.set_xlabel('Fourier frequency [Hz]')
-ax.set_ylabel('Phase noise ASD [rad/√Hz]')
-ax.set_title('Converted to phase noise')
-ax.legend(fontsize=9)
-ax.grid(True, which='both', alpha=0.3)
-ax.set_xlim(f[0], f[-1])
-
-# ─────────────────────────────────────────────
 # Convert phase noise to displacement noise
 # x = phi * lambda / (2*pi)   [m/sqrt(Hz)]
 # ─────────────────────────────────────────────
@@ -205,26 +159,33 @@ sd_tot   = sp_tot   * phase_to_disp
 sd_tot_ro   = sp_tot_ro   * phase_to_disp
 sd_ro =  sqrt_S_ro * phase_to_disp
 
-plt.tight_layout()
-plt.savefig('outputs/sideband_noise_budget.png', dpi=150, bbox_inches='tight')
+# ─────────────────────────────────────────────
+# Plotting
+# ─────────────────────────────────────────────
+colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+fig, ax = plt.subplots(figsize=(10, 6))
+fig.suptitle('Sideband Readout Noise Budget', fontsize=14, fontweight='bold')
 
-# ── New figure: displacement noise ───────────
-fig2, ax = plt.subplots(figsize=(8, 6))
-ax.loglog(f, sd_shot,  label='Shot noise',       color=colors[0])
-ax.loglog(f, sd_dark,  label='Dark noise',       color=colors[1])
-ax.loglog(f, sd_amp,   label='Amp noise',        color=colors[2])
-ax.loglog(f, sd_RIN1f, label='1f-RIN',           color=colors[3])
-ax.loglog(f, sd_RIN2f, label='2f-RIN',           color=colors[4])
-ax.loglog(f, sd_mod,   label='Modulation noise', color=colors[5])
-ax.loglog(f, sd_USO,   label='USO noise',        color=colors[6])
-ax.loglog(f, sd_ro,   'k--', lw=2, label='readout limit')
-ax.loglog(f, sd_tot_ro, lw=3, label='Total readout noise', color='grey', alpha=0.7)
+ax.loglog(f, sp_shot,  label='Shot noise',       color=colors[0])
+ax.loglog(f, sp_dark,  label='Dark noise',       color=colors[1])
+ax.loglog(f, sp_amp,   label='Amp noise',        color=colors[2])
+ax.loglog(f, sp_RIN1f, label='1f-RIN',           color=colors[3])
+ax.loglog(f, sp_RIN2f, label='2f-RIN',           color=colors[4])
+ax.loglog(f, sp_mod,   label='Modulation noise', color=colors[5])
+ax.loglog(f, sp_USO,   label='USO noise',        color=colors[6])
+ax.loglog(f, sp_tot_ro,label='Total readout noise', color='grey', lw=2, alpha=0.7)
+ax.loglog(f, sqrt_S_ro,   'k--', lw=2, label='readout limit')
 ax.set_xlabel('Fourier frequency [Hz]')
-ax.set_ylabel('Displacement noise ASD [m/√Hz]')
-ax.set_title(f'Displacement noise  (λ = {lam*1e9:.0f} nm,  x = φ·λ/2π)')
+ax.set_ylabel('Phase noise ASD [rad/√Hz]')
 ax.legend(fontsize=9)
 ax.grid(True, which='both', alpha=0.3)
 ax.set_xlim(f[0], f[-1])
-fig2.tight_layout()
-fig2.savefig('outputs/sideband_noise_budget_displacement.png', dpi=150, bbox_inches='tight')
-print("Plot saved to outputs/sideband_noise_budget_displacement.png")
+
+ax2 = ax.twinx()
+ax2.set_yscale('log')
+ax2.set_ylim(np.array(ax.get_ylim()) * phase_to_disp)
+ax2.set_ylabel('Displacement noise ASD [m/√Hz]')
+
+plt.tight_layout()
+plt.savefig('outputs/sideband_noise_budget.png', dpi=150, bbox_inches='tight')
+print("Plot saved to outputs/sideband_noise_budget.png")
