@@ -42,13 +42,14 @@ DATA_DIR = Path("data\\")
 
 # Base filenames (without extension) for the three phasemeter files
 FILES = [
-    "Split_PM_1_SB_20260518_105431",
-    "Split_PM_2_SB_20260518_105430",
-    "Split_PM_3_SB_20260518_105429",
+    "Carrier_20260526_134721",
+    "USB_20260526_134721",
+    "LSB_20260526_134722",
+    "CLK_20260526_134723",
 ]
 
 # Crop: remove this many seconds from the START of each channel's data
-CROP_START_S = 40.0   # e.g. 5.0  -> skip the first 5 seconds
+CROP_START_S = 0.0   # e.g. 5.0  -> skip the first 5 seconds
 
 # Crop: remove this many seconds from the END of each channel's data
 CROP_END_S   = 0.0   # e.g. 2.0  -> skip the last 2 seconds
