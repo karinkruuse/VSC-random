@@ -5,18 +5,12 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-<<<<<<< HEAD
-filename = 'Delayline_opticalbaseline_100hr_measurement_2_20260424_173355'
-delay_s_init = 3.999
-=======
-filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
-delay_s_init = 3.99945
->>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
-
+filename = 'BL_after_SB_fix2_20260527_105824'
+delay_s_init = 7.5
 fmin = 1e-4
 fmax = 1
-PT_channel = 4
-search_width = 2e-3
+PT_channel = 2
+search_width = 1
 nr_of_channels = 4
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
@@ -28,13 +22,8 @@ def col(name):
 t  = col('Time (s)')
 fs = 1.0 / np.median(np.diff(t))
 
-<<<<<<< HEAD
-start_time = 24 * 60 * 60
-end_time   = 2 * 60 * 60
-=======
 start_time = 0 * 60 * 60
-end_time   = 22.5 * 60 * 60
->>>>>>> 15bd0b6a10471191e273171c46446c04077e9b92
+end_time   = 0 * 60 * 60
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
 

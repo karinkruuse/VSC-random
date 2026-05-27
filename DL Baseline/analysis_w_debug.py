@@ -5,9 +5,9 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
-delay_s  = 3.9990972327
-DDS_signal_nr = 4
+filename = 'DL_BL2_20260527_153408'
+delay_s  = 5
+DDS_signal_nr = 2
 nr_of_channels = 4
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -50,7 +50,7 @@ def crop_time(t, data_dict, t_start=0, t_end=0):
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s or {duration/3600:.2f} hours")
 start_time = 0 * 60 * 60
-end_time = 22.5 * 60 * 60
+end_time = 0 * 60 * 60
 t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ tdi = (
     - ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
 )
 
-if (False):
+if (True):
     # ── 8. PLOT ───────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
 
@@ -135,6 +135,7 @@ if (False):
     ax[0].legend(loc='upper right')
 
     ax[1].plot(t, detrend(tdi), lw=0.5, label='TDI combo')
+    ax[1].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
     ax[1].plot(t, ch3_phase_d, lw=0.5, label='ch3 phase')
     ax[1].set_ylabel('TDI vs ch3 phase to be subtracted')
     ax[1].set_xlabel('Time (s)')
