@@ -32,6 +32,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
 from pathlib import Path
+from scipy.signal import welch
 
 # ──────────────────────────────────────────────────────────────────────────────
 # USER SETTINGS
@@ -42,10 +43,10 @@ DATA_DIR = Path("data\\")
 
 # Base filenames (without extension) for the three phasemeter files
 FILES = [
-    "Carrier_20260526_134721",
-    "USB_20260526_134721",
-    "LSB_20260526_134722",
-    "CLK_20260526_134723",
+    "Carrier_20260526_160851",
+    "USB_20260526_160852",
+    "LSB_20260526_160853",
+    "CLK_20260526_160854",
 ]
 
 # Crop: remove this many seconds from the START of each channel's data
@@ -247,6 +248,89 @@ def add_slope_box(ax, d: dict):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
+# asd HELPERS
+# ──────────────────────────────────────────────────────────────────────────────
+
+def compute_asd(signal: np.ndarray, t_rel_h: np.ndarray,
+                nperseg_frac: float = 0.25) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Compute one-sided asd via Welch's method.
+
+    Parameters
+    ----------
+    signal       : 1-D array of the time-domain signal
+    t_rel_h      : relative time axis in *hours* (uniform spacing assumed)
+    nperseg_frac : fraction of total length used for each Welch segment
+                   (default 0.25 → 4 non-overlapping segments, 50 % overlap
+                    gives ~7 averages)
+
+    Returns
+    -------
+    f    : frequency axis in Hz
+    asd  : one-sided asd (same units as signal squared, per Hz)
+    """
+    dt_h  = float(np.median(np.diff(t_rel_h)))   # hours per sample
+    fs    = 1.0 / (dt_h * 3600.0)                # sample rate in Hz
+    nperseg = max(16, int(len(signal) * nperseg_frac))
+    f, psd = welch(signal, fs=fs, window="hann",
+                   nperseg=nperseg, noverlap=nperseg // 2,
+                   scaling="density", detrend=False)
+    return f[1:], np.sqrt(psd[1:])   # drop DC bin
+
+
+def save_asd_plots(channels: list, out_path: Path):
+    """
+    Plot asds for all channels (phase residual & frequency fluctuation)
+    and save to a single PDF.
+
+    Layout  : 8 rows × 2 columns
+      Left  : phase residual asd   [cyc²/Hz]  → converted to dBc/Hz when
+              the carrier power normalisation is straightforward, here kept
+              as cyc²/Hz on a log-log scale.
+      Right : frequency fluctuation asd  [Hz²/Hz]   (log-log)
+    """
+    n   = len(channels)
+    fig, axes = plt.subplots(n, 2, figsize=(15, 3.8 * n), constrained_layout=True)
+    if n == 1:
+        axes = [axes]
+
+    fig.suptitle(
+        "Moku:Pro Phasemeter – asd of all channels\n"
+        "(Welch method, Hann window, 50 % overlap, ~25 % segment length)",
+        fontsize=13, fontweight="bold",
+    )
+
+    for row, d in enumerate(channels):
+        label = d["label"]
+
+        # ── Phase asd ────────────────────────────────────────────────────────
+        f_ph, asd_ph = compute_asd(d["phase_det"], d["t_rel"])
+        ax_ph = axes[row][0]
+        ax_ph.loglog(f_ph, asd_ph, lw=0.9, color="steelblue")
+        ax_ph.set_xlabel("Fourier frequency (Hz)", fontsize=9)
+        ax_ph.set_ylabel("asd (cyc²/Hz)", fontsize=9)
+        ax_ph.set_title(f"{label}  –  Phase residual asd", fontsize=9)
+        ax_ph.grid(True, which="both", alpha=0.3)
+
+        # ── Frequency asd ─────────────────────────────────────────────────────
+        f_fr, asd_fr = compute_asd(d["freq_fluct"], d["t_rel"])
+        ax_fr = axes[row][1]
+        ax_fr.loglog(f_fr, asd_fr, lw=0.9, color="darkorange")
+        ax_fr.set_xlabel("Fourier frequency (Hz)", fontsize=9)
+        ax_fr.set_ylabel("asd (Hz²/Hz)", fontsize=9)
+        ax_fr.set_title(
+            f"{label}  –  Frequency fluctuation asd\n"
+            f"(mean freq = {fmt_freq(d['freq_mean'])})",
+            fontsize=9,
+        )
+        ax_fr.grid(True, which="both", alpha=0.3)
+
+    fig.savefig(out_path, dpi=150)
+    plt.close(fig)
+    print(f"Saved -> {out_path}")
+
+
+# ──────────────────────────────────────────────────────────────────────────────
 # MAIN
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -319,6 +403,12 @@ def main():
     out_path = DATA_DIR / "phasemeter_all_channels.pdf"
     fig.savefig(out_path, dpi=150)
     print(f"Saved -> {out_path}")
+    plt.close(fig)
+
+    # ── asd plots ─────────────────────────────────────────────────────────────
+    asd_path = DATA_DIR / "phasemeter_asd.pdf"
+    save_asd_plots(channels, asd_path)
+
     #plt.show()
 
 

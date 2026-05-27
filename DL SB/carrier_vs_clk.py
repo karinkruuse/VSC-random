@@ -1,21 +1,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import detrend, welch, decimate
+from scipy.signal import detrend, welch
 from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-FILE_CARRIER = 'data/Carrier_20260526_134721.npy'
-FILE_CLK     = 'data/CLK_20260526_134723.npy'
+FILE_CARRIER = 'data/Carrier_20260526_160851.npy'
+FILE_CLK     = 'data/CLK_20260526_160854.npy'
 
-DELAY_NOMINAL_S = 4.1
-DELAY_SEARCH_S  = 0.1
+# Arm delay search (Carrier A vs Carrier B — same file, no offset problem)
+DELAY_NOMINAL_S = 4.1   # programmed delay (s)
+DELAY_SEARCH_S  = 0.5   # ± around nominal (s)
 
-FMIN_OBJ = 1e-3   # Hz — lower bound of PSD integration for minimisation
-FMAX_OBJ = 1.0    # Hz — upper bound
-FMIN_ASD = 9e-4   # Hz — for final ASD plot
+# Start-time offset search (Carrier file vs CLK file)
+# Carrier started ~3 s BEFORE CLK → negative value shifts carrier forward
+OFFSET_NOMINAL_S = -3.0  # rough prior (s)
+OFFSET_SEARCH_S  =  1.0  # ± around nominal (s)
 
-# ── 1. LOAD ───────────────────────────────────────────────────────────────
+# PSD integration band for both optimisation stages
+FMIN_OBJ = 1e-3  # Hz
+FMAX_OBJ = 1.0   # Hz
+
+# ASD plot floor
+FMIN_ASD = 9e-4  # Hz
+
+# Segment length for coarse searches (None = all data)
+COARSE_SEGMENT_S = 5 * 60   # 5 min
+
+# ── ─────────────────────────────────────────────────────────────────────────
+# 1. LOAD
+# ──────────────────────────────────────────────────────────────────────────
 def load_npy(path):
     data = np.load(path)
     def col(n): return data[n].copy()
@@ -38,98 +52,277 @@ print(f"Carrier: {len(carrier['t'])} samples | fs={fs:.4f} Hz | "
 print(f"CLK:     {len(clk['t'])} samples | fs={fs_clk:.4f} Hz | "
       f"duration={clk['t'][-1]-clk['t'][0]:.1f} s")
 
-# ── 2. DECIMATE CLK ───────────────────────────────────────────────────────
-decimate_factor  = int(round(fs_clk / fs))
-print(f"Decimating CLK by {decimate_factor}x")
+if abs(fs - fs_clk) / fs > 1e-3:
+    print(f"  WARNING: sample rates differ by more than 0.1% "
+          f"({fs:.6f} vs {fs_clk:.6f} Hz)")
 
-t_jitter_clk     = detrend(clk['phase_A']) / clk['freq_A']
-t_jitter_clk_dec = decimate(t_jitter_clk, decimate_factor, ftype='iir', zero_phase=True)
-clk_freq_A_dec   = clk['freq_A'][::decimate_factor]
-t_clk_dec        = clk['t'][::decimate_factor]
+# Timing jitter from CLK channel A [seconds]
+t_jitter_clk = clk['phase_A'] / clk['freq_A']
 
-n_dec            = min(len(t_clk_dec), len(t_jitter_clk_dec))
-t_clk_dec        = t_clk_dec[:n_dec]
-t_jitter_clk_dec = t_jitter_clk_dec[:n_dec]
-clk_freq_A_dec   = clk_freq_A_dec[:n_dec]
-print(f"Decimated CLK: {len(t_clk_dec)} samples | "
-      f"fs={1.0/np.median(np.diff(t_clk_dec)):.4f} Hz | "
-      f"duration={t_clk_dec[-1]-t_clk_dec[0]:.1f} s")
+# ── ─────────────────────────────────────────────────────────────────────────
+# 2. STAGE 1 — ARM DELAY  from Carrier A vs Carrier B
+#    Both channels live in the same file on the same time axis,
+#    so there is NO inter-file offset to worry about here.
+# ──────────────────────────────────────────────────────────────────────────
+def carrier_ab_psd(delay_s, segment_s=None):
+    """
+    Integrated PSD of (pA_detrended - pB_delayed_detrended).
+    Uses only the Carrier file — no CLK involved.
+    """
+    t     = carrier['t']
+    pA    = detrend(carrier['phase_A'])
+    pB    = detrend(carrier['phase_B'])
 
-# ── 3. DELAY MINIMISATION ─────────────────────────────────────────────────
-def integrated_psd(delay_s):
-    delay_samp  = delay_s * fs
-    n_crop      = int(np.ceil(abs(delay_samp))) + 5
-    phase_dly   = timeshift(carrier['phase_B'], -delay_samp)
+    if segment_s is not None:
+        mask = t <= t[0] + segment_s
+        t, pA, pB = t[mask], pA[mask], pB[mask]
 
-    pA  = carrier['phase_A'][n_crop:-n_crop]
-    pB  = phase_dly[n_crop:-n_crop]
-    tdi = detrend(pA - pB)
+    delay_samp = delay_s * fs
+    n_crop     = int(np.ceil(abs(delay_samp))) + 5
+
+    if len(t) < 2 * n_crop + 20:
+        return np.inf
+
+    pB_dly = timeshift(pB, -delay_samp)
+
+    sl    = slice(n_crop, -n_crop)
+    pA_d  = detrend(pA[sl])
+    pBd_d = detrend(pB_dly[sl])
+
+    residual = pA_d - pBd_d
+
+    nperseg = min(int(fs / FMIN_OBJ), len(residual))
+    f, psd  = welch(residual, fs=fs, nperseg=nperseg, detrend='constant')
+    band    = (f >= FMIN_OBJ) & (f <= FMAX_OBJ)
+    if band.sum() < 2:
+        return np.inf
+    return float(np.trapz(psd[band], f[band]))
+
+
+# Coarse sweep
+print(f"\n── Stage 1: arm delay (Carrier A vs B), "
+      f"coarse sweep on first {COARSE_SEGMENT_S/60:.0f} min ──")
+n_coarse  = 50
+delays_c  = np.linspace(DELAY_NOMINAL_S - DELAY_SEARCH_S,
+                         DELAY_NOMINAL_S + DELAY_SEARCH_S, n_coarse)
+psds_delay = np.array([carrier_ab_psd(d, segment_s=COARSE_SEGMENT_S)
+                        for d in delays_c])
+
+best_i  = np.nanargmin(psds_delay)
+delay0  = delays_c[best_i]
+print(f"  Coarse minimum: delay = {delay0:.6f} s  "
+      f"(integrated PSD = {psds_delay[best_i]:.4e})")
+
+# Fine optimisation on all data
+print(f"  Fine optimisation on all data...")
+res_delay = minimize_scalar(
+    lambda d: carrier_ab_psd(d, segment_s=None),
+    bounds=(delay0 - 0.05, delay0 + 0.05),
+    method='bounded',
+    options={'xatol': 1e-8, 'maxiter': 300},
+)
+delay_s_opt = float(res_delay.x)
+print(f"  Fine result: delay = {delay_s_opt:.9f} s")
+"""
+# Coarse delay curve plot
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.semilogy(delays_c, psds_delay, 'o-', ms=4)
+ax.axvline(delay_s_opt, color='r', ls='--',
+           label=f'opt = {delay_s_opt:.6f} s')
+ax.set_xlabel('Delay (s)')
+ax.set_ylabel('Integrated PSD (Carrier A − B)')
+ax.set_title('Stage 1 — arm delay coarse sweep (Carrier A vs B)')
+ax.legend(); ax.grid(True, alpha=0.4)
+plt.tight_layout()
+plt.savefig('plots/stage1_delay_sweep.png', dpi=150)
+print("  Saved: plots/stage1_delay_sweep.png")
+"""
+
+
+# ── ─────────────────────────────────────────────────────────────────────────
+# 3. STAGE 2 — INTER-FILE OFFSET  via full TDI minimisation
+#    Now we fix delay_s_opt and vary offset_s.
+#    TDI =  pA_d  -  pB_dly_d  -  fB_dly * (tj_d - tj_dly_d)
+#    same combination as analysis_w_debug.py
+# ──────────────────────────────────────────────────────────────────────────
+def full_tdi_psd(offset_s, delay_s, segment_s=None):
+    """
+    Integrated PSD of the full TDI combination including CLK jitter correction.
+
+    offset_s : time to ADD to carrier['t'] to align it onto the CLK time axis
+    delay_s  : arm delay (fixed from Stage 1)
+    """
+    t_car = carrier['t'] + offset_s
+
+    t0 = max(clk['t'][0],  t_car[0])
+    t1 = min(clk['t'][-1], t_car[-1])
+    if segment_s is not None:
+        t1 = min(t1, t0 + segment_s)
+
+    delay_samp = delay_s * fs
+    n_crop     = int(np.ceil(abs(delay_samp))) + 5
+
+    mask = (clk['t'] >= t0) & (clk['t'] <= t1)
+    grid = clk['t'][mask]
+
+    if len(grid) < 2 * n_crop + 20:
+        return np.inf
+
+    def og_car(arr): return np.interp(grid, t_car,    arr)
+    def og_clk(arr): return np.interp(grid, clk['t'], arr)
+
+    pA  = og_car(carrier['phase_A'])
+    pB  = og_car(carrier['phase_B'])
+    fB  = og_car(carrier['freq_B'])
+    tj  = og_clk(t_jitter_clk)
+
+    pB_dly = timeshift(pB,  -delay_samp)
+    fB_dly = timeshift(fB,  -delay_samp)
+    tj_dly = timeshift(tj,  -delay_samp)
+
+    sl = slice(n_crop, -n_crop)
+    pA, pB_dly, fB_dly, tj, tj_dly = (
+        x[sl] for x in [pA, pB_dly, fB_dly, tj, tj_dly])
+
+    pA_d     = detrend(pA)
+    pB_dly_d = detrend(pB_dly)
+    tj_d     = detrend(tj)
+    tj_dly_d = detrend(tj_dly)
+
+    tdi = pA_d - pB_dly_d - fB_dly * (tj_d - tj_dly_d)
 
     nperseg = min(int(fs / FMIN_OBJ), len(tdi))
     f, psd  = welch(tdi, fs=fs, nperseg=nperseg, detrend='constant')
     band    = (f >= FMIN_OBJ) & (f <= FMAX_OBJ)
-    return np.trapz(psd[band], f[band])
+    if band.sum() < 2:
+        return np.inf
+    return float(np.trapz(psd[band], f[band]))
 
-print(f"\nSearching delay in [{DELAY_NOMINAL_S-DELAY_SEARCH_S:.3f}, "
-      f"{DELAY_NOMINAL_S+DELAY_SEARCH_S:.3f}] s ...")
 
-result = minimize_scalar(
-    integrated_psd,
-    bounds=(DELAY_NOMINAL_S - DELAY_SEARCH_S,
-            DELAY_NOMINAL_S + DELAY_SEARCH_S),
+# Coarse sweep
+print(f"\n── Stage 2: inter-file offset (full TDI), "
+      f"coarse sweep on first {COARSE_SEGMENT_S/60:.0f} min ──")
+print(f"  (delay fixed at {delay_s_opt:.9f} s)")
+n_coarse   = 50
+offsets_c  = np.linspace(OFFSET_NOMINAL_S - OFFSET_SEARCH_S,
+                          OFFSET_NOMINAL_S + OFFSET_SEARCH_S, n_coarse)
+psds_offset = np.array([full_tdi_psd(o, delay_s_opt, segment_s=COARSE_SEGMENT_S)
+                         for o in offsets_c])
+
+best_i   = np.nanargmin(psds_offset)
+offset0  = offsets_c[best_i]
+print(f"  Coarse minimum: offset = {offset0:.6f} s  "
+      f"(integrated PSD = {psds_offset[best_i]:.4e})")
+
+# Fine optimisation on all data
+print(f"  Fine optimisation on all data...")
+res_offset = minimize_scalar(
+    lambda o: full_tdi_psd(o, delay_s_opt, segment_s=None),
+    bounds=(offset0 - 0.5, offset0 + 0.5),
     method='bounded',
-    options={'xatol': 1e-6}
+    options={'xatol': 1e-6, 'maxiter': 300},
 )
-delay_opt = result.x
-print(f"Optimal delay: {delay_opt:.9f} s  (integrated PSD = {result.fun:.4e})")
+offset_s_opt = float(res_offset.x)
+print(f"  Fine result: offset = {offset_s_opt:.6f} s")
 
-
-# ── 4. FINAL TDI WITH OPTIMAL DELAY ──────────────────────────────────────
-delay_samp  = delay_opt * fs
-n_crop      = int(np.ceil(abs(delay_samp))) + 5
-phase_dly   = timeshift(carrier['phase_B'], -delay_samp)
-
-pA  = detrend(carrier['phase_A'][n_crop:-n_crop])
-pB  = detrend(phase_dly[n_crop:-n_crop])
-tdi = detrend(pA - pB)
-
-# ── 5. TIMESERIES PLOT ───────────────────────────────────────────────────
-fig, ax = plt.subplots(figsize=(12, 4))
-t_plot = np.arange(len(pA)) / fs / 3600   # hours
-ax.plot(t_plot, pA, lw=0.5, label='phase_A (delayed arm)')
-ax.plot(t_plot, pB, lw=0.5, label='phase_B (undelayed, time-shifted)', alpha=0.8)
-ax.set_xlabel('Time (h)')
-ax.set_ylabel('Phase (cyc)')
-ax.set_title(f'Phase timeseries | delay = {delay_opt:.6f} s')
-ax.legend()
-ax.grid(True, ls='--', alpha=0.4)
+# Coarse offset curve plot
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.semilogy(offsets_c, psds_offset, 'o-', ms=4)
+ax.axvline(offset_s_opt, color='r', ls='--',
+           label=f'opt = {offset_s_opt:.6f} s')
+ax.set_xlabel('Offset (s)')
+ax.set_ylabel('Integrated PSD (full TDI)')
+ax.set_title(f'Stage 2 — inter-file offset coarse sweep\n'
+             f'(delay fixed: {delay_s_opt:.6f} s)')
+ax.legend(); ax.grid(True, alpha=0.4)
 plt.tight_layout()
-plt.savefig('plots/carrier_timeseries.png', dpi=150)
-print("Saved: plots/carrier_timeseries.png")
+plt.savefig('plots/stage2_offset_sweep.png', dpi=150)
+print("  Saved: plots/stage2_offset_sweep.png")
+"""
+# ── ─────────────────────────────────────────────────────────────────────────
+# 4. FINAL DATASET
+# ──────────────────────────────────────────────────────────────────────────
+print(f"\n── Building final dataset ──")
+print(f"  delay  = {delay_s_opt:.9f} s")
+print(f"  offset = {offset_s_opt:.6f} s")
 
-# ── 6. ASD ────────────────────────────────────────────────────────────────
+t_car = carrier['t'] + offset_s_opt
+t0    = max(clk['t'][0],  t_car[0])
+t1    = min(clk['t'][-1], t_car[-1])
+
+delay_samp = delay_s_opt * fs
+n_crop     = int(np.ceil(abs(delay_samp))) + 5
+
+mask = (clk['t'] >= t0) & (clk['t'] <= t1)
+grid = clk['t'][mask]
+
+def og_car(arr): return np.interp(grid, t_car,    arr)
+def og_clk(arr): return np.interp(grid, clk['t'], arr)
+
+pA  = og_car(carrier['phase_A'])
+pB  = og_car(carrier['phase_B'])
+fB  = og_car(carrier['freq_B'])
+tj  = og_clk(t_jitter_clk)
+
+pB_dly = timeshift(pB,  -delay_samp)
+fB_dly = timeshift(fB,  -delay_samp)
+tj_dly = timeshift(tj,  -delay_samp)
+
+sl = slice(n_crop, -n_crop)
+t_final, pA, pB_dly, fB_dly, tj, tj_dly = (
+    x[sl] for x in [grid, pA, pB_dly, fB_dly, tj, tj_dly])
+
+pA_d     = detrend(pA)
+pB_dly_d = detrend(pB_dly)
+tj_d     = detrend(tj)
+tj_dly_d = detrend(tj_dly)
+
+tdi_final = pA_d - pB_dly_d - fB_dly * (tj_d - tj_dly_d)
+tdi_final = detrend(tdi_final)
+
+# also keep A-B without jitter correction for comparison
+tdi_no_clk = detrend(pA_d - pB_dly_d)
+
+duration = t_final[-1] - t_final[0]
+print(f"  {len(t_final)} samples | {duration/3600:.3f} h")
+
+
+plt.plot(pA_d, label='pA_d')
+plt.plot(pB_dly_d, label='pB_dly_d')
+plt.show()
+
+"""
 def compute_asd(x, fmin=FMIN_ASD):
     nperseg = min(int(fs / fmin), len(x))
-    print(f"  nperseg={nperseg}")
+    print(f"  nperseg = {nperseg}  (signal length = {len(x)})")
     f, psd = welch(x, fs=fs, nperseg=nperseg, detrend='constant')
     return f, np.sqrt(psd)
 
 print("\nComputing ASDs...")
-f_tdi, a_tdi = compute_asd(tdi)
-f_A,   a_A   = compute_asd(detrend(pA))
-f_B,   a_B   = compute_asd(detrend(pB))
+f_tdi,    a_tdi    = compute_asd(tdi_final)
+f_noclk,  a_noclk  = compute_asd(tdi_no_clk)
+f_pA,     a_pA     = compute_asd(pA_d)
+f_pB,     a_pB     = compute_asd(detrend(og_car(carrier['phase_B'])[sl]))
 
-# ── 6. ASD PLOT ───────────────────────────────────────────────────────────
-plt.figure(figsize=(9, 5))
-plt.loglog(f_tdi, a_tdi, lw=1.5, label='TDI residual')
-plt.loglog(f_A,   a_A,   lw=2,   label='Delayed (A)',   alpha=0.8)
-plt.loglog(f_B,   a_B,   lw=1,   label='Undelayed (B)', alpha=0.7)
+# ── ─────────────────────────────────────────────────────────────────────────
+# 6. ASD PLOT
+# ──────────────────────────────────────────────────────────────────────────
+title = (f'Carrier TDI  |  delay = {delay_s_opt:.9f} s  |  offset = {offset_s_opt:.6f} s\n'
+         f'duration = {duration/3600:.3f} h')
+
+plt.figure(figsize=(10, 5))
+plt.loglog(f_tdi,   a_tdi,   lw=1.5, label='TDI + CLK jitter correction')
+plt.loglog(f_noclk, a_noclk, lw=1.5, label='TDI (A−B, no CLK correction)',
+           ls='--', alpha=0.8)
+plt.loglog(f_pA,    a_pA,    lw=1.0, label='Carrier A (delayed arm)', alpha=0.6)
+plt.loglog(f_pB,    a_pB,    lw=1.0, label='Carrier B (direct arm)',  alpha=0.6)
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('ASD (cyc / √Hz)')
 plt.title(f'Carrier TDI | optimal delay = {delay_opt:.9f} s')
 plt.grid(True, which='both', ls='--', alpha=0.5)
 plt.legend()
 plt.tight_layout()
-plt.savefig('plots/carrier_tdi_asd.png', dpi=150)
-print("Saved: plots/carrier_tdi_asd.png")
+plt.savefig('plots/carrier_clk_tdi_asd.png', dpi=150)
+print("Saved: plots/carrier_clk_tdi_asd.png")
 plt.show()
+"""
