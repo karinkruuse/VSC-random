@@ -1,0 +1,170 @@
+# ============================================================
+#  miniLISA Testbed Configuration
+#  Photodetector variant: FEMTO HBPR-100M-60K-IN-FST
+#  (Balanced InGaAs, DC–100 MHz, free-space, switchable TIA)
+#  *** UNBALANCED noise model — RIN suppression NOT applied ***
+#  (balanced detection modelling to be added later)
+# ============================================================
+#
+#  PD-SPECIFIC NOTES
+#  -----------------
+#  The HBPR is a BALANCED detector physically, but this config is
+#  for use with the UNBALANCED noise budget script (no CMRR applied
+#  to RIN terms).  Power levels are therefore set conservatively
+#  using the DIFFERENTIAL saturation limit, not the common-mode
+#  10 mW limit that balanced operation would allow.
+#
+#  *** POWER HANDLING (unbalanced model) ***
+#
+#  Saturation is set by the differential (single-port) limit:
+#       Low gain  (Z = 20 kOhm): max 53 uW differential @ 1550 nm
+#                                 -> ~67 uW @ 1064 nm (scaled by R ratio)
+#       High gain (Z = 60 kOhm): max 18 uW differential @ 1550 nm
+#                                 -> ~23 uW @ 1064 nm
+#       In AC-coupled mode: 275 uW differential regardless of gain.
+#  Each beam is treated as an independent input; keep P_i and P_REF
+#  each below ~30 uW (low-gain) to stay within the linear range.
+#
+#  NOTE: Once the noise budget script is updated to model balanced
+#  detection (CMRR applied to 1f-RIN), switch back to the common-mode
+#  power limit (up to ~5 mW per beam) and add CMRR_dB here.
+#
+#  GAIN SETTINGS (TWO SWITCHABLE):
+#  This toml uses the LOW-GAIN (Z = 20 kΩ) setting, which gives:
+#    - Higher saturation headroom (67 µW differential)
+#    - Full 100 MHz bandwidth
+#    - NEP ~7.1 pW/√Hz at 50 MHz, 12.0 pW/√Hz at 100 MHz
+#  Switch to HIGH-GAIN (Z = 60 kΩ) for lower noise at the cost of
+#  tighter differential saturation (23 µW) — update C_pd, S_amp below.
+#
+#  RESPONSIVITY @ 1064 nm:
+#  Datasheet gives 0.95 A/W @ 1550 nm.  InGaAs is fairly flat from
+#  1000–1550 nm; at 1064 nm ~0.75 A/W is a reasonable estimate.
+#  (Exact value depends on the specific diode batch — measure if possible.)
+#
+#  S_amp DERIVATION (low-gain setting, 100 MHz bandwidth):
+#  NEP = 12.0 pW/√Hz @ 100 MHz (datasheet worst-case across band)
+#  NEP_min = 3.7 pW/√Hz (datasheet minimum, low frequency)
+#  Input current noise: i_n = NEP × R = 12.0e-12 × 0.75 = 9.0 pA/√Hz
+#  S_amp = i_n × Z = 9.0e-12 × 20e3 = 180 nV/√Hz  (100 MHz case)
+#  For a more optimistic estimate at your 18 MHz heterodyne frequency,
+#  use the intermediate NEP value (~7.1 pW/√Hz @ 50 MHz):
+#  S_amp_50MHz = 7.1e-12 × 0.75 × 20e3 = 107 nV/√Hz
+#  The conservative (100 MHz) value is used here.
+#
+#  All frequencies in Hz unless otherwise noted.
+# ============================================================
+
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+f_het_min = 5e6
+f_het_max = 25e6
+
+f_inter_min = 25e6
+f_inter_max = 60e6
+
+doppler_max = 2e6
+
+f_het = 18e6
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+nu_m       = 10e6
+delta_f_SB = 1e6
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+f_USO = 10e6
+f_s   = 80e6
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+tau = 8.33
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+f_science_min = 1e-4
+f_science_max = 1.0
+f_TDI_null    = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+m   = 0.53
+
+# ── Photodetector: FEMTO HBPR-100M-60K-IN-FST ────────────
+#
+# Responsivity @ 1064 nm  (estimated; datasheet gives 0.95 A/W @ 1550 nm)
+R   = 0.75          # [A/W]
+
+eta = 0.8
+
+# Effective C_pd for noise model  (LOW-GAIN setting, Z = 20 kΩ)
+#   C_pd_eff = 1 / (2π × 18 MHz × 20,000 Ω) = 0.44 pF
+# For HIGH-GAIN (Z = 60 kΩ): C_pd_eff = 0.15 pF  — update if switching gain
+C_pd = 0.44e-12     # [F]  — low-gain setting
+
+# Dark current [A]
+# InGaAs PIN at room temp: ~1 nA typical (not stated in FEMTO datasheet)
+I_dark = 1e-9       # [A]  conservative estimate
+
+# TIA voltage noise ASD [V/sqrt(Hz)]  (LOW-GAIN setting, worst-case @ 100 MHz)
+#   NEP = 12.0 pW/√Hz @ 100 MHz (datasheet)
+#   i_n = NEP × R = 12.0e-12 × 0.75 = 9.0 pA/√Hz
+#   S_amp = i_n × Z = 9.0e-12 × 20e3 = 180 nV/√Hz
+# For HIGH-GAIN (Z = 60 kΩ), same NEP → S_amp = 540 nV/√Hz
+# At your 18 MHz heterodyne, the actual NEP is between 3.7 and 7.1 pW/√Hz;
+# the 12.0 pW/√Hz value used here is the conservative bound.
+S_amp = 180e-9      # [V/sqrt(Hz)]  — low-gain, 100 MHz NEP
+
+# *** OPTICAL POWER (unbalanced model) ***
+#
+# Limited by differential saturation in low-gain DC-coupled mode:
+#   ~67 uW total at 1064 nm.  With P_i = P_REF, each beam <= ~30 uW.
+# Using 25 uW per beam here (~75% of limit).
+#
+# When the script is updated for balanced detection, raise these
+# to ~5 mW per beam and add CMRR_dB to [instrument].
+P_i   = 25e-6       # [W]  SC laser power   — unbalanced limit ~30 uW per beam
+P_REF = 25e-6       # [W]  reference laser power
+
+
+# ------------------------------------------------------------
+[laser]
+# ------------------------------------------------------------
+
+wavelength = 1064e-9
+RIN_level  = 1e-8
+
+
+# ------------------------------------------------------------
+[noise]
+# ------------------------------------------------------------
+
+S_M0       = 1e-14
+f_corner_M = 1.5e-2
+S_q0       = 1e-14
+
+
+# ------------------------------------------------------------
+[environment]
+# ------------------------------------------------------------
+
+T = 300

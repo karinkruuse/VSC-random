@@ -1,0 +1,157 @@
+# ============================================================
+#  miniLISA Testbed Configuration
+#  Photodetector variant: Newport / MKS  F-PD-30-1064
+#  (30 GHz InGaAs PIN, 1064 nm optimised, bare 50 Ω output)
+# ============================================================
+#
+#  PD-SPECIFIC NOTES
+#  -----------------
+#  The F-PD-30-1064 is a BARE PIN diode terminated into 50 Ω.
+#  There is NO integrated transimpedance amplifier (TIA).
+#
+#  Consequence for the noise model in miniLISA_sideband_noise_budget.py:
+#    * Z is NOT set by 1/(2π C_pd f_het).
+#      Instead Z = 50 Ω  (fixed RF termination).
+#      The script must override Z = 50 after loading C_pd,
+#      or C_pd can be set to a value that reproduces 50 Ω at f_het:
+#        C_pd_eff = 1 / (2π × f_het × 50)
+#                 = 1 / (2π × 18e6 × 50)  ≈  177 pF
+#      That effective value is used here so the formula Z=1/(2πC f)
+#      gives exactly 50 Ω without changing the script.  See comment
+#      in [instrument] below.
+#
+#    * S_amp = 0  (no amplifier stage; thermal noise of 50 Ω
+#      is already captured by the Johnson / thermal term in the script).
+#
+#    * Physical junction capacitance of this 30 GHz device is
+#      approximately 0.15 pF (estimated from 30 GHz BW and 50 Ω load;
+#      not stated on datasheet).  This is NOT the value used in the
+#      noise model — see C_pd note above.
+#
+#  All frequencies in Hz unless otherwise noted.
+# ============================================================
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+f_het_min = 5e6
+f_het_max = 25e6
+
+f_inter_min = 25e6
+f_inter_max = 60e6
+
+doppler_max = 2e6
+
+f_het = 18e6        # operating heterodyne beatnote [Hz]
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+nu_m          = 10e6    # EOM modulation frequency [Hz]
+delta_f_SB    = 1e6     # clock sideband offset [Hz]
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+f_USO = 10e6
+f_s   = 80e6
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+tau = 8.33          # one-way light travel time [s]  (emulated)
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+f_science_min = 1e-4
+f_science_max = 1.0
+f_TDI_null    = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+
+PD_model = "Newport F-PD-30-1064"
+
+# EOM modulation depth
+m   = 0.53
+
+# ── Photodetector: F-PD-30-1064 ──────────────────────────
+#
+# Responsivity @ 1060 nm (datasheet typ.)
+R   = 0.60          # [A/W]
+#   Note: datasheet gives 0.75 A/W @ 1550 nm; we use the
+#   1060 nm value since the testbed runs at 1064 nm.
+
+# Heterodyne efficiency (unchanged from baseline)
+eta = 0.8
+
+# Effective C_pd for noise model
+#   The device has a fixed 50 Ω RF output — no TIA.
+#   To keep the formula  Z = 1/(2π C_pd f_het) = 50 Ω,
+#   we set C_pd = 1/(2π × 18e6 × 50) ≈ 177 pF.
+#   This is an *effective* modelling parameter, not the
+#   physical junction capacitance (~0.15 pF, estimated).
+C_pd = 177e-12      # [F]  — effective value giving Z = 50 Ω at f_het = 18 MHz
+
+# Dark current (datasheet: 10 nA typ., 100 nA max. @ 25 °C)
+# Use I_dark = 100e-9 for a worst-case noise budget.
+I_dark = 10e-9      # [A]  typ.  (swap to 100e-9 for worst-case)
+
+# TIA voltage noise ASD — ZERO: no amplifier on this device.
+# Johnson noise of the 50 Ω termination is already captured
+# by the thermal term sqrt(4 kB T / Z) in the script.
+S_amp = 0.0         # [V/sqrt(Hz)]
+
+# Optical powers at the photodetector
+# The F-PD-30-1064 handles up to 20 mW (datasheet) continuously.
+# Running near this limit improves shot-noise-limited SNR.
+# WARNING: at 50 Ω and R=0.60, I_DC = 0.60×20e-3 = 12 mA
+#   → V_DC = 12 mA × 50 Ω = 0.6 V,  well within bias range.
+P_i   = 10e-3       # [W]  SC laser power  (can increase up to ~10 mW safely)
+P_REF = 10e-3       # [W]  reference laser power
+
+
+# ------------------------------------------------------------
+[laser]
+# ------------------------------------------------------------
+
+# Laser wavelength [m]
+wavelength = 1064e-9
+
+# Laser RIN ASD [1/sqrt(Hz)]  (both SC and REF lasers, assumed equal)
+# Typical NPRO value with noise eater active above ~1 MHz
+RIN_level = 1e-8
+
+
+# ------------------------------------------------------------
+[noise]
+# ------------------------------------------------------------
+
+# Modulation (EOM clock) noise model:
+#   sqrt(S_M(f)) = S_M0 * sqrt(1 + (f_corner_M / f)^2)
+S_M0       = 1e-14   # white timing noise floor  [s/sqrt(Hz)]
+f_corner_M = 1.5e-2  # 1/f corner frequency      [Hz]
+
+# USO clock noise:  sqrt(S_q(f)) = S_q0 * f^{-3/2}
+S_q0 = 1e-14         # [s/sqrt(Hz)] at 1 Hz
+
+
+# ------------------------------------------------------------
+[environment]
+# ------------------------------------------------------------
+
+# Operating temperature [K]  (used for Johnson / thermal noise)
+T = 300
