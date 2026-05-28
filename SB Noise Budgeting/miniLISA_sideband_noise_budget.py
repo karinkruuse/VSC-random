@@ -72,8 +72,41 @@ f = np.logspace(
 
 
 # ─────────────────────────────────────────────────────────────
-# LISA readout requirement (scaled to testbed nu_m)
+# BASELINE NOISE  (measured, from CSV)
 # ─────────────────────────────────────────────────────────────
+# Units in CSV: cyc/√Hz  →  rad/√Hz  (× 2π)
+# Interpolated onto the script's frequency axis.
+# Outside the CSV's frequency range the baseline is set to NaN
+# and excluded from the total (no extrapolation).
+# ─────────────────────────────────────────────────────────────
+
+_baseline_path = 'baseline.csv'
+sp_baseline = np.full_like(f, np.nan)   # [rad/√Hz]  NaN outside data range
+
+if os.path.exists(_baseline_path):
+    _bl = np.loadtxt(_baseline_path, delimiter=',', skiprows=1)
+    _bl_f   = _bl[:, 0]
+    _bl_asd = _bl[:, 1] * 2 * np.pi     # [rad/√Hz]
+
+    # drop f=0 row and any non-positive frequencies
+    _mask   = _bl_f > 0
+    _bl_f   = _bl_f[_mask]
+    _bl_asd = _bl_asd[_mask]
+
+    # interpolate in log-log space onto script frequency axis
+    _in_range = (f >= _bl_f[0]) & (f <= _bl_f[-1])
+    if _in_range.any():
+        sp_baseline[_in_range] = np.exp(
+            np.interp(
+                np.log(f[_in_range]),
+                np.log(_bl_f),
+                np.log(_bl_asd),
+            )
+        )
+    print(f"  Baseline loaded: {_baseline_path}")
+    print(f"  Coverage: {_bl_f[0]:.3e} – {_bl_f[-1]:.3e} Hz  ({_in_range.sum()} of {len(f)} freq bins)")
+else:
+    print(f"  Baseline file not found ({_baseline_path}) — omitted from total")
 
 sqrt_S_ro_LISA = 600 / (2*np.pi) * 1e-6 * np.sqrt(1 + (0.7e-3/f)**4) / 2.4e9 * nu_m
 # [rad/√Hz]
@@ -208,6 +241,12 @@ sp_tot_ro = np.sqrt(sp_shot**2 + sp_dark**2 + sp_thermal**2
 sp_tot = np.sqrt(sp_tot_ro**2 + sp_mod**2)
 # [rad/√Hz]  + modulation clock (USO omitted by default)
 
+# Add baseline in quadrature only where data exists (NaN elsewhere)
+_bl_sq = np.where(np.isfinite(sp_baseline), sp_baseline**2, 0.0)
+sp_tot_with_baseline = np.sqrt(sp_tot**2 + _bl_sq)
+# NaN outside baseline coverage so the line only appears where data exists
+sp_tot_with_baseline[~np.isfinite(sp_baseline)] = np.nan
+
 
 # ─────────────────────────────────────────────────────────────
 # CONSOLE SUMMARY
@@ -242,6 +281,9 @@ noise_rows += [
     ('Total (RO)', sp_tot_ro),
     ('Total',      sp_tot),
 ]
+if np.isfinite(sp_baseline[idx]):
+    noise_rows.append(('Baseline (measured)', sp_baseline))
+    noise_rows.append(('Total + baseline',    sp_tot_with_baseline))
 
 print(f"\n{'─'*52}")
 print(f"  miniLISA noise budget  —  {pd_model}")
@@ -273,7 +315,7 @@ fig, ax = plt.subplots(figsize=(10, 6))
 fig.suptitle('miniLISA Sideband Readout Noise Budget', fontsize=14, fontweight='bold')
 ax.set_title(f'Photodetector: {pd_model}', fontsize=10, color='dimgrey')
 
-ax.loglog(f, sp_shot,         label='Shot noise',               color=colors[0])
+ax.loglog(f, sp_shot,         label=f'Shot noise, laser power {P_i*1e3:.1f} mW',               color=colors[0])
 rin1f_plot_label = (f'1f-RIN (balanced, {CMRR_dB:.0f} dB)' if CMRR_dB is not None
                     else '1f-RIN (unbalanced)')
 ax.loglog(f, sp_RIN1f,        label=rin1f_plot_label,            color=colors[4])
@@ -286,8 +328,25 @@ else:
     ax.loglog(f, sp_thermal,  label='Thermal noise',            color=colors[2], linestyle='--')
     ax.loglog(f, sp_amp,      label='Amp noise',                color=colors[3])
 
-ax.loglog(f, sp_tot_ro,       label='Total readout noise',      color='grey', lw=2, alpha=0.7)
-ax.loglog(f, sqrt_S_ro_LISA,  label='LISA readout limit (scaled)', color='k', lw=2, linestyle='--')
+ax.loglog(f, sp_tot_ro,       label='Total readout noise',          color='grey',   lw=2, alpha=0.7)
+ax.loglog(f, sqrt_S_ro_LISA,  label='LISA readout limit (scaled)',   color='k',      lw=2, linestyle='--')
+ax.loglog(f, sqrt_S_ro_LISA*240,  label='LISA readout limit',   color='gray',      lw=2, linestyle='--')
+
+
+
+S_req = 60e-6 * (1.0 + 0.07 / f)  # rad/√Hz, this modulation noise will be f_het/nu_m scaled in post processing
+
+ax.loglog(f, S_req,
+           linestyle="--",
+           color="k",
+           linewidth=1.2,
+           label=r"Requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$rad/$\sqrt{\mathrm{Hz}}$")
+
+
+
+if np.isfinite(sp_baseline).any():
+    ax.loglog(f, sp_baseline,         label='Delay line intrinsic noise',          color='black',  lw=1, linestyle=':', alpha=0.8)
+    ax.loglog(f, sp_tot_with_baseline, label='Readout + delay line noise',            color='crimson', lw=2)
 
 ax.set_xlabel('Fourier frequency [Hz]')
 ax.set_ylabel('Phase noise ASD [rad/√Hz]')

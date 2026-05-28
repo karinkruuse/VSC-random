@@ -5,8 +5,8 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DL_BL2_20260527_153408'
-delay_s  = 5
+filename = 'DownstairsTest_20260423_170536'
+delay_s  = 3.9990409977
 DDS_signal_nr = 2
 nr_of_channels = 4
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
@@ -123,7 +123,7 @@ tdi = (
     - ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
 )
 
-if (True):
+if (False):
     # ── 8. PLOT ───────────────────────────────────────────────────────────────
     fig, ax = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
 
@@ -175,6 +175,9 @@ def compute_asd(x, fs, fmin=9e-4, nperseg=None):
 f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
 f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
+
+
+np.savetxt("baseline.csv", np.column_stack((f3, asd_tdi)), header='Frequency (Hz),ASD (cyc/sqrt(Hz))', delimiter=',', comments='')
 
 # ── 10. ASD PLOT ──────────────────────────────────────────────────────────
 plt.figure(figsize=(8, 5))

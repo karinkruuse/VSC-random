@@ -70,6 +70,7 @@ doppler_max = 2e6
 f_het = 18e6
 
 
+
 # ------------------------------------------------------------
 [modulation]
 # ------------------------------------------------------------
@@ -143,6 +144,7 @@ NEP = 7.1e-12       # [W/√Hz]  low-gain, ~50 MHz  (use 12e-12 for conservative
 P_i   = 1e-3        # [W]  SC laser power   — up to ~5 mW with good balance
 P_REF = 1e-3        # [W]  reference laser  — keep matched to P_i within ~1%
 
+f_PLL_bandwidth = 100e3   # [Hz]  e.g. 10 kHz loop bandwidth
 
 # ------------------------------------------------------------
 [laser]

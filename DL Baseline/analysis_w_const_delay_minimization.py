@@ -5,12 +5,12 @@ from scipy.optimize import minimize_scalar
 from pytdi.dsp import timeshift
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'BL_after_SB_fix2_20260527_105824'
-delay_s_init = 7.5
+filename = 'DownstairsTest_20260423_170536'
+delay_s_init = 4
 fmin = 1e-4
 fmax = 1
 PT_channel = 2
-search_width = 1
+search_width = 0.1
 nr_of_channels = 4
 
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ def tdi_cost(delay_s):
 
 
     # integrate PSD → total power
-    cost = np.trapezoid(psd[mask], f[mask])
+    cost = np.trapz(psd[mask], f[mask])
 
     return cost
 

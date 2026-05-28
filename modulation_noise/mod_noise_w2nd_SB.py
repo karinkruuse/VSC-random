@@ -140,6 +140,8 @@ plt.tight_layout()
 plt.savefig(out_asd, dpi=200)
 plt.close()
 
+np.savetxt("mod_noise.csv", np.column_stack((fM, np.sqrt(PM))), header="Frequency (Hz), ASD (cyc/sqrt(Hz))", comments="")
+
 # Frequency PSD (this is the comparable-to-your-colleague plot quantity)
 plt.figure()
 plt.loglog(ffA, PffA, label="Carrier frequency")
