@@ -120,8 +120,8 @@ S_amp = 0.0         # [V/sqrt(Hz)]
 # Running near this limit improves shot-noise-limited SNR.
 # WARNING: at 50 Ω and R=0.60, I_DC = 0.60×20e-3 = 12 mA
 #   → V_DC = 12 mA × 50 Ω = 0.6 V,  well within bias range.
-P_i   = 10e-3       # [W]  SC laser power  (can increase up to ~10 mW safely)
-P_REF = 10e-3       # [W]  reference laser power
+P_i   = 8e-3       # [W]  SC laser power  (can increase up to ~10 mW safely)
+P_REF = 8e-3       # [W]  reference laser power
 
 
 # ------------------------------------------------------------

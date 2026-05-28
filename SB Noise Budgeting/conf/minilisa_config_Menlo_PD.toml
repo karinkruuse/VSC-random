@@ -1,0 +1,148 @@
+# ============================================================
+#  miniLISA Testbed Configuration
+#  Photodetector: Menlo Systems FPD510-FC-NIR
+#  InGaAs PIN, DC–200 MHz, fiber-coupled FC/APC, integrated TIA
+#  Single-channel (NOT balanced) — no CMRR
+# ============================================================
+#
+#  SOURCE: FPD510-Series User Manual (2020), section 2.3
+#
+#  KEY SPECS (FPD510-FC-NIR, from datasheet table):
+#    Detector type           InGaAs
+#    Optical input           Fiber, SMF28 pigtail with FC/APC
+#    Spectral range          950–1650 nm
+#    Saturation limit        <100 uW  (general datasheet figure)
+#    Damage threshold        3 mW
+#    Frequency range         DC–250 MHz
+#    3dB bandwidth           DC–200 MHz
+#    Rise time               2 ns
+#    Max gain                1.5e5 V_pp / W_input
+#    NEP (calculated)        3.0 pW/sqrt(Hz)  [FC-NIR column]
+#    Output impedance        50 Ohm
+#    Output coupling         DC
+#    Output signal range     0–1 V
+#    Output connector        SMA
+#
+#  *** OUTPUT RAIL SATURATION (configuration-specific) ***
+#  The general <100 uW saturation figure is conservative.
+#  The actual rail limit depends on the TIA gain and output range:
+#    Z_eff = Gain / R = 1.5e5 / 0.65 ≈ 230,769 Ohm
+#    I_max = V_rail / Z_eff = 1.0 / 230,769 ≈ 4.33 uA
+#    P_sat(rail) = I_max / R = 4.33e-6 / 0.65 ≈ 6.7 uW  (total, both beams)
+#  This is the binding constraint.  Keep P_i + P_REF ≤ 5 uW.
+#
+#  *** RESPONSIVITY @ 1064 nm ***
+#  Read from FPDx10-FC-NIR curve in Fig. 2.3.1:
+#  ~0.65 A/W at 1064 nm (FC variant, SMF28 coupling loss included).
+#
+#  *** C_pd DERIVATION ***
+#  Z_eff = 230,769 Ohm
+#  C_pd_eff = 1 / (2π × 18 MHz × 230,769) = 38.3 fF
+#  (Effective modelling parameter — physical junction C is ~0.15 pF.)
+#
+#  *** NO CMRR ***
+#  This is a single-channel amplified detector, not a balanced receiver.
+#  CMRR_dB is not set; the script uses the unbalanced RIN model.
+#
+#  All frequencies in Hz unless otherwise noted.
+# ============================================================
+
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+f_het_min = 5e6
+f_het_max = 25e6
+f_inter_min = 25e6
+f_inter_max = 60e6
+doppler_max = 2e6
+f_het = 18e6
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+nu_m       = 10e6
+delta_f_SB = 1e6
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+f_USO = 10e6
+f_s   = 80e6
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+tau = 8.33
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+f_science_min = 1e-4
+f_science_max = 1.0
+f_TDI_null    = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+PD_model = "Menlo FPD510-FC-NIR"
+
+m   = 0.53
+
+# Responsivity @ 1064 nm  (from FPDx10-FC-NIR spectral curve, Fig. 2.3.1)
+R   = 0.65          # [A/W]
+
+eta = 0.8
+
+# Effective C_pd for noise model
+#   Z_eff = Gain / R = 1.5e5 / 0.65 = 230,769 Ohm
+#   C_pd_eff = 1 / (2π × 18 MHz × 230,769) = 38.3 fF
+C_pd = 38.3e-15     # [F]  effective modelling parameter
+
+# NEP from datasheet (DC to 200 MHz bandwidth)
+NEP = 3.0e-12       # [W/sqrt(Hz)]  (FC-NIR column, table 2.3)
+# I_dark and S_amp absorbed into NEP — not needed
+
+# No CMRR_dB — single-channel detector, unbalanced noise model applies
+
+# *** OPTICAL POWER — CRITICAL: rail saturation at ~6.7 uW total ***
+# P_i + P_REF must stay below ~5 uW.
+# At 2 uW per beam: V_DC = R × P_total × Z_eff = 0.65 × 4e-6 × 230769 ≈ 0.6 V
+# (60% of the 1V output rail — safe operating point)
+P_i   = 2e-6        # [W]  SC laser power   (P_i + P_REF ≤ 5 uW total)
+P_REF = 2e-6        # [W]  reference laser power
+
+
+# ------------------------------------------------------------
+[laser]
+# ------------------------------------------------------------
+
+wavelength = 1064e-9
+RIN_level  = 1e-8
+
+
+# ------------------------------------------------------------
+[noise]
+# ------------------------------------------------------------
+
+S_M0       = 1e-14
+f_corner_M = 1.5e-2
+S_q0       = 1e-14
+
+
+# ------------------------------------------------------------
+[environment]
+# ------------------------------------------------------------
+
+T = 300

@@ -1,0 +1,152 @@
+# ============================================================
+#  miniLISA Testbed Configuration
+#  Photodetector: Thorlabs PDB415C
+#  Balanced InGaAs PIN, DC–100 MHz, free-space
+# ============================================================
+#
+#  SOURCE: PDB4x5 Series Operation Manual (2023), section 5.1.1
+#
+#  KEY SPECS (PDB415C, from datasheet):
+#    Detector type           InGaAs / PIN
+#    Operating wavelength    800–1700 nm
+#    Max responsivity (typ)  1.0 A/W  (peak, ~1550 nm)
+#    Bandwidth (-3 dB)       DC–100 MHz
+#    CMRR                    >25 dB
+#    Transimpedance gain     50e3 V/A  @ high-Z load
+#                            25e3 V/A  @ 50 Ohm load  [÷2 per datasheet]
+#    CW saturation power     72 uW @ 1550 nm  (minimum value at peak R)
+#                            ~96 uW @ 1064 nm (scales as R(1550)/R(1064))
+#    NEP (DC–100 MHz)        6.99 pW/sqrt(Hz)
+#    Max input power         20 mW  (damage threshold)
+#    RF output voltage swing ±3.6 V  @ high-Z  (±1.8 V into 50 Ohm)
+#    Output connector        SMA
+#
+#  *** LOAD IMPEDANCE ***
+#  The datasheet quotes transimpedance for high-Z load.
+#  For a 50 Ohm load (FPGA ADC input), Z = 50e3 / 2 = 25 kOhm.
+#  C_pd_eff is computed accordingly.
+#
+#  *** POWER HANDLING ***
+#  In balanced mode the CW saturation applies to the POWER DIFFERENCE
+#  between the two inputs, not the total power.
+#  The damage threshold is 20 mW per photodiode.
+#  Saturation at 1064 nm: ~96 uW power difference.
+#  With well-balanced beams (P_i ≈ P_REF) you can run higher total
+#  power; however the datasheet does not specify a separate common-mode
+#  limit, so keep P_i + P_REF ≤ ~80 uW to be safe (≈ 40 uW per beam).
+#
+#  *** RESPONSIVITY @ 1064 nm ***
+#  Read from the typical InGaAs responsivity curve (Fig. 5.1, PDB4x5C):
+#  ~0.75 A/W at 1064 nm.
+#
+#  *** C_pd DERIVATION ***
+#  Z = 25e3 Ohm (50 Ohm load)
+#  C_pd_eff = 1 / (2π × 18 MHz × 25e3) = 0.354 pF
+#
+#  *** CMRR ***
+#  Datasheet minimum >25 dB.  Using 25 dB as conservative budget value.
+#  Remove CMRR_dB to revert to unbalanced noise model.
+#
+#  All frequencies in Hz unless otherwise noted.
+# ============================================================
+
+
+# ------------------------------------------------------------
+[beatnote]
+# ------------------------------------------------------------
+
+f_het_min = 5e6
+f_het_max = 25e6
+f_inter_min = 25e6
+f_inter_max = 60e6
+doppler_max = 2e6
+f_het = 18e6
+
+
+# ------------------------------------------------------------
+[modulation]
+# ------------------------------------------------------------
+
+nu_m       = 10e6
+delta_f_SB = 1e6
+
+
+# ------------------------------------------------------------
+[clocks]
+# ------------------------------------------------------------
+
+f_USO = 10e6
+f_s   = 80e6
+
+
+# ------------------------------------------------------------
+[geometry]
+# ------------------------------------------------------------
+
+tau = 8.33
+
+
+# ------------------------------------------------------------
+[science_band]
+# ------------------------------------------------------------
+
+f_science_min = 1e-4
+f_science_max = 1.0
+f_TDI_null    = 0.060
+
+
+# ------------------------------------------------------------
+[instrument]
+# ------------------------------------------------------------
+
+PD_model = "Thorlabs PDB415C"
+
+m   = 0.53
+
+# Responsivity @ 1064 nm  (from InGaAs responsivity curve, Fig. 5.1)
+R   = 0.75          # [A/W]
+
+eta = 0.8
+
+# Effective C_pd for 50 Ohm load
+#   Z = 25e3 Ohm  (50e3 / 2, per datasheet note)
+#   C_pd_eff = 1 / (2π × 18 MHz × 25,000) = 0.354 pF
+C_pd = 0.354e-12    # [F]
+
+# NEP from datasheet (DC to 100 MHz bandwidth)
+NEP = 6.99e-12      # [W/sqrt(Hz)]
+# I_dark and S_amp absorbed into NEP — not needed
+
+# CMRR for balanced 1f-RIN suppression
+# Datasheet: >25 dB minimum  →  using minimum as conservative value
+CMRR_dB = 25.0      # [dB]
+
+# Optical powers
+# CW saturation (power difference) at 1064 nm: ~96 uW
+# With balanced beams and CMRR active, keep each beam ≤ 40 uW.
+P_i   = 35e-6       # [W]  SC laser power   (≤ 40 uW per beam)
+P_REF = 35e-6       # [W]  reference laser  (keep matched to P_i)
+
+
+# ------------------------------------------------------------
+[laser]
+# ------------------------------------------------------------
+
+wavelength = 1064e-9
+RIN_level  = 1e-8
+
+
+# ------------------------------------------------------------
+[noise]
+# ------------------------------------------------------------
+
+S_M0       = 1e-14
+f_corner_M = 1.5e-2
+S_q0       = 1e-14
+
+
+# ------------------------------------------------------------
+[environment]
+# ------------------------------------------------------------
+
+T = 300

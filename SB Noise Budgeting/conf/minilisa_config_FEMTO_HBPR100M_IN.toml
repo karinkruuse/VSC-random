@@ -2,8 +2,7 @@
 #  miniLISA Testbed Configuration
 #  Photodetector variant: FEMTO HBPR-100M-60K-IN-FST
 #  (Balanced InGaAs, DC–100 MHz, free-space, switchable TIA)
-#  *** UNBALANCED noise model — RIN suppression NOT applied ***
-#  (balanced detection modelling to be added later)
+#  *** BALANCED noise model — CMRR_dB set, 1f-RIN suppression active ***
 # ============================================================
 #
 #  PD-SPECIFIC NOTES
@@ -106,7 +105,7 @@ f_TDI_null    = 0.060
 # ------------------------------------------------------------
 [instrument]
 # ------------------------------------------------------------
-
+PD_model = "FEMTO_HBPR100M_IN"
 m   = 0.53
 
 # ── Photodetector: FEMTO HBPR-100M-60K-IN-FST ────────────
@@ -121,29 +120,28 @@ eta = 0.8
 # For HIGH-GAIN (Z = 60 kΩ): C_pd_eff = 0.15 pF  — update if switching gain
 C_pd = 0.44e-12     # [F]  — low-gain setting
 
-# Dark current [A]
-# InGaAs PIN at room temp: ~1 nA typical (not stated in FEMTO datasheet)
-I_dark = 1e-9       # [A]  conservative estimate
+# CMRR [dB]  — common-mode rejection ratio for balanced detection
+# Datasheet gives 50 dB typ.  Use a conservative value for the budget.
+# When CMRR_dB is present the script applies balanced RIN suppression
+# to the 1f-RIN term.  Remove this line to revert to unbalanced model.
+CMRR_dB = 40.0      # [dB]  conservative (datasheet typ. 50 dB)
+# Replaces individual dark + thermal + amp estimates in the noise budget.
+# Datasheet gives: 3.7 pW/√Hz (min), ~7.1 pW/√Hz @ 50 MHz, 12.0 pW/√Hz @ 100 MHz
+# Using the value closest to f_het = 18 MHz (~50 MHz band):
+NEP = 7.1e-12       # [W/√Hz]  low-gain, ~50 MHz  (use 12e-12 for conservative bound)
 
-# TIA voltage noise ASD [V/sqrt(Hz)]  (LOW-GAIN setting, worst-case @ 100 MHz)
-#   NEP = 12.0 pW/√Hz @ 100 MHz (datasheet)
-#   i_n = NEP × R = 12.0e-12 × 0.75 = 9.0 pA/√Hz
-#   S_amp = i_n × Z = 9.0e-12 × 20e3 = 180 nV/√Hz
-# For HIGH-GAIN (Z = 60 kΩ), same NEP → S_amp = 540 nV/√Hz
-# At your 18 MHz heterodyne, the actual NEP is between 3.7 and 7.1 pW/√Hz;
-# the 12.0 pW/√Hz value used here is the conservative bound.
-S_amp = 180e-9      # [V/sqrt(Hz)]  — low-gain, 100 MHz NEP
+# S_amp and I_dark are not needed when NEP is set — kept here commented out
+# for reference and for use if NEP is removed.
+# S_amp  = 180e-9   # [V/√Hz]  derived: NEP × R × Z = 7.1e-12 × 0.75 × 20e3
+# I_dark = 1e-9     # [A]      absorbed into NEP
 
-# *** OPTICAL POWER (unbalanced model) ***
+# *** OPTICAL POWER (balanced model) ***
 #
-# Limited by differential saturation in low-gain DC-coupled mode:
-#   ~67 uW total at 1064 nm.  With P_i = P_REF, each beam <= ~30 uW.
-# Using 25 uW per beam here (~75% of limit).
-#
-# When the script is updated for balanced detection, raise these
-# to ~5 mW per beam and add CMRR_dB to [instrument].
-P_i   = 25e-6       # [W]  SC laser power   — unbalanced limit ~30 uW per beam
-P_REF = 25e-6       # [W]  reference laser power
+# CMRR_dB is set, so balanced detection is active.
+# Power is now limited by the common-mode limit: 10 mW per PD (datasheet).
+# Keep beams matched within ~1% to stay below the differential sat. limit.
+P_i   = 1e-3        # [W]  SC laser power   — up to ~5 mW with good balance
+P_REF = 1e-3        # [W]  reference laser  — keep matched to P_i within ~1%
 
 
 # ------------------------------------------------------------
