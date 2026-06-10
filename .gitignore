@@ -1,6 +1,6 @@
 __pycache__/
 finesse_pdh_modelling/input_files/*
 
-
+*.csv
 *.li
 *.npy
