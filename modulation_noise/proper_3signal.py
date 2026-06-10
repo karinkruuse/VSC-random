@@ -153,7 +153,7 @@ ffU, PffU = psd(fU_dt_Hz, fs)
 # useful: SB splitting (should be ~2*f_mod if referenced that way)
 df_UL = fU_dt_Hz - fL_dt_Hz
 ffd, Pffd = psd(df_UL, fs)
-
+#np.savetxt("modulator_psd.csv", np.column_stack((fM, PM)), header="Frequency(Hz),PSD(Hz^2/Hz)", delimiter=",")
 # -----------------------
 # outputs
 # -----------------------
@@ -178,21 +178,21 @@ plt.close()
 
 # Phase ASD (rad/sqrt(Hz))  [cycles -> rad via *2π]
 plt.figure()
-S_req = 60e-6 * (1.0 + 0.07 / fC)  # rad/√Hz
+S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi # rad/√Hz
 
 plt.loglog(fC, S_req,
            linestyle="--",
            color="k",
            linewidth=1.2,
            label=r"Requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$rad/$\sqrt{\mathrm{Hz}}$")
-plt.loglog(fC, np.sqrt(PC)*2*np.pi, label="Carrier phase", color="k")
-plt.loglog(fL, np.sqrt(PL)*2*np.pi, label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
-plt.loglog(fU, np.sqrt(PU)*2*np.pi, label="USB phase", color=c_purple, alpha=0.7, linewidth=0.6)
-plt.loglog(fM, np.sqrt(PM)*2*np.pi, label=r'$\delta\phi_m = \frac{1}{2}(\mathrm{USB} - \mathrm{LSB})$', color="tab:blue")
-plt.loglog(fUC, np.sqrt(PUC)*2*np.pi, label="USB-Carrier", color=c_purple, alpha=0.35)
-plt.loglog(fCL, np.sqrt(PCL)*2*np.pi, label="Carrier-LSB", color=c_green, alpha=0.35)
+plt.loglog(fC, np.sqrt(PC), label="Carrier phase", color="k")
+plt.loglog(fL, np.sqrt(PL), label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
+plt.loglog(fU, np.sqrt(PU), label="USB phase", color=c_purple, alpha=0.7, linewidth=0.6)
+plt.loglog(fM, np.sqrt(PM), label=r'$\delta\phi_m = \frac{1}{2}(\mathrm{USB} - \mathrm{LSB})$', color="tab:blue")
+plt.loglog(fUC, np.sqrt(PUC), label="USB-Carrier", color=c_purple, alpha=0.35)
+plt.loglog(fCL, np.sqrt(PCL), label="Carrier-LSB", color=c_green, alpha=0.35)
 plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("ASD (rad/√Hz)")
+plt.ylabel("ASD (cyc/√Hz)")
 plt.grid(True, which="both", alpha=0.3)
 plt.legend()
 plt.tight_layout()
