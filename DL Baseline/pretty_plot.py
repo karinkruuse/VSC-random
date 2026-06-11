@@ -38,12 +38,12 @@ plt.rcParams.update({
 })
 
 # ── CONFIG ─────────────────────────────────────────────────────────────────
-filename      = 'Delayline_11MHz_mix_UNDEL_DDS_400mVpp_ADC_on_inputs_1_2_and4_20260419_222428'
-delay_s       = 3.99909723
-DDS_signal_nr = 4
+filename      = 'DownstairsTest_20260423_170536'
+delay_s       = 3.999041
+DDS_signal_nr = 2
 nr_of_channels = 4
 start_time    = 0 * 60 * 60   # seconds to crop from start
-end_time      = 22.5 * 60 * 60   # seconds to crop from end
+end_time      = 0 * 60 * 60   # seconds to crop from end
 
 # ── 1. LOAD ────────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
@@ -138,8 +138,8 @@ used_hours = (duration - start_time - end_time) / 3600
 
 fig, ax = plt.subplots(figsize=(7, 4.8))
 
-ax.loglog(f1, asd_ch1, color=(215/255, 27/255,  47/255), lw=1.4, label="Delayed Optical Beatnote")
-ax.loglog(f2, asd_ch3, color=(215/255, 27/255,  47/255, 0.5), lw=1.4, label="Optical Beatnote")
+ax.loglog(f2, asd_ch3, color=(215/255, 27/255,  47/255, 0.5), lw=1.4, label="Input Signal")
+ax.loglog(f1, asd_ch1, color=(215/255, 27/255,  47/255), lw=1.4, label="Delayed Signal")
 ax.loglog(f3, asd_tdi, color=(130/255, 23/255, 112/255), lw=1.4, label="Residual noise")
 
 ax.set_xlabel("Fourier frequency (Hz)")
