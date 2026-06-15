@@ -12,7 +12,7 @@ and whether to show the clock-corrected residual alongside the uncorrected.
 # ══════════════════════════════════════════════════════════════════════════════
 # One noise type, or a list for combined plot:
 #   'clock' | 'board' | 'modulation' | 'optical' | 'optical_sb' | 'board_baseline'
-NOISE_TO_PLOT  = ['board']   # string or list of strings
+NOISE_TO_PLOT  = ['modulation']   # string or list of strings
 TDI_NAME       = 'X2'       # 'X1' | 'alpha1' | 'X2'
 SHOW_CORRECTED = True       # also compute and overlay clock-corrected version
 

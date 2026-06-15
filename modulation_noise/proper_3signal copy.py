@@ -100,7 +100,7 @@ print("Saved:", out_ts)
 # -----------------------
 # PSD helper (same style as yours)
 # -----------------------
-def psd(x, fs, seg_s=2*2048):
+def psd(x, fs, seg_s=8*2048):
     nperseg = int(seg_s * fs)
     nperseg = max(256, min(nperseg, len(x)))
     f, Pxx = welch(
@@ -153,7 +153,7 @@ ffU, PffU = psd(fU_dt_Hz, fs)
 # useful: SB splitting (should be ~2*f_mod if referenced that way)
 df_UL = fU_dt_Hz - fL_dt_Hz
 ffd, Pffd = psd(df_UL, fs)
-#np.savetxt("modulator_psd.csv", np.column_stack((fM, PM)), header="Frequency(Hz),PSD(Hz^2/Hz)", delimiter=",")
+np.savetxt("modulator_psd.csv", np.column_stack((fM, PM)), header="Frequency(Hz),PSD(Hz^2/Hz)", delimiter=",")
 # -----------------------
 # outputs
 # -----------------------
@@ -166,13 +166,13 @@ out_asd_freq  = DATA.with_name(stem + "_asd_freq.png")
 
 # Phase ASD (rad/sqrt(Hz))  [cycles -> rad via *2π]
 plt.figure()
-S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi # rad/√Hz
+S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi /2400*24 # rad/√Hz
 
 plt.loglog(fC, S_req,
            linestyle="--",
            color="k",
            linewidth=1.2,
-           label=r"Requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$rad/$\sqrt{\mathrm{Hz}}$")
+           label=r"Requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$")
 #plt.loglog(fC, np.sqrt(PC), label="Carrier phase", color="k")
 #plt.loglog(fL, np.sqrt(PL), label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
 #plt.loglog(fU, np.sqrt(PU), label="USB phase", color=c_purple, alpha=0.7, linewidth=0.6)

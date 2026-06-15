@@ -12,7 +12,7 @@ and whether to show the clock-corrected residual alongside the uncorrected.
 # ══════════════════════════════════════════════════════════════════════════════
 # One noise type, or a list for combined plot:
 #   'clock' | 'board' | 'modulation' | 'optical' | 'optical_sb' | 'board_baseline'
-NOISE_TO_PLOT  = ['optical', 'optical_sb']   # string or list of strings
+NOISE_TO_PLOT  = ['modulation']   # string or list of strings
 TDI_NAME       = 'X1'      # 'X1' | 'alpha1'
 SHOW_CORRECTED = True      # also compute and overlay clock-corrected version
 
@@ -27,8 +27,8 @@ L            = 2.5e9 / c
 
 # ── Heterodyne & modulation frequencies [Hz] ─────────────────────────────────
 nu1  = 15.0e6;  nu2  =  6.9e6;  nu3  = 13.6e6
-mod_order = 8
-num1 =  5*10**mod_order;  num2 =  5*10**mod_order;  num3 =  5*10**mod_order
+mod_order = 7
+num1 =  3.6*10**mod_order;  num2 =  5*10**mod_order;  num3 =  5*10**mod_order
 
 # ══════════════════════════════════════════════════════════════════════════════
 # IMPORTS

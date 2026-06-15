@@ -62,7 +62,6 @@ for i, (d, h, t, density) in enumerate(tank_params, start=1):
     radii.append(outer_radius)
 
     print(f"Tank {i} ({'SS vessel' if i == 1 else 'Al shield'}):")
-    print(f"  Material volume = {vol:.6f} m^3 ({vol*1000:.2f} liters)")
     print(f"  Calculated mass = {mass:.2f} kg  |  Used mass = {used_mass:.2f} kg")
     print(f"  Outer surface area = {area:.4f} m^2\n")
 
