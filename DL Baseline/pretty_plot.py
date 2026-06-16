@@ -67,7 +67,7 @@ channels = {ch: load_channel(ch) for ch in range(1, nr_of_channels + 1)}
 # ── 2. CROP ────────────────────────────────────────────────────────────────
 duration = t[-1] - t[0]
 print(f"Duration: {duration:.1f} s = {duration/3600:.2f} h")
-
+print(t)
 i0 = np.searchsorted(t, t[0]  + start_time)
 i1 = np.searchsorted(t, t[-1] - end_time)
 sl = slice(i0, i1)

@@ -5,10 +5,12 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename = 'DownstairsTest_20260423_170536'
-delay_s  = 3.9990409977
+filename      = 'DownstairsTest_20260423_170536'
+delay_s       = 3.999041
 DDS_signal_nr = 2
 nr_of_channels = 4
+start_time    = 0 * 60 * 60   # seconds to crop from start
+end_time      = 0 * 60 * 60   # seconds to crop from end
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
 
@@ -155,7 +157,7 @@ if (False):
 
 
 # ── 9. ASD COMPUTATION ────────────────────────────────────────────────────
-def compute_asd(x, fs, fmin=9e-4, nperseg=None):
+def compute_asd(x, fs, fmin=1e-4, nperseg=None):
     if fmin is not None:
         nperseg = int(fs / fmin)
 
