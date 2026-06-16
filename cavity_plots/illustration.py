@@ -81,8 +81,42 @@ for x in offB:
 
 ax.axhline(0.50, color='#dddddd', lw=0.7, zorder=1)
 
+# ── FSR indicators with curly braces ─────────────────────────────────────────
+def draw_bracket(ax, x0, x1, y, direction='up', color='black', lw=1.2, serif=0.025):
+    # simple horizontal line only
+    ax.plot([x0, x1], [y, y], color=color, lw=lw,
+            solid_capstyle='butt', zorder=3)
+
+def nearest_pair(offsets, target):
+    sarr = np.sort(offsets)
+    idx  = np.searchsorted(sarr, target)
+    idx  = np.clip(idx, 1, len(sarr) - 1)
+    return sarr[idx - 1], sarr[idx]
+
+pA0, pA1 = nearest_pair(offA, target= 2.0e9)
+pB0, pB1 = nearest_pair(offB, target=-2.0e9)
+
+# Cavity A — bracket in upper strip, serifs pointing up
+bracket_yA = 0.93
+C_bracket = (50/255, 50/255, 50/255)  # 50/255 gray
+draw_bracket(ax, pA0/1e9, pA1/1e9, y=bracket_yA,
+             direction='up', color=C_bracket, lw=1.3, serif=0.04)
+ax.text((pA0 + pA1)/2e9, bracket_yA + 0.07,
+        f"FSR ≈ {fsrA/1e6:.0f} MHz",
+        ha='center', va='bottom', fontsize=8.5,
+        color=C_bracket, fontweight='bold')
+
+# Cavity B — bracket in lower strip, serifs pointing down
+bracket_yB = 0.07
+draw_bracket(ax, pB0/1e9, pB1/1e9, y=bracket_yB,
+             direction='down', color=C_bracket, lw=1.3, serif=0.04)
+ax.text((pB0 + pB1)/2e9, bracket_yB - 0.07,
+        f"FSR ≈ {fsrB/1e6:.0f} MHz",
+        ha='center', va='top', fontsize=8.5,
+        color=C_bracket, fontweight='bold')
+
 ax.set_xlim(-half_span/1e9, half_span/1e9)
-ax.set_ylim(0, 1)
+ax.set_ylim(-0.18, 1.18)
 ax.set_xlabel("Frequency offset from 281 THz (GHz)", fontsize=12)
 ax.set_yticks([])
 for spine in ['left', 'right', 'top']:

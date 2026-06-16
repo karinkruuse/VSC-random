@@ -115,7 +115,7 @@ tdi = (
 )
 
 # ── 8. ASD ─────────────────────────────────────────────────────────────────
-def compute_asd(x, fs, fmin=9e-4):
+def compute_asd(x, fs, fmin=1e-4):
     nperseg = min(int(fs / fmin), len(x))
     print(f"nperseg = {nperseg}  (len = {len(x)})")
     f, psd = welch(x, fs=fs, nperseg=nperseg, detrend='constant')
@@ -142,9 +142,21 @@ ax.loglog(f2, asd_ch3, color=(215/255, 27/255,  47/255, 0.5), lw=1.4, label="Inp
 ax.loglog(f1, asd_ch1, color=(215/255, 27/255,  47/255), lw=1.4, label="Delayed Signal")
 ax.loglog(f3, asd_tdi, color=(130/255, 23/255, 112/255), lw=1.4, label="Residual noise")
 
+
+
+
+S_req = (1 / 1064e-9) * 1e-12 * np.sqrt(1.0 + (2e-3 / f1)**4)
+
+ax.loglog(f1, S_req,
+           linestyle="--",
+           color="k",
+           linewidth=1.2,
+           label=r"1 pm Requirement")
+
+
 ax.set_xlabel("Fourier frequency (Hz)")
 ax.set_ylabel("ASD (cyc / $\\sqrt{\\mathrm{Hz}}$)")
-ax.set_xlim(9e-4, fs / 2)
+ax.set_xlim(1e-4, fs / 2)
 
 ax.xaxis.set_minor_locator(ticker.LogLocator(subs="all", numticks=10))
 ax.yaxis.set_minor_locator(ticker.LogLocator(subs="all", numticks=10))

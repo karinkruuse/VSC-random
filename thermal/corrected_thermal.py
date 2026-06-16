@@ -183,7 +183,7 @@ H_uncoupled = np.abs(np.prod([1 / (1 + 1j * omega * tau) for tau in tau_list], a
 
 plt.figure(figsize=(7, 5))
 plt.loglog(f, ambient_asd, label="Ambient T", linewidth=2)
-plt.loglog(f, H_coupled   * ambient_asd, label="Shielded T (coupled)")
+#plt.loglog(f, H_coupled   * ambient_asd, label="Shielded T (coupled)")
 plt.loglog(f, H_uncoupled * ambient_asd, label="Shielded T (uncoupled)", linestyle='--')
 plt.loglog(f, req_asd, color='gray', linestyle='--', label="10 µK")
 ymin, ymax = plt.ylim()
@@ -206,8 +206,8 @@ param_text = (
     f"Cutoff f (23) = {fc_23*1e3:.2f} mHz"
 )
 
-plt.text(0.02, 0.2, param_text, transform=plt.gca().transAxes,
-         fontsize=8, bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray"))
+#plt.text(0.02, 0.2, param_text, transform=plt.gca().transAxes,
+#         fontsize=8, bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray"))
 
 plt.tight_layout()
 plt.savefig("shielding.png", dpi=400)
