@@ -49,9 +49,22 @@ modulator = modulator[modulator["freq"] > 0]
 freq_m = modulator["freq"].values
 asd_m  = np.sqrt(modulator["psd"].values)   # cyc/√Hz
 
-# ── requirement ────────────────────────────────────────────────────────────
-f1   = np.logspace(np.log10(freq_b[1]), np.log10(freq_b[-1]), 2000)
-S_req = (1 / 1064e-9) * 1e-12 * np.sqrt(1.0 + (2e-3 / f1)**4)
+c = 3e8        # speed of light [m/s]
+lam = 1064e-9  # LISA laser wavelength [m]
+
+f = np.logspace(-4, 2, 1000)  # frequency array [Hz]
+
+# --- individual noise ASDs in phase [cycles/sqrt(Hz)] ---
+asd_oms = (15e-12 / lam) * np.sqrt(1.0 + (2e-3 / f)**4)
+
+asd_acc = (3e-15 / ((2 * np.pi * f)**2 * lam)) \
+          * np.sqrt(1.0 + (0.4e-3 / f)**2) \
+          * np.sqrt(1.0 + (f / 8e-3)**4)
+
+# --- total single-link phase noise ASD [cycles/sqrt(Hz)] ---
+asd_total = np.sqrt(asd_oms**2 + asd_acc**2)
+
+
 
 # ── colours ───────────────────────────────────────────────────────────────
 gray = (50/255, 50/255, 50/255)
@@ -61,16 +74,16 @@ col2 = (215/255, 27/255,  47/255)
 # ── plot ──────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(7, 4.5))
 
-ax.plot(f1, S_req,         color=gray,    lw=1.5, ls="--", label="1 pm requirement", zorder=4)
-ax.plot(f1, S_req / 200,   color="black", lw=1.2, ls="-",  label=r"1 pm requirement $\times 1/200$", zorder=4)
+ax.plot(f, asd_total,         color=gray,    lw=1.5, ls="--", label="one-way link requirement (OMS + acc)", zorder=4)
+ax.plot(f, asd_total / 200,   color="black", lw=1.2, ls="-",  label=r"one-way link requirement (OMS + acc) $\times 1/200$", zorder=4)
 
-ax.plot(freq_b, asd_b, color=col1, lw=0.7, alpha=0.85, label="Baseline")
-ax.plot(freq_m, asd_m, color=col2, lw=0.7, alpha=0.85, label="Modulator")
+ax.plot(freq_b, asd_b, color=col1, lw=0.7, alpha=0.85, label="Delay line board intrinsic noise")
+ax.plot(freq_m, asd_m, color=col2, lw=0.7, alpha=0.85, label="Modulator phase noise")
 
 ax.set_xscale("log")
 ax.set_yscale("log")
 ax.set_xlabel("Frequency (Hz)")
-ax.set_ylabel(r"Frequency noise ASD (cyc/$\sqrt{\mathrm{Hz}}$)")
+ax.set_ylabel(r"Phase noise ASD (cyc/$\sqrt{\mathrm{Hz}}$)")
 
 ax.xaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2,10)*0.1, numticks=20))
 ax.yaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2,10)*0.1, numticks=20))
