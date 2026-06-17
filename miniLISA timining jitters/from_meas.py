@@ -64,7 +64,7 @@ asd_acc = (3e-15 / ((2 * np.pi * f)**2 * lam)) \
 # --- total single-link phase noise ASD [cycles/sqrt(Hz)] ---
 asd_total = np.sqrt(asd_oms**2 + asd_acc**2)
 
-
+S_req = 60e-6 * (1.0 + 0.07 / f) /2/np.pi # rad/√Hz
 
 # ── colours ───────────────────────────────────────────────────────────────
 gray = (50/255, 50/255, 50/255)
@@ -74,10 +74,10 @@ col2 = (215/255, 27/255,  47/255)
 # ── plot ──────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(7, 4.5))
 
-ax.plot(f, asd_total,         color=gray,    lw=1.5, ls="--", label="one-way link requirement (OMS + acc)", zorder=4)
-ax.plot(f, asd_total / 200,   color="black", lw=1.2, ls="-",  label=r"one-way link requirement (OMS + acc) $\times 1/200$", zorder=4)
+ax.plot(f, S_req,         color=gray,    lw=1.5, ls="--", label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$", zorder=4)
+ax.plot(f, S_req / 200,   color="black", lw=1.2, ls="-",  label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$ $\times 1/200$", zorder=4)
 
-ax.plot(freq_b, asd_b, color=col1, lw=0.7, alpha=0.85, label="Delay line board intrinsic noise")
+#ax.plot(freq_b, asd_b, color=col1, lw=0.7, alpha=0.85, label="Delay line board intrinsic noise")
 ax.plot(freq_m, asd_m, color=col2, lw=0.7, alpha=0.85, label="Modulator phase noise")
 
 ax.set_xscale("log")

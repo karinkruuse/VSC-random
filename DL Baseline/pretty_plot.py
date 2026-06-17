@@ -162,12 +162,6 @@ asd_acc = (3e-15 / ((2 * np.pi * f)**2 * lam)) \
 asd_total = np.sqrt(asd_oms**2 + asd_acc**2)
 
 
-ax.loglog(f, asd_total,
-           linestyle="--",
-           color="k",
-           linewidth=1.2,
-           label=r"one-way link requirement (OMS + acc)")
-
 
 ax.set_xlabel("Fourier frequency (Hz)")
 ax.set_ylabel("ASD (cyc / $\\sqrt{\\mathrm{Hz}}$)")
