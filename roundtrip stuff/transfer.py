@@ -29,10 +29,10 @@ plt.rcParams.update({
     "ytick.minor.size"   : 2.5,
     "xtick.major.width"  : 0.8,
     "ytick.major.width"  : 0.8,
-    "xtick.labelsize"    : 10,
-    "ytick.labelsize"    : 10,
-    "axes.labelsize"     : 11,
-    "legend.fontsize"    : 9,
+    "xtick.labelsize"    : 13,
+    "ytick.labelsize"    : 13,
+    "axes.labelsize"     : 13,
+    "legend.fontsize"    : 10,
     "legend.framealpha"  : 0.92,
     "legend.edgecolor"   : "#cccccc",
     "legend.handlelength": 2.0,
@@ -121,7 +121,7 @@ ax.legend(loc="upper left", frameon=True, fancybox=False)
 
 fig.subplots_adjust(left=0.13, bottom=0.13, right=0.97, top=0.95)
 
-out = "phasemeter_transfer_function.png"
+out = "phasemeter_transfer_function.svg"
 fig.savefig(out, dpi=300, bbox_inches="tight")
 print(f"Saved: {out}")
-plt.show()
+#plt.show()
