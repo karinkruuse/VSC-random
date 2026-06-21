@@ -166,7 +166,7 @@ out_asd_freq  = DATA.with_name(stem + "_asd_freq.png")
 
 # Phase ASD (rad/sqrt(Hz))  [cycles -> rad via *2π]
 plt.figure()
-S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi /2400*24 # rad/√Hz
+S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi /200 # rad/√Hz
 
 plt.loglog(fC, S_req,
            linestyle="--",

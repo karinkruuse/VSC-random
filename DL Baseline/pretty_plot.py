@@ -8,7 +8,6 @@ import matplotlib.ticker as ticker
 from scipy.signal import detrend, welch
 from pytdi.dsp import timeshift
 
-# ── matplotlib style ───────────────────────────────────────────────────────
 plt.rcParams.update({
     "font.family"        : "sans-serif",
     "font.sans-serif"    : ["Helvetica", "Arial", "DejaVu Sans"],
@@ -27,15 +26,16 @@ plt.rcParams.update({
     "ytick.minor.size"   : 2.5,
     "xtick.major.width"  : 0.8,
     "ytick.major.width"  : 0.8,
-    "xtick.labelsize"    : 10,
-    "ytick.labelsize"    : 10,
-    "axes.labelsize"     : 11,
-    "legend.fontsize"    : 9,
+    "xtick.labelsize"    : 13,
+    "ytick.labelsize"    : 13,
+    "axes.labelsize"     : 13,
+    "legend.fontsize"    : 10,
     "legend.framealpha"  : 0.92,
     "legend.edgecolor"   : "#cccccc",
     "legend.handlelength": 2.0,
     "figure.dpi"         : 150,
 })
+
 
 # ── CONFIG ─────────────────────────────────────────────────────────────────
 filename      = 'DownstairsTest_20260423_170536'
@@ -143,15 +143,24 @@ ax.loglog(f1, asd_ch1, color=(215/255, 27/255,  47/255), lw=1.4, label="Delayed 
 ax.loglog(f3, asd_tdi, color=(130/255, 23/255, 112/255), lw=1.4, label="Residual noise")
 
 
+import numpy as np
+import matplotlib.pyplot as plt
 
+c = 3e8        # speed of light [m/s]
+lam = 1064e-9  # LISA laser wavelength [m]
 
-S_req = (1 / 1064e-9) * 1e-12 * np.sqrt(1.0 + (2e-3 / f1)**4)
+f = np.logspace(-4, 2, 1000)  # frequency array [Hz]
 
-ax.loglog(f1, S_req,
-           linestyle="--",
-           color="k",
-           linewidth=1.2,
-           label=r"1 pm Requirement")
+# --- individual noise ASDs in phase [cycles/sqrt(Hz)] ---
+asd_oms = (15e-12 / lam) * np.sqrt(1.0 + (2e-3 / f)**4)
+
+asd_acc = (3e-15 / ((2 * np.pi * f)**2 * lam)) \
+          * np.sqrt(1.0 + (0.4e-3 / f)**2) \
+          * np.sqrt(1.0 + (f / 8e-3)**4)
+
+# --- total single-link phase noise ASD [cycles/sqrt(Hz)] ---
+asd_total = np.sqrt(asd_oms**2 + asd_acc**2)
+
 
 
 ax.set_xlabel("Fourier frequency (Hz)")
@@ -174,7 +183,7 @@ ax.set_title(
 
 fig.subplots_adjust(left=0.13, bottom=0.13, right=0.97, top=0.93)
 
-out = f"plots/{filename}_TDI1_asd_pub.png"
+out = f"plots/{filename}_TDI1_asd_pub.svg"
 fig.savefig(out, dpi=300, bbox_inches="tight")
 print(f"Saved: {out}")
 

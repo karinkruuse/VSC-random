@@ -29,15 +29,18 @@ plt.rcParams.update({
     "ytick.minor.size"   : 2.5,
     "xtick.major.width"  : 0.8,
     "ytick.major.width"  : 0.8,
-    "xtick.labelsize"    : 10,
-    "ytick.labelsize"    : 10,
-    "axes.labelsize"     : 11,
-    "legend.fontsize"    : 9,
+    "xtick.labelsize"    : 13,
+    "ytick.labelsize"    : 13,
+    "axes.labelsize"     : 13,
+    "legend.fontsize"    : 10,
     "legend.framealpha"  : 0.92,
     "legend.edgecolor"   : "#cccccc",
     "legend.handlelength": 2.0,
     "figure.dpi"         : 150,
 })
+
+
+
 
 # ── 1. Data file ───────────────────────────────────────────────────────────
 if len(sys.argv) > 1:
@@ -74,7 +77,7 @@ def asd(x):
     f, psd = welch(x, fs=fs_nom, nperseg=nperseg, window="hann", detrend="linear")
     return f[1:], np.sqrt(psd[1:])
 
-f_ch1, a_ch1 = asd(channels[2]["freq_dev"] - channels[3]["freq_dev"])   # D(PD1)
+f_ch1, a_ch1 = asd(channels[2]["freq_dev"] - channels[3]["freq_dev"])   
 f_ch2, a_ch2 = asd(channels[2]["freq_dev"])   # PD1
 f_ch3, a_ch3 = asd(channels[3]["freq_dev"])   # PD2
 
@@ -92,7 +95,7 @@ fig, ax = plt.subplots(figsize=(7, 4.8))
 # Measured transfer function
 ax.loglog(f_ch1, tf_meas,
           color=(130/255, 23/255, 112/255), lw=1.3,
-          label=r"Measured")
+          label=r"$\frac{\mathrm{ASD}(\delta\nu_{\mathrm{PD}_1} - \delta\nu_{\mathrm{PD}_2})}{\mathrm{ASD}(\delta\nu_{\mathrm{PD}_1})}$")
 
 # Expected transfer function
 ax.loglog(f_th, tf_th,
@@ -118,7 +121,7 @@ ax.legend(loc="upper left", frameon=True, fancybox=False)
 
 fig.subplots_adjust(left=0.13, bottom=0.13, right=0.97, top=0.95)
 
-out = "phasemeter_transfer_function.png"
+out = "phasemeter_transfer_function.svg"
 fig.savefig(out, dpi=300, bbox_inches="tight")
 print(f"Saved: {out}")
-plt.show()
+#plt.show()

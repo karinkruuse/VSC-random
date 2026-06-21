@@ -119,11 +119,20 @@ ax.set_xlim(-half_span/1e9, half_span/1e9)
 ax.set_ylim(-0.18, 1.18)
 ax.set_xlabel("Frequency offset from 281 THz (GHz)", fontsize=12)
 ax.set_yticks([])
-for spine in ['left', 'right', 'top']:
+for spine in ['left', 'right', 'top', 'bottom']:
     ax.spines[spine].set_visible(False)
-ax.spines['bottom'].set_linewidth(0.8)
 ax.tick_params(axis='x', labelsize=10)
 ax.grid(axis='x', linestyle=':', lw=0.4, alpha=0.35, color='gray', zorder=0)
+
+# Arrow on both ends of x-axis to suggest it continues
+arrowprops = dict(arrowstyle='->', color='black', lw=0.8,
+                  mutation_scale=10)
+ax.annotate('', xy=(1.01, 0), xycoords=('axes fraction', 'data'),
+            xytext=(0.99, 0), textcoords=('axes fraction', 'data'),
+            arrowprops=arrowprops)
+ax.annotate('', xy=(-0.01, 0), xycoords=('axes fraction', 'data'),
+            xytext=(0.01, 0), textcoords=('axes fraction', 'data'),
+            arrowprops=arrowprops)
 
 plt.savefig("cavity_resonances_slide.pdf",
             bbox_inches='tight', dpi=300)
