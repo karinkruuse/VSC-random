@@ -72,6 +72,8 @@ signals = [
     ("Photodetector 1", channels[2]["freq_dev"], (215/255, 27/255, 47/255),  1.4),
     ("Photodetector 2", channels[3]["freq_dev"], (41/255,  95/255, 36/255),  0.9),   # thinner – sits on top of red
     ("Mixed signal",    channels[4]["freq_dev"], (130/255, 23/255, 112/255), 1.4),
+    ("Photodetector 1 - Photodetector 2",    channels[2]["freq_dev"]-channels[2]["freq_dev"], (70/255, 70/255, 170/255), 1),
+    
 ]
 
 # ── 4. Welch ───────────────────────────────────────────────────────────────
