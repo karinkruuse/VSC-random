@@ -128,7 +128,7 @@ def tdi_cost(delay_s):
 
 
     # integrate PSD → total power
-    cost = np.trapz(psd[mask], f[mask])
+    cost = np.trapezoid(psd[mask], f[mask])
 
     return cost
 

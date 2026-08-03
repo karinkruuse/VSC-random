@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import detrend
@@ -6,7 +7,7 @@ from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
 filename      = 'DownstairsTest_20260423_170536'
-delay_s       = 3.999041
+delay_s       = 3.9990456803
 DDS_signal_nr = 2
 nr_of_channels = 4
 start_time    = 0 * 60 * 60   # seconds to crop from start
@@ -122,7 +123,7 @@ tj_dly_d    = detrend(tj_dly)
 tdi = (
     ch1_phase_d
     - ch3_phase_d
-    - ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
+    #- ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
 )
 
 if (False):
@@ -178,8 +179,27 @@ f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
 f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
 
-
 np.savetxt("baseline.csv", np.column_stack((f3, asd_tdi)), header='Frequency (Hz),ASD (cyc/sqrt(Hz))', delimiter=',', comments='')
+
+# ── 9b. RECOVER CLOCK NOISE ASD ───────────────────────────────────────────
+# tdi = clock(t) - clock(t - delay)  =>  |H(f)| = |1 - exp(-i2*pi*f*delay)| = 2|sin(pi*f*delay)|
+transfer_fn = 2 * np.abs(np.sin(np.pi * f3 * delay_s))
+
+# transfer function nulls (f = n/delay) blow up the division; clamp instead of
+# masking so there are no NaN gaps, and peaks near the nulls are capped at 1/floor
+transfer_fn_floor = 0.05
+transfer_fn_clamped = np.maximum(transfer_fn, transfer_fn_floor)
+
+asd_clock = asd_tdi / transfer_fn_clamped
+
+clock_asd_path = os.path.join(os.path.dirname(__file__), '..', 'clock_noise', 'measured_clock_asd.csv')
+np.savetxt(
+    clock_asd_path,
+    np.column_stack((f3, asd_clock)),
+    header='Frequency (Hz),ASD (cyc/sqrt(Hz))',
+    delimiter=',',
+    comments=''
+)
 
 # ── 10. ASD PLOT ──────────────────────────────────────────────────────────
 plt.figure(figsize=(8, 5))
@@ -187,6 +207,7 @@ plt.figure(figsize=(8, 5))
 plt.loglog(f3, asd_tdi, lw=1.5, label='Residual Noise')
 plt.loglog(f1, asd_ch1, lw=2, label='Delayed Signal (ch1)', alpha=0.8)
 plt.loglog(f2, asd_ch3, lw=1, label='Pure Signal (ch3)', alpha=0.7)
+plt.loglog(f3, asd_clock, lw=1.5, label='Clock Noise (recovered)', color='k')
 
 
 #plt.loglog(f0, asd_ch4, lw=1, label='ch4 phase')
