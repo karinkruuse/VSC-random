@@ -4,6 +4,40 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 ##############################################################################
+# STYLE (validated categorical palette -- see dataviz skill palette.md)
+##############################################################################
+
+surface       = "#fcfcfb"
+ink_primary   = "#0b0b0b"
+ink_secondary = "#52514e"
+ink_muted     = "#898781"
+gridline      = "#e1e0d9"
+baseline      = "#c3c2b7"
+
+color_extrapolated = "#d71b2f"   # (215, 27, 47)  red
+color_measured      = "#295f24"  # (41, 95, 36)   green
+color_anchor        = color_extrapolated         # datasheet points match the line
+color_requirement   = ink_primary                # black
+color_modulator     = "#821770"  # (130, 23, 112) magenta
+color_delayline     = "#2d13b4"  # (45, 19, 180)  blue
+color_pd_noise      = ink_secondary  # neutral, dotted -- another noise floor
+
+# noise-region washes: a plain gray ramp, kept separate from the four data colors
+region_colors = ["#f5f5f3", "#eaeae7", "#dfdfdc", "#d4d4d0", "#c9c9c5"]
+
+plt.rcParams.update({
+    "figure.facecolor": "none",
+    "axes.facecolor":   "none",
+    "savefig.facecolor": "none",
+    "text.color":        ink_primary,
+    "axes.labelcolor":   ink_secondary,
+    "axes.edgecolor":    baseline,
+    "xtick.color":       ink_secondary,
+    "ytick.color":       ink_secondary,
+    "font.family":       "sans-serif",
+})
+
+##############################################################################
 # USER INPUT
 ##############################################################################
 
@@ -97,33 +131,39 @@ ASD = np.sqrt(Sphi)
 fig, ax1 = plt.subplots(figsize=(11,6))
 
 ax1.set_xscale("log")
-ax1.plot(f, L, lw=2)
-ax1.scatter(f_data, L_data, color="red", zorder=5)
+ax1.plot(f, L, color=color_extrapolated, lw=2.2, label="Extrapolated (datasheet)")
+ax1.scatter(
+    f_data, L_data, color=color_anchor,
+    s=45, zorder=5, label="Datasheet points"
+)
 
 ax1.set_ylabel("L(f) [dBc/Hz]")
-ax1.grid(True, which="both")
+ax1.grid(True, which="both", color=gridline, lw=0.8)
+ax1.set_axisbelow(True)
+for spine in ("top", "right"):
+    ax1.spines[spine].set_visible(False)
 
 ##############################################################################
 # Noise-regime shading
 ##############################################################################
 
-# (f_low, f_high, label, fill color) -- fixed categorical order, low to high f
+# (f_low, f_high, label) -- gray bands, kept separate from the four data colors
+# (the "white phase floor" region, f_data[-1] to fmax, is dropped: it falls
+# entirely outside the 1e-4-1e4 Hz view since the datasheet's last point sits
+# right at the new upper edge)
 noise_regions = [
-    (fmin,       1e-2,       "Flicker\nfrequency (f⁻³)", "#2a78d6"),
-    (1e-2,       1e0,        "White\nfrequency (f⁻²)",   "#eb6834"),
-    (1e0,        f_data[0],  "Flicker\nphase (f⁻¹)",     "#1baf7a"),
-    (f_data[0],  f_data[-1], "Datasheet\ninterpolation", "#eda100"),
-    (f_data[-1], fmax,       "White phase\n(floor)",     "#e87ba4"),
+    (fmin,       1e-2,       "Flicker\nfrequency (f⁻³)"),
+    (1e-2,       1e0,        "White\nfrequency (f⁻²)"),
+    (1e0,        f_data[0],  "Flicker\nphase (f⁻¹)"),
+    (f_data[0],  f_data[-1], "Datasheet\ninterpolation"),
 ]
 
-label_ink = "#52514e"
-
-for f_lo, f_hi, label, color in noise_regions:
-    ax1.axvspan(f_lo, f_hi, color=color, alpha=0.12, zorder=0)
+for (f_lo, f_hi, label), color in zip(noise_regions, region_colors):
+    ax1.axvspan(f_lo, f_hi, color=color, zorder=0)
     ax1.text(
         np.sqrt(f_lo * f_hi), 0.97, label,
         transform=ax1.get_xaxis_transform(),
-        ha="center", va="top", fontsize=8, color=label_ink,
+        ha="center", va="top", fontsize=8, color=ink_secondary,
     )
 
 ##############################################################################
@@ -144,6 +184,9 @@ yl = ax1.get_ylim()
 ax3 = ax1.twinx()
 ax3.set_yscale("log")
 ax3.set_ylabel(r"Timing jitter ASD [fs/$\sqrt{\rm Hz}$]")
+for spine in ("top", "left"):
+    ax3.spines[spine].set_visible(False)
+ax3.spines["right"].set_color(baseline)
 
 ax3.set_ylim(
     rad_asd_to_jitter_fs(np.sqrt(2*10**(yl[0]/10)), f_carrier_datasheet),
@@ -152,7 +195,7 @@ ax3.set_ylim(
 
 ax3.plot(
     lisa_band, [lisa_timing_req_fs] * 2,
-    color="black", ls="--", lw=1.5,
+    color=color_requirement, ls="--", lw=1.5,
     label=f"LISA requirement ({lisa_displacement_req_m*1e12:.0f} pm/√Hz)"
 )
 
@@ -165,19 +208,76 @@ measured_path = os.path.join(os.path.dirname(__file__), 'measured_clock_asd.csv'
 if os.path.exists(measured_path):
     f_meas, asd_meas_cyc = np.loadtxt(measured_path, delimiter=',', skiprows=1, unpack=True)
     asd_meas_jitter_fs = rad_asd_to_jitter_fs(asd_meas_cyc * 2 * np.pi, f_carrier_measurement)
-    ax3.plot(f_meas, asd_meas_jitter_fs, color="green", lw=1.5, label="Measured (TDI-derived)")
+    ax3.plot(f_meas, asd_meas_jitter_fs, color=color_measured, lw=1.3, alpha=0.85, label="Measured (TDI-derived)")
 else:
     print(f"No measured clock ASD found at {measured_path}, skipping overlay")
 
-ax3.legend(loc="lower right")
+##############################################################################
+# Modulator noise & delay-line intrinsic noise (measured noises/, cyc/sqrt(Hz)
+# ASD or cyc^2/Hz PSD, both phase quantities -> fs/sqrt(Hz) via the 10 MHz carrier)
+##############################################################################
+
+measured_noises_dir = os.path.join(os.path.dirname(__file__), '..', 'measured noises')
+
+delayline_path = os.path.join(measured_noises_dir, 'baseline.csv')
+if os.path.exists(delayline_path):
+    f_dl, asd_dl_cyc = np.loadtxt(delayline_path, delimiter=',', skiprows=1, unpack=True)
+    keep = f_dl > 0   # drop the DC bin, log axis can't show f=0
+    dl_jitter_fs = rad_asd_to_jitter_fs(asd_dl_cyc[keep] * 2 * np.pi, f_carrier_datasheet)
+    ax3.plot(f_dl[keep], dl_jitter_fs, color=color_delayline, lw=1, alpha=0.85, label="Delay line intrinsic noise")
+else:
+    print(f"No delay line noise found at {delayline_path}, skipping overlay")
+
+# note: this file's header says "PSD(Hz^2/Hz)" but the generating script
+# (modulation_noise/proper_3signal.py) computes it from a phase quantity in
+# cycles (theta_m = 0.5*(USB-LSB) phase) -- the header units are mislabeled,
+# the values are actually a phase PSD in cyc^2/Hz
+modulator_path = os.path.join(measured_noises_dir, 'modulator_psd.csv')
+if os.path.exists(modulator_path):
+    f_mod, psd_mod_cyc2 = np.loadtxt(modulator_path, delimiter=',', skiprows=1, unpack=True)
+    keep = f_mod > 0
+    asd_mod_cyc = np.sqrt(psd_mod_cyc2[keep])
+    mod_jitter_fs = rad_asd_to_jitter_fs(asd_mod_cyc * 2 * np.pi, f_carrier_datasheet)
+    ax3.plot(f_mod[keep], mod_jitter_fs, color=color_modulator, lw=1, alpha=0.85, label="Modulator noise")
+else:
+    print(f"No modulator noise found at {modulator_path}, skipping overlay")
 
 ##############################################################################
+# Newport PD noise floor (total shot+Johnson+RIN, flat/white -> fs/sqrt(Hz))
+##############################################################################
+
+pd_noise_path = os.path.join(os.path.dirname(__file__), 'newport_pd_noise_floor.csv')
+if os.path.exists(pd_noise_path):
+    pd_noise_rad = np.loadtxt(pd_noise_path, delimiter=',', skiprows=1)
+    pd_noise_fs = rad_asd_to_jitter_fs(float(pd_noise_rad), f_carrier_datasheet)
+    ax3.plot(
+        (fmin, 1e4), [pd_noise_fs] * 2,
+        color=color_pd_noise, ls=":", lw=1.5,
+        label="Newport PD noise floor (1 mW/beam)"
+    )
+else:
+    print(f"No PD noise floor found at {pd_noise_path}, skipping overlay")
+
+handles1, labels1 = ax1.get_legend_handles_labels()
+handles3, labels3 = ax3.get_legend_handles_labels()
+legend = ax3.legend(
+    handles1 + handles3, labels1 + labels3,
+    loc="upper center", bbox_to_anchor=(0.5, -0.18), ncol=4,
+    frameon=True, facecolor=surface,
+    edgecolor=baseline, labelcolor=ink_primary
+)
+legend.get_frame().set_linewidth(0.8)
+
+##############################################################################
+
+ax1.set_xlim(1e-4, 1e4)
 
 ax1.set_xlabel("Fourier frequency [Hz]")
 plt.title(
     "Oscillator Phase Noise / Timing Jitter\n"
-    f"(datasheet @ {f_carrier_datasheet/1e6:.0f} MHz, measured @ {f_carrier_measurement/1e6:.0f} MHz)"
+    f"(datasheet @ {f_carrier_datasheet/1e6:.0f} MHz, measured @ {f_carrier_measurement/1e6:.0f} MHz)",
+    color=ink_primary
 )
 
 plt.tight_layout()
-plt.savefig("oscillator_phase_noise.png", dpi=300)
+plt.savefig("oscillator_phase_noise.png", dpi=300, transparent=True, bbox_inches="tight")
