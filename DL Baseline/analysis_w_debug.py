@@ -185,12 +185,18 @@ np.savetxt("baseline.csv", np.column_stack((f3, asd_tdi)), header='Frequency (Hz
 # tdi = clock(t) - clock(t - delay)  =>  |H(f)| = |1 - exp(-i2*pi*f*delay)| = 2|sin(pi*f*delay)|
 transfer_fn = 2 * np.abs(np.sin(np.pi * f3 * delay_s))
 
-# transfer function nulls (f = n/delay) blow up the division; clamp instead of
-# masking so there are no NaN gaps, and peaks near the nulls are capped at 1/floor
-transfer_fn_floor = 0.05
-transfer_fn_clamped = np.maximum(transfer_fn, transfer_fn_floor)
-
-asd_clock = asd_tdi / transfer_fn_clamped
+# near its *interior* nulls (f = n/delay, n=1,2,3,...) this blows up to spikes
+# that are a division artifact, not real signal, so mask those points out
+# (purely cosmetic -- gaps instead of spikes). The n=0 null sits at f=0 itself,
+# where the transfer function just rises smoothly from zero rather than dipping
+# and recovering -- a global "< 0.15*max" threshold catches that whole low-f
+# rise too and wipes out the low-frequency band, so restrict the mask to bins
+# nearest an n>=1 null only, leaving the low-frequency data untouched
+with np.errstate(divide="ignore", invalid="ignore"):
+    asd_clock = asd_tdi / transfer_fn
+nearest_null_order = np.round(f3 * delay_s)
+near_interior_null = (nearest_null_order >= 1) & (transfer_fn < 0.15 * transfer_fn.max())
+asd_clock[near_interior_null] = np.nan
 
 clock_asd_path = os.path.join(os.path.dirname(__file__), '..', 'clock_noise', 'measured_clock_asd.csv')
 np.savetxt(
