@@ -4,7 +4,7 @@ import scipy.special as sp
 from scipy.constants import elementary_charge as e
 
 # ── HBPR-100M-60K-IN-FC parameters (from datasheet) ──────────────────────────
-Res      = 0.65                  # responsivity [A/W] @ 1550 nm
+Res      = 0.65                  # responsivity [A/W] @ 1064 nm
 NEP      = 6e-12               # NEP [W/√Hz] @ 100 MHz (worst case in band)
 CMRR_dB  = 55                    # common mode rejection ratio [dB]
 CMRR     = 10**(CMRR_dB / 20)   # linear CMRR (~562)

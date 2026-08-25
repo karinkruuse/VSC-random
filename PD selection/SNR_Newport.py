@@ -13,7 +13,7 @@ P_m = P_tot * gamma / (1 + gamma)
 P_r = P_tot / (1 + gamma)
 
 
-P_m   = np.arange(10e-6, 0.02, 10e-6)  # power per beam [W], equal beams P_m = P_r
+P_m   = np.arange(10e-6, 10e-3, 10e-6)  # power per beam [W], equal beams P_m = P_r; capped at 10 mW/beam (30 mW abs-max total)
 P_r   = P_m
 
 

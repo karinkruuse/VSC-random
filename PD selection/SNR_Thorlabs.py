@@ -4,6 +4,9 @@ import scipy.special as sp
 from scipy.constants import elementary_charge as e
 
 # ── Thorlabs PDB425C parameters (from datasheet) ──────────────────────────────
+# TODO: part number mismatch — this uses PDB425C, but PDB415C was referenced
+# elsewhere; the two differ in bandwidth/NEP. Confirm the correct part before
+# trusting the NEP/CMRR/sat numbers below.
 Res      = 0.65                   # responsivity [A/W] @ peak (InGaAs)
 NEP      = 5.2e-12               # NEP [W/√Hz], DC to 75 MHz
 CMRR_dB  = 35                    # CMRR minimum [dB]

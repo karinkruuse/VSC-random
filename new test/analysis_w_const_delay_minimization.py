@@ -1,0 +1,186 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import detrend, welch
+from scipy.optimize import minimize_scalar
+from pytdi.dsp import timeshift
+
+# ── CONFIG ────────────────────────────────────────────────────────────────
+filename = 'synced_phasemeter_data'
+delay_s_init = 4.3
+fmin = 1e-4
+fmax = 1
+search_width = 0.1
+
+# channel roles within data/synced_phasemeter_data.npz (see sync_phasemeters.py)
+UNDELAYED_KEY = 'carrier'          # direct/undelayed carrier
+DELAYED_KEY   = 'delayer_carrier'  # delayed carrier -- gets time-shifted
+PT_KEY        = 'delayer_carrier_b'  # pilot tone, co-located with the delayed channel
+
+# ── 1. LOAD ───────────────────────────────────────────────────────────────
+data = np.load(f'data/{filename}.npz')
+
+def col(name):
+    return data[name].copy()
+
+t  = col('time_s')
+fs = 1.0 / np.median(np.diff(t))
+
+start_time = 0 * 60 * 60
+end_time   = 0 * 60 * 60
+
+print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s or {(t[-1]-t[0])/3600:.2f} hours")
+
+# channel 1 = undelayed/direct carrier, channel 3 = delayed carrier, channel
+# 'pt' = pilot tone for jitter (kept as 1/3/pt to match the rest of the
+# pipeline below, which was written for a 4-channel Moku layout)
+channels = {
+    1:    {'phase': col(UNDELAYED_KEY), 'freq': col(f'{UNDELAYED_KEY}_freq')},
+    3:    {'phase': col(DELAYED_KEY),   'freq': col(f'{DELAYED_KEY}_freq')},
+    'pt': {'phase': col(PT_KEY),        'freq': col(f'{PT_KEY}_freq')},
+}
+
+# ── 2. INITIAL CROPPING ───────────────────────────────────────────────────
+def crop_time(t, data_dict, t_start=0, t_end=0):
+    i0 = np.searchsorted(t, t[0] + t_start)
+    i1 = np.searchsorted(t, t[-1] - t_end)
+
+    if i0 >= i1:
+        raise ValueError("Cropping removed entire dataset")
+
+    sl = slice(i0, i1)
+    t_new = t[sl]
+
+    out = {}
+    for ch in data_dict:
+        out[ch] = {k: v[sl] for k, v in data_dict[ch].items()}
+
+    return t_new, out
+
+t, channels = crop_time(t, channels, start_time, end_time)
+
+# ── 3. DERIVED SIGNAL ─────────────────────────────────────────────────────
+
+print(f"Computing jitter from pilot tone '{PT_KEY}'")
+t_jitter = channels['pt']['phase'] / channels['pt']['freq']
+
+# ── 4. GLOBAL FIXES (CRITICAL) ────────────────────────────────────────────
+
+# ---- FIXED PSD SETTINGS (no dependency on delay!)
+nperseg_fixed = int(fs / fmin)
+
+# ---- FIXED CROPPING (use worst-case delay)
+max_delay = delay_s_init + search_width
+max_delay_samples = max_delay * fs
+n_crop_fixed = int(np.ceil(abs(max_delay_samples))) + 3
+
+# ── 5. CORE PIPELINE ──────────────────────────────────────────────────────
+def compute_tdi(delay_s):
+
+    delay_samples = delay_s * fs
+
+    # --- delay
+    # delayer_carrier lags carrier by delay_s, so it needs to be *advanced*
+    # (positive shift) to land back on carrier's timebase -- NOT delayed further.
+    ch3_phase_dly = timeshift(channels[3]['phase'], delay_samples)
+    ch3_freq_dly  = timeshift(channels[3]['freq'],  delay_samples)
+    tj_dly        = timeshift(t_jitter,             delay_samples)
+
+    # --- FIXED cropping
+    sl = slice(n_crop_fixed, -n_crop_fixed)
+
+    ch1_phase = channels[1]['phase'][sl]
+    ch1_freq  = channels[1]['freq'][sl]
+
+    ch3_phase_dly = ch3_phase_dly[sl]
+    ch3_freq_dly  = ch3_freq_dly[sl]
+
+    tj     = t_jitter[sl]
+    tj_dly = tj_dly[sl]
+
+    # --- better detrending (important for low-f sanity)
+    ch1_phase_d = detrend(ch1_phase, type='linear')
+    ch3_phase_d = detrend(ch3_phase_dly, type='linear')
+    tj_d        = detrend(tj, type='linear')
+    tj_dly_d    = detrend(tj_dly, type='linear')
+
+    # --- TDI
+    tdi = (
+        ch1_phase_d
+        - ch3_phase_d
+        - ch3_freq_dly * (tj_d - tj_dly_d)
+    )
+
+    return tdi
+
+# ── 6. COST FUNCTION ──────────────────────────────────────────────────────
+def tdi_cost(delay_s):
+
+    tdi = compute_tdi(delay_s)
+
+    # PSD
+    nperseg = min(int(fs / fmin), len(tdi))
+    f, psd = welch(tdi, fs=fs, nperseg=nperseg, detrend='constant')
+
+
+
+    # frequency band selection
+    mask = (f >= fmin)
+    if fmax is not None:
+        mask &= (f <= fmax)
+
+
+    # integrate PSD → total power
+    cost = np.trapezoid(psd[mask], f[mask])
+
+    return cost
+
+# ── 7. OPTIMIZATION ───────────────────────────────────────────────────────
+result = minimize_scalar(
+    tdi_cost,
+    bounds=(delay_s_init - search_width, delay_s_init + search_width),
+    method='bounded',
+    options={'xatol': 1e-9, 'maxiter': 500}
+)
+
+delay_opt = result.x
+
+print(f"\nInitial delay:  {delay_s_init:.10f} s")
+print(f"Optimal delay:  {delay_opt:.10f} s")
+
+# ── 8. COST LANDSCAPE (TURN THIS ON IF CONFUSED) ───────────────────────────
+if False:
+    delays = np.linspace(delay_s_init - search_width, delay_s_init + search_width, 40)
+    costs = [tdi_cost(d) for d in delays]
+
+    plt.figure()
+    plt.plot(delays, costs, '-o', ms=3)
+    plt.axvline(delay_opt, color='r', label='optimum')
+    plt.xlabel('Delay (s)')
+    plt.ylabel('Integrated PSD')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f'plots/{filename}_delay_scan.png', dpi=200)
+
+# ── 9. FINAL ASD ──────────────────────────────────────────────────────────
+def compute_asd(x, nperseg=nperseg_fixed):
+    f, psd = welch(x, fs=fs, nperseg=nperseg_fixed, detrend='constant')
+    return f, np.sqrt(psd)
+
+tdi_opt  = compute_tdi(delay_opt)
+tdi_init = compute_tdi(delay_s_init)
+
+f, asd_opt  = compute_asd(tdi_opt, nperseg=int(fs / 1e-3))
+_, asd_init = compute_asd(tdi_init, nperseg=int(fs / 1e-3))
+
+plt.figure(figsize=(8,5))
+plt.loglog(f, asd_init, label=f'init = {delay_s_init:.10f} s', alpha=0.7)
+plt.loglog(f, asd_opt,  label=f'opt  = {delay_opt:.10f} s', lw=1.5)
+
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('ASD (cyc / √Hz)')
+plt.title('TDI delay optimization (stable)')
+plt.grid(True, which='both', ls='--', alpha=0.5)
+plt.legend()
+
+plt.tight_layout()
+plt.savefig(f'plots/{filename}_opt_const_delay.png', dpi=300)

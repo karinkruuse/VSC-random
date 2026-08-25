@@ -1,18 +1,21 @@
 """
-Sync the 4 Moku phasemeter files onto a common timebase, using Input B (the
-signal common to all 4 instruments) to find the time offset of each file,
-then interpolating everything onto one shared time grid.
+Sync the 4 Moku phasemeter files onto a common timebase, using Input A (the
+carrier signal common to all 4 instruments) to find the time offset of each
+file, then interpolating everything onto one shared time grid.
 
-Output: data/synced_phasemeter_data.npz containing, for each slot (keyed by
-its header label, e.g. "carrier", "delayer_sb"):
+Each file's header carries one comment line "LABEL_A, LABEL_B" (e.g.
+"carrier, USB" or "carrier, LSB") naming the physical signal on Input A and
+Input B respectively -- both labels come from that line, not from the
+"Input A (on), ..."/"Input B (on), ..." set-up lines above it.
+
+Output: data/synced_phasemeter_data.npz containing every Input A and Input B
+stream from all 4 slots (keyed by its comment-line label, numbered on
+collision -- e.g. 4x "carrier"/"carrier_1"/"carrier_2"/"carrier_3", 2x
+"USB"/"USB_1", 2x "LSB"/"LSB_1" -- so nothing is discarded even though only
+the A streams are used below to find the sync offsets):
     time_s              -- common time axis (s)
-    <label>             -- Input A phase (cyc), detrended
-    <label>_b           -- Input B phase (cyc), detrended (same signal in
-                            all 4 slots -- kept per-slot so any two slots'
-                            B channels can be directly cross-correlated to
-                            check/refine their relative clock sync)
-    <label>_freq        -- Input A frequency (Hz), raw
-    <label>_b_freq      -- Input B frequency (Hz), raw
+    <label>             -- phase (cyc), detrended
+    <label>_freq        -- frequency (Hz), raw
 """
 import glob
 import json
@@ -25,7 +28,7 @@ from scipy.interpolate import interp1d
 from scipy.optimize import minimize_scalar
 from scipy.signal import detrend, welch
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data/rb_clocked")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data/mod_1input")
 OUT_NPZ = os.path.join(DATA_DIR, "synced_phasemeter_data.npz")
 OUT_PLOT = os.path.join(os.path.dirname(__file__), "synced_overview.png")
 OFFSET_CACHE = os.path.join(DATA_DIR, "sync_offsets_cache.json")
@@ -38,37 +41,54 @@ SYNC_WINDOW_S = 100.0  # only use this much data to find the offset -- much fast
 # and the offset is a single scalar so it doesn't need the full record to pin down
 
 
+# the header's label line is a bare "LABEL_A, LABEL_B" comment -- distinguish
+# it from the other "# % ..." lines (Moku:Pro Phasemeter, Input A/B (on)...,
+# Acquisition rate, Advanced settings, Output A/B..., Internal clock, Acquired
+# ..., Time (s), ...) by excluding their known prefixes. (A regex lookahead
+# for this was tried first, but `\s*` backtracking off the space it had
+# matched let it slip past the excluded prefixes -- plain string checks here
+# instead.)
+_LABEL_LINE_EXCLUDE = ("Moku:Pro", "Input", "Output", "Acquisition",
+                       "Advanced", "Internal", "Acquired", "Time")
+_TWO_FIELD_RE = re.compile(r"([^,]+),\s*([^,]+)$")
+
+
 def parse_header(txt_path):
-    label, rate = os.path.basename(txt_path), None
+    label_a, label_b, rate = None, None, None
     with open(txt_path) as f:
         for line in f:
-            m = re.match(r"#\s*%\s*input\s*\d*,\s*(.+)", line, re.IGNORECASE)
-            if m:
-                # only the first comma-separated field is the label -- ignore
-                # any trailing annotations like ", board free running"
-                label = m.group(1).split(",")[0].strip()
-            m = re.match(r"#\s*%\s*Acquisition rate:\s*([\d.eE+-]+)", line)
+            content = line.strip().lstrip("#").strip()
+            if content.startswith("%"):
+                content = content[1:].strip()
+            if not content.startswith(_LABEL_LINE_EXCLUDE):
+                m = _TWO_FIELD_RE.match(content)
+                if m:
+                    label_a, label_b = m.group(1).strip(), m.group(2).strip()
+            m = re.match(r"Acquisition rate:\s*([\d.eE+-]+)", content)
             if m:
                 rate = float(m.group(1))
-    return label, rate
+    if label_a is None or label_b is None:
+        raise ValueError(f"{txt_path}: no 'label_a, label_b' comment line found")
+    return label_a, label_b, rate
 
 
 def sanitize_key(label, used):
-    key = re.sub(r"\s+", "_", label.strip().lower())
-    key = re.sub(r"[^a-z0-9_]", "", key)
-    if key in used:
-        key = f"{key}_{used[key]}"
-    used[label] = used.get(label, 0) + 1
+    base = re.sub(r"\s+", "_", label.strip().lower())
+    base = re.sub(r"[^a-z0-9_]", "", base)
+    n = used.get(base, 0)
+    key = base if n == 0 else f"{base}_{n}"
+    used[base] = n + 1
     return key
 
 
 def load_slot(npy_path):
     txt_path = npy_path.replace(".npy", ".txt")
-    label, rate = parse_header(txt_path)
+    label_a, label_b, rate = parse_header(txt_path)
     data = np.load(npy_path)
     return {
         "path": npy_path,
-        "label": label,
+        "label_a": label_a,
+        "label_b": label_b,
         "rate": rate,
         "t": data["Time (s)"],
         "a_phase": data["Input A Phase (cyc)"],
@@ -110,22 +130,22 @@ def estimate_offset(ref, other):
     at reference-frame time `u + offset`.
 
     Same spectral (PSD-minimization) method used for the physical delay
-    estimate: for a trial offset, shift other's B channel and form the
-    residual against ref's B channel. B carries no physical delay -- it's
-    the same signal in every slot -- so the true offset is the one where the
-    residual PSD collapses to near-nothing (a much sharper, more reliable
-    signal than a plain cross-correlation, which the large non-linear shared
-    drift between slots can easily swamp).
+    estimate: for a trial offset, shift other's A channel and form the
+    residual against ref's A channel. A carries no physical delay -- it's
+    the same carrier signal in every slot -- so the true offset is the one
+    where the residual PSD collapses to near-nothing (a much sharper, more
+    reliable signal than a plain cross-correlation, which the large
+    non-linear shared drift between slots can easily swamp).
     """
     dt = 1.0 / ref["rate"]
     fs = ref["rate"]
 
-    other_b_on_ref_t = interp1d(other["t"], other["b_phase"], kind="cubic",
+    other_a_on_ref_t = interp1d(other["t"], other["a_phase"], kind="cubic",
                                  bounds_error=False, fill_value=np.nan)(ref["t"])
-    mask = ~np.isnan(other_b_on_ref_t)
+    mask = ~np.isnan(other_a_on_ref_t)
     t = ref["t"][mask]
-    ref_sig = ref["b_phase"][mask]
-    other_sig = other_b_on_ref_t[mask]
+    ref_sig = ref["a_phase"][mask]
+    other_sig = other_a_on_ref_t[mask]
 
     # only need a short window to pin down a single scalar offset -- using
     # the full multi-thousand-second record here is needlessly slow, since
@@ -208,34 +228,36 @@ def main():
     dt = 1.0 / ref["rate"]
     common_t = np.arange(t_start, t_end, dt)
 
-    # save each slot's own Input B phase too (not just slot 1's) -- B carries
-    # no physical delay, so a downstream script can cross-correlate any two
-    # slots' B channels directly to check/refine their relative clock sync,
-    # instead of only having it available relative to slot 1.
-    # Frequency channels are saved too (raw, not detrended) so a downstream
-    # script can do clock-noise correction: jitter = phase_b / freq_b [s],
-    # correction = freq_a * jitter [cyc].
+    # every Input A and Input B stream from every slot is kept, keyed by its
+    # comment-line label (numbered on collision -- e.g. carrier appears 4x,
+    # USB and LSB 2x each). Frequency channels are saved too (raw, not
+    # detrended) so a downstream script can do clock-noise correction:
+    # jitter = phase / freq [s], correction = freq_other * jitter [cyc].
     used_keys = {}
     out = {"time_s": common_t}
-    slot_keys = []
+    stream_keys = []
     for s in slots:
         a_phase_interp = interp1d(s["t_ref_frame"], s["a_phase"], kind="cubic")
         b_phase_interp = interp1d(s["t_ref_frame"], s["b_phase"], kind="cubic")
         a_freq_interp = interp1d(s["t_ref_frame"], s["a_freq"], kind="cubic")
         b_freq_interp = interp1d(s["t_ref_frame"], s["b_freq"], kind="cubic")
-        key = sanitize_key(s["label"], used_keys)
-        out[key] = a_phase_interp(common_t)
-        out[f"{key}_b"] = b_phase_interp(common_t)
-        out[f"{key}_freq"] = a_freq_interp(common_t)
-        out[f"{key}_b_freq"] = b_freq_interp(common_t)
-        slot_keys.append(key)
+
+        key_a = sanitize_key(s["label_a"], used_keys)
+        key_b = sanitize_key(s["label_b"], used_keys)
+
+        out[key_a] = a_phase_interp(common_t)
+        out[f"{key_a}_freq"] = a_freq_interp(common_t)
+        out[key_b] = b_phase_interp(common_t)
+        out[f"{key_b}_freq"] = b_freq_interp(common_t)
+
+        s["key_a"], s["key_b"] = key_a, key_b
+        stream_keys += [key_a, key_b]
 
     # the set frequency never exactly matches the real signal frequency, so
     # each phase channel has a linear ramp on top of the interesting signal
     # -- remove it with a best-fit line
     print()
-    all_keys = slot_keys + [f"{k}_b" for k in slot_keys]
-    for key in all_keys:
+    for key in stream_keys:
         out[key], slope = detrend_linear(common_t, out[key])
         print(f"{key}: removed linear ramp of {slope:.6f} cyc/s ({slope:.6f} Hz)")
 
@@ -246,33 +268,35 @@ def main():
     # --- sync-check plot ---
     fig, (ax_a, ax_b, ax_zoom) = plt.subplots(3, 1, figsize=(11, 10))
 
-    for s, key in zip(slots, slot_keys):
-        ax_a.plot(common_t, out[key],
-                   label=f"{os.path.basename(s['path'])} ({s['label']})")
-    ax_a.set_ylabel("Input A phase (cyc), detrended")
-    ax_a.set_title("Channel A -- all 4 slots, synced + linear ramp removed (as saved)")
+    for s in slots:
+        ax_a.plot(common_t, out[s["key_a"]],
+                   label=f"{os.path.basename(s['path'])} ({s['key_a']})")
+        ax_a.plot(common_t, out[s["key_b"]], ls="--",
+                   label=f"{os.path.basename(s['path'])} ({s['key_b']})")
+    ax_a.set_ylabel("Phase (cyc), detrended")
+    ax_a.set_title("All synced data streams -- 4x carrier, 2x USB, 2x LSB (as saved)")
     ax_a.legend(fontsize=8)
 
-    # channel B has an arbitrary per-instrument DC phase offset, so remove
+    # channel A has an arbitrary per-instrument DC phase offset, so remove
     # each slot's mean before overlaying -- if sync worked these should
     # overlap tightly over the *entire* duration, not just near t=0
     for s in slots:
-        b_on_common = np.interp(common_t, s["t_ref_frame"], s["b_phase"])
-        ax_b.plot(common_t, b_on_common - b_on_common.mean(),
-                   label=f"{os.path.basename(s['path'])} ({s['label']})")
-    ax_b.set_ylabel("Input B phase (cyc), mean-removed")
-    ax_b.set_title("Channel B (sync signal), full duration, DC offset removed per slot")
+        a_on_common = np.interp(common_t, s["t_ref_frame"], s["a_phase"])
+        ax_b.plot(common_t, a_on_common - a_on_common.mean(),
+                   label=f"{os.path.basename(s['path'])} ({s['label_a']})")
+    ax_b.set_ylabel("Input A phase (cyc), mean-removed")
+    ax_b.set_title("Channel A (sync signal), full duration, DC offset removed per slot")
     ax_b.legend(fontsize=8)
 
     mid = common_t[0] + 0.5 * (common_t[-1] - common_t[0])
     zoom_mask = (common_t >= mid) & (common_t <= mid + 20)
     for s in slots:
-        b_on_common = np.interp(common_t[zoom_mask], s["t_ref_frame"], s["b_phase"])
-        ax_zoom.plot(common_t[zoom_mask], b_on_common - b_on_common.mean(),
-                     label=f"{os.path.basename(s['path'])} ({s['label']})")
-    ax_zoom.set_ylabel("Input B phase (cyc), mean-removed")
+        a_on_common = np.interp(common_t[zoom_mask], s["t_ref_frame"], s["a_phase"])
+        ax_zoom.plot(common_t[zoom_mask], a_on_common - a_on_common.mean(),
+                     label=f"{os.path.basename(s['path'])} ({s['label_a']})")
+    ax_zoom.set_ylabel("Input A phase (cyc), mean-removed")
     ax_zoom.set_xlabel("Common time (s)")
-    ax_zoom.set_title("Channel B, 20 s zoom mid-record -- fine structure should overlap if sync worked")
+    ax_zoom.set_title("Channel A, 20 s zoom mid-record -- fine structure should overlap if sync worked")
     ax_zoom.legend(fontsize=8)
 
     fig.tight_layout()
