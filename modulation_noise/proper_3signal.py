@@ -100,7 +100,7 @@ print("Saved:", out_ts)
 # -----------------------
 # PSD helper (same style as yours)
 # -----------------------
-def psd(x, fs, seg_s=16*2048):
+def psd(x, fs, seg_s=8*2048):
     nperseg = int(seg_s * fs)
     nperseg = max(256, min(nperseg, len(x)))
     f, Pxx = welch(
@@ -154,6 +154,39 @@ ffU, PffU = psd(fU_dt_Hz, fs)
 df_UL = fU_dt_Hz - fL_dt_Hz
 ffd, Pffd = psd(df_UL, fs)
 #np.savetxt("modulator_psd.csv", np.column_stack((fM, PM)), header="Frequency(Hz),PSD(Hz^2/Hz)", delimiter=",")
+
+# -----------------------
+# ratios between the phase-difference ASDs
+# theta_m = 0.5*(USB-LSB) is the modulator phase noise estimator; compare it
+# (not the un-halved USB-LSB) against each single sideband-vs-carrier term,
+# and compare those two single terms against each other.
+# (fUC, fCL, fM share the same frequency grid since they use the same fs/nperseg)
+# -----------------------
+ASD_UC = np.sqrt(PUC)
+ASD_CL = np.sqrt(PCL)
+ASD_M  = np.sqrt(PM)
+
+ratio_M_CL  = ASD_M / ASD_CL    # theta_m / (Carrier-LSB)
+ratio_M_UC  = ASD_M / ASD_UC    # theta_m / (USB-Carrier)
+ratio_UC_CL = ASD_UC / ASD_CL   # (USB-Carrier) / (Carrier-LSB)
+
+print("Median ASD ratio theta_m/(Carrier-LSB)        = %.3f" % np.median(ratio_M_CL))
+print("Median ASD ratio theta_m/(USB-Carrier)         = %.3f" % np.median(ratio_M_UC))
+print("Median ASD ratio (USB-Carrier)/(Carrier-LSB)  = %.3f" % np.median(ratio_UC_CL))
+
+out_ratio_summary = DATA.with_name(stem + "_asd_phase_ratio_summary.txt")
+out_ratio_summary.write_text(
+    "\n".join([
+        f"Source file: {DATA.name}",
+        "",
+        "Ratio of phase-difference ASDs (median / mean over Fourier frequency)",
+        f"theta_m/(Carrier-LSB):       median={np.median(ratio_M_CL):.4f}  mean={np.mean(ratio_M_CL):.4f}",
+        f"theta_m/(USB-Carrier):       median={np.median(ratio_M_UC):.4f}  mean={np.mean(ratio_M_UC):.4f}",
+        f"(USB-Carrier)/(Carrier-LSB): median={np.median(ratio_UC_CL):.4f}  mean={np.mean(ratio_UC_CL):.4f}",
+    ]) + "\n",
+    encoding="utf-8",
+)
+print("Saved:", out_ratio_summary)
 # -----------------------
 # outputs
 # -----------------------
@@ -198,6 +231,22 @@ plt.legend()
 plt.tight_layout()
 plt.savefig(out_asd_phase, dpi=400)
 plt.close()
+
+# Ratios between the phase-difference ASDs (theta_m, Carrier-LSB, USB-Carrier)
+out_asd_phase_ratio = DATA.with_name(stem + "_asd_phase_ratio.png")
+plt.figure()
+plt.semilogx(fM, ratio_M_CL, label=r"$\theta_m$ / (Carrier-LSB)", color="tab:orange")
+plt.semilogx(fM, ratio_M_UC, label=r"$\theta_m$ / (USB-Carrier)", color="tab:blue")
+plt.semilogx(fUC, ratio_UC_CL, label="(USB-Carrier) / (Carrier-LSB)", color="tab:gray", alpha=0.7)
+plt.axhline(1.0, linestyle=":", color="k", linewidth=1, alpha=0.5)
+plt.xlabel("Fourier frequency (Hz)")
+plt.ylabel("ASD ratio")
+plt.grid(True, which="both", alpha=0.3)
+plt.legend()
+plt.tight_layout()
+plt.savefig(out_asd_phase_ratio, dpi=200)
+plt.close()
+print("Saved:", out_asd_phase_ratio)
 
 # Frequency PSD (Hz^2/Hz)
 plt.figure()

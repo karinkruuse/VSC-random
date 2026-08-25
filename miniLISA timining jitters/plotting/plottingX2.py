@@ -17,8 +17,8 @@ TDI_NAME       = 'X2'       # 'X1' | 'alpha1' | 'X2'
 SHOW_CORRECTED = True       # also compute and overlay clock-corrected version
 
 # Data files (set to None to use filler models)
-MODULATOR_PSD_FILE = 'modulator_psd.csv'
-BASELINE_ASD_FILE  = 'baseline.csv'
+MODULATOR_PSD_FILE = '../../measured noises/modulator_psd.csv'
+BASELINE_ASD_FILE  = '../../measured noises/baseline.csv'
 
 # ── Physical parameters ───────────────────────────────────────────────────────
 c            = 299792458.0
@@ -31,9 +31,9 @@ L            = 2.5e9 / c
 dL = 5e-8   # common value used for all six links when arms are symmetric
 
 # ── Heterodyne & modulation frequencies [Hz] ─────────────────────────────────
-nu1  = 15.0e6;  nu2  =  6.9e6;  nu3  = 13.6e6
-mod_order = 7
-num1 =  2.4*10**mod_order;  num2 =  2.4*10**mod_order;  num3 =  2.4*10**mod_order
+nu1  = 15.0e6;  nu2  =  10.9e6;  nu3  = 21.6e6
+mod_order = 6
+num1 =  2000*10**mod_order;  num2 =  2000*10**mod_order;  num3 =  2000*10**mod_order
 
 # ══════════════════════════════════════════════════════════════════════════════
 # IMPORTS
@@ -566,6 +566,42 @@ else:
         'divide_2pi': noise_config[noise_list[0]]['divide_2pi'],
     }
 
+
+plt.rcParams.update({
+    "font.family"        : "sans-serif",
+    "font.sans-serif"    : ["Helvetica", "Arial", "DejaVu Sans"],
+    "mathtext.fontset"   : "custom",
+    "mathtext.rm"        : "Helvetica",
+    "mathtext.it"        : "Helvetica:italic",
+    "mathtext.bf"        : "Helvetica:bold",
+    "axes.spines.top"    : True,
+    "axes.spines.right"  : True,
+    "axes.linewidth"     : 0.8,
+    "xtick.direction"    : "in",
+    "ytick.direction"    : "in",
+    "xtick.major.size"   : 4,
+    "ytick.major.size"   : 4,
+    "xtick.minor.size"   : 2.5,
+    "ytick.minor.size"   : 2.5,
+    "xtick.major.width"  : 0.8,
+    "ytick.major.width"  : 0.8,
+    "xtick.labelsize"    : 13,
+    "ytick.labelsize"    : 13,
+    "axes.labelsize"     : 13,
+    "legend.fontsize"    : 10,
+    "legend.framealpha"  : 0.92,
+    "legend.edgecolor"   : "#cccccc",
+    "legend.handlelength": 2.0,
+    "figure.dpi"         : 150,
+})
+
+
+color_extrapolated = "#d71b2f"   # (215, 27, 47)  red
+color_measured     = "#295f24"   # (41, 95, 36)   green
+color_modulator    = "#821770"   # (130, 23, 112) magenta
+color_delayline    = "#2d13b4"   # (45, 19, 180)  blue
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # PLOT
 # ══════════════════════════════════════════════════════════════════════════════
@@ -579,25 +615,26 @@ for ax, (key_src, key_tot, alloc, ylabel) in zip(axes, [
     ('srcs_freq',  'total_freq',  asd_alloc_freq,  cfg['ylabel_f']),
     ('srcs_phase', 'total_phase', asd_alloc_phase, cfg['ylabel_p']),
 ]):
-    ax.loglog(freqs, res_unc[key_tot], lw=2.5, color='k',
-              label=f'{TDI_NAME} total')
+    #ax.loglog(freqs, res_unc[key_tot], lw=2.5, color='k',
+    #          label=f'{TDI_NAME} total')
     if res_cor is not None:
-        ax.loglog(freqs, res_cor[key_tot], lw=2.5, color='steelblue', ls='-.',
-                  label=f'{TDI_NAME}$^c$ total (corrected)')
+        ax.loglog(freqs, res_cor[key_tot], lw=1.5, color=color_extrapolated,
+                  label=f'{TDI_NAME}$^c$ modulation noise', zorder=10)
     if res_cor_mod is not None:
-        ax.loglog(freqs, res_cor_mod[key_tot], lw=2, color='darkorange', ls='-.',
-                  label=f'{TDI_NAME}$^c$ mod. residual')
-    ax.loglog(freqs, alloc, lw=1.5, color='red', ls=':', label='1 pm alloc.')
-    ax.set_xlabel('Frequency [Hz]')
+        ax.loglog(freqs, res_cor_mod[key_tot], lw=1, color=color_extrapolated,
+                  label=f'{TDI_NAME}$^c$ mod residual')
+    ax.loglog(freqs, alloc, lw=1, color='gray', label='1 pm alloc.')
+    ax.loglog(freqs, 15*alloc, lw=1, color='black', label='15 pm alloc.')
+    ax.set_xlabel('Fourier Frequency [Hz]')
     ax.set_ylabel(ylabel)
     ax.set_xlim([freqs[0], freqs[-1]])
     ax.legend(fontsize=8)
     ax.grid(True, which='both', alpha=0.3)
 
-axes[0].set_title(f'{cfg["title"]} — frequency\n{freq_info}', fontsize=9)
-axes[1].set_title(f'{cfg["title"]} — phase\n{freq_info}', fontsize=9)
+#axes[0].set_title(f'{cfg["title"]} — frequency\n{freq_info}', fontsize=9)
+#axes[1].set_title(f'{cfg["title"]} — phase\n{freq_info}', fontsize=9)
 
 corr_str = ' + corrected' if SHOW_CORRECTED else ''
-plt.suptitle(f'{TDI_NAME}{corr_str}  |  {plot_title}  |  $L={L:.2f}$ s', fontsize=10)
+#plt.suptitle(f'{TDI_NAME}{corr_str}  |  {plot_title}  |  $L={L:.2f}$ s', fontsize=10)
 plt.tight_layout()
-plt.savefig(f'{TDI_NAME}_{plot_title}.png', dpi=300, bbox_inches='tight')
+plt.savefig(f'{TDI_NAME}_{plot_title}.png', bbox_inches='tight',transparent=True)

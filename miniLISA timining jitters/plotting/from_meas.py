@@ -37,17 +37,19 @@ plt.rcParams.update({
 })
 
 # ── load data ──────────────────────────────────────────────────────────────
-baseline = pd.read_csv("baseline.csv",
-                       names=["freq", "asd"], skiprows=1)
-baseline = baseline[baseline["freq"] > 0]
-freq_b = baseline["freq"].values
-asd_b  = baseline["asd"].values   # cyc/√Hz
+#baseline = pd.read_csv("baseline.csv",
+#                       names=["freq", "asd"], skiprows=1)
+#baseline = baseline[baseline["freq"] > 0]
+#freq_b = baseline["freq"].values
+#asd_b  = baseline["asd"].values   # cyc/√Hz
 
-modulator = pd.read_csv("modulator_psd.csv",
-                        comment="#", names=["freq", "psd"])
+modulator = pd.read_csv("../../measured noises/modulator_psd.csv",
+                        comment="#", names=["freq", "psd", "psd2", "psd3"])
 modulator = modulator[modulator["freq"] > 0]
 freq_m = modulator["freq"].values
 asd_m  = np.sqrt(modulator["psd"].values)   # cyc/√Hz
+asd_m2  = np.sqrt(modulator["psd2"].values)   # cyc/√Hz
+asd_m3  = np.sqrt(modulator["psd3"].values)   # cyc/√Hz
 
 c = 3e8        # speed of light [m/s]
 lam = 1064e-9  # LISA laser wavelength [m]
@@ -74,11 +76,13 @@ col2 = (215/255, 27/255,  47/255)
 # ── plot ──────────────────────────────────────────────────────────────────
 fig, ax = plt.subplots(figsize=(7, 4.5))
 
-ax.plot(f, S_req,         color=gray,    lw=1.5, ls="--", label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$", zorder=4)
-ax.plot(f, S_req / 200,   color="black", lw=1.2, ls="-",  label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$ $\times 1/200$", zorder=4)
+#ax.plot(f, S_req,         color=gray,    lw=1.5, ls="--", label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$", zorder=4)
+#ax.plot(f, S_req / 200,   color="black", lw=1.2, ls="-",  label=r"SB phase noise requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$cyc/$\sqrt{\mathrm{Hz}}$ $\times 1/200$", zorder=4)
 
 #ax.plot(freq_b, asd_b, color=col1, lw=0.7, alpha=0.85, label="Delay line board intrinsic noise")
-ax.plot(freq_m, asd_m, color=col2, lw=0.7, alpha=0.85, label="Modulator phase noise")
+ax.plot(freq_m, asd_m, color=col2, lw=0.7, alpha=0.85, label="Modulator phase noise from USB-LSB")
+ax.plot(freq_m, asd_m2, color="black", lw=0.7, alpha=0.85, label="Modulator phase noise from USB-C")
+ax.plot(freq_m, asd_m3, color="gray", lw=0.7, alpha=0.85, label="Modulator phase noise from C-LSB")
 
 ax.set_xscale("log")
 ax.set_yscale("log")
@@ -95,7 +99,7 @@ ax.tick_params(which="both", top=True, right=True)
 ax.grid(True,  which="major", color="#e0e0e0", linewidth=0.6, linestyle="--")
 ax.grid(False, which="minor")
 
-ax.set_xlim(freq_b[1], freq_b[-1])
+ax.set_xlim(freq_m[1], freq_m[-1])
 ax.legend(loc="upper right")
 
 fig.tight_layout()

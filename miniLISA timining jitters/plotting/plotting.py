@@ -12,23 +12,24 @@ and whether to show the clock-corrected residual alongside the uncorrected.
 # ══════════════════════════════════════════════════════════════════════════════
 # One noise type, or a list for combined plot:
 #   'clock' | 'board' | 'modulation' | 'optical' | 'optical_sb' | 'board_baseline'
-NOISE_TO_PLOT  = ['modulation']   # string or list of strings
+NOISE_TO_PLOT  = ['board_baseline']   # string or list of strings
 TDI_NAME       = 'X1'      # 'X1' | 'alpha1'
-SHOW_CORRECTED = True      # also compute and overlay clock-corrected version
+SHOW_CORRECTED = False      # also compute and overlay clock-corrected version
 
 # Data files (set to None to use filler models)
-MODULATOR_PSD_FILE = 'modulator_psd.csv'
-BASELINE_ASD_FILE  = 'baseline.csv'
+MODULATOR_PSD_FILE = '../../measured noises/modulator_psd.csv'
+BASELINE_ASD_FILE  = '../../measured noises/baseline.csv'
 
 # ── Physical parameters ───────────────────────────────────────────────────────
 c            = 299792458.0
 lambda_laser = 1064e-9
-L            = 2.5e9 / c
+L            = 8
+
 
 # ── Heterodyne & modulation frequencies [Hz] ─────────────────────────────────
-nu1  = 15.0e6;  nu2  =  6.9e6;  nu3  = 13.6e6
+nu1  = 17.0e6;  nu2  =  17e6;  nu3  = 17e6
 mod_order = 7
-num1 =  3.6*10**mod_order;  num2 =  5*10**mod_order;  num3 =  5*10**mod_order
+num1 =  2*10**mod_order;  num2 =  2*10**mod_order;  num3 =  2*10**mod_order
 
 # ══════════════════════════════════════════════════════════════════════════════
 # IMPORTS
@@ -43,7 +44,7 @@ from scipy.interpolate import interp1d
 # ══════════════════════════════════════════════════════════════════════════════
 # FREQUENCY GRID & ALLOCATION
 # ══════════════════════════════════════════════════════════════════════════════
-freqs  = np.logspace(-4, 0, 2000)
+freqs  = np.logspace(-4, 0.9, 2000)
 omegas = 2*np.pi*freqs
 
 Sx_alloc        = (64*omegas**2 * np.sin(omegas*L)**2 * np.sin(2*omegas*L)**2
@@ -454,22 +455,25 @@ freq_info = (f"$\\nu_1={nu1/1e6:.1f}$, $\\nu_2={nu2/1e6:.1f}$, "
 
 fig, axes = plt.subplots(1, 2, figsize=(13, 5))
 
+np.savetxt("baselineX1.csv", np.column_stack((freqs, np.sqrt(3)*res_unc['total_phase'])), header='Frequency (Hz),ASD (cyc/sqrt(Hz))', delimiter=',', comments='')
+
 for ax, (key_src, key_tot, alloc, ylabel) in zip(axes, [
     ('srcs_freq',  'total_freq',  asd_alloc_freq,  cfg['ylabel_f']),
     ('srcs_phase', 'total_phase', asd_alloc_phase, cfg['ylabel_p']),
 ]):
-    for asd, lbl in zip(res_unc[key_src], cfg['labels']):
-        if np.max(asd) > 0:
-            ax.loglog(freqs, asd, lw=1.2, ls='--', alpha=0.6, label=lbl)
+    #for asd, lbl in zip(res_unc[key_src], cfg['labels']):
+    #    if np.max(asd) > 0:
+    #        ax.loglog(freqs, asd, lw=1.2, ls='--', alpha=0.6, label=lbl)
     ax.loglog(freqs, res_unc[key_tot], lw=2.5, color='k',
               label=f'{TDI_NAME} total')
     if res_cor is not None:
-        ax.loglog(freqs, res_cor[key_tot], lw=2.5, color='steelblue', ls='-.',
+        ax.loglog(freqs, np.sqrt(3)*res_cor[key_tot], lw=2.5, color='steelblue', ls='-.',
                   label=f'{TDI_NAME}$^c$ total (corrected)')
     if res_cor_mod is not None:
-        ax.loglog(freqs, res_cor_mod[key_tot], lw=2, color='darkorange', ls='-.',
+        ax.loglog(freqs, np.sqrt(3)*res_cor_mod[key_tot], lw=2, color='darkorange', ls='-.',
                   label=f'{TDI_NAME}$^c$ mod. residual')
     ax.loglog(freqs, alloc, lw=1.5, color='red', ls=':', label='1 pm alloc.')
+    ax.loglog(freqs, 15*alloc, lw=1.5, color='green', ls=':', label='15 pm alloc.')
     ax.set_xlabel('Frequency [Hz]')
     ax.set_ylabel(ylabel)
     ax.set_xlim([freqs[0], freqs[-1]])
@@ -482,4 +486,4 @@ axes[1].set_title(f'{cfg["title"]} — phase\n{freq_info}', fontsize=9)
 corr_str = ' + corrected' if SHOW_CORRECTED else ''
 plt.suptitle(f'{TDI_NAME}{corr_str}  |  {plot_title}  |  $L={L:.2f}$ s', fontsize=10)
 plt.tight_layout()
-plt.show()
+plt.savefig(f"{TDI_NAME}{corr_str}.png",dpi=300)
