@@ -6,20 +6,12 @@ from pytdi.dsp import timeshift
 from scipy.signal import welch
 
 # ── CONFIG ────────────────────────────────────────────────────────────────
-filename      = 'BaselineW250MHz_20260811_175509'
+filename      = 'alias_20260805_111545'
 delay_s       = 4.3
+DDS_signal_nr = 2
+nr_of_channels = 3
 start_time    = 0 * 60 * 60   # seconds to crop from start
 end_time      = 0 * 60 * 60   # seconds to crop from end
-min_f         = 1e-3
-
-# channel roles within data/MokuPhasemeterData_20260808_135900.npy -- per the
-# txt header's "% delayed carrier, PT, carrier, delayes SB" line, which lists
-# Inputs 1-4 in that order
-UNDELAYED_INPUT  = 3   # carrier -- direct/undelayed
-DELAYED_INPUT    = 1   # delayed carrier -- gets time-shifted
-PT_INPUT         = 2   # pilot tone, co-located with the delayed channel
-DELAYED_SB_INPUT = 4   # delayed sideband -- for the alt residual combo
-
 # ── 1. LOAD ───────────────────────────────────────────────────────────────
 data = np.load(f'data/{filename}.npy')
 
@@ -31,22 +23,14 @@ fs = 1.0 / np.median(np.diff(t))
 
 print(f"Samples: {len(t)} | fs ≈ {fs:.4f} Hz | duration ≈ {t[-1]-t[0]:.1f} s")
 
-def load_input(n):
-    pfx = f'Input {n} '
+def load_channel(ch):
+    pfx = f'Input {ch} '
     return {
         'freq':  col(pfx + 'Frequency (Hz)'),
         'phase': col(pfx + 'Phase (cyc)'),
     }
 
-# channel 1 = undelayed/direct carrier, channel 3 = delayed carrier, channel
-# 'pt' = pilot tone for jitter (kept as 1/3/pt to match the rest of the
-# pipeline below, which was written for a 4-channel Moku layout)
-channels = {
-    1:    load_input(UNDELAYED_INPUT),
-    3:    load_input(DELAYED_INPUT),
-    'pt': load_input(PT_INPUT),
-    'sb': load_input(DELAYED_SB_INPUT),
-}
+channels = {ch: load_channel(ch) for ch in range(1, nr_of_channels + 1)}
 
 # ── 2. OPTIONAL INITIAL CROPPING ──────────────────────────────────────────
 def crop_time(t, data_dict, t_start=0, t_end=0):
@@ -74,8 +58,8 @@ t, channels = crop_time(t, channels, start_time, end_time)
 
 # ── 3. DERIVED SIGNALS ────────────────────────────────────────────────────
 
-print(f"Measuring timing jitters from pilot tone (Input {PT_INPUT})")
-t_jitter = channels['pt']['phase'] / channels['pt']['freq']
+print(f"Measuring timing jitters from channel {DDS_signal_nr}")
+t_jitter = channels[DDS_signal_nr]['phase'] / channels[DDS_signal_nr]['freq']
 
 #f0 = channels[4]['freq'].mean()
 #print(f"Reference frequency (ch4 mean): {f0:.6f} Hz")
@@ -85,17 +69,11 @@ print(f"Delay: {delay_s:.3f} s = {delay_samples:.2f} samples")
 
 # ── 4. APPLY DELAYS ───────────────────────────────────────────────────────
 def apply_delay(x, tau):
-    # the delayed carrier (channel 3) lags the direct carrier (channel 1) by
-    # delay_s, so it needs to be *advanced* (positive shift) to land back on
-    # channel 1's timebase -- NOT delayed further.
-    return timeshift(x, tau)
+    return timeshift(x, -tau)
 
 ch3_phase_dly = apply_delay(channels[3]['phase'], delay_samples)
 ch3_freq_dly  = apply_delay(channels[3]['freq'],  delay_samples)
 tj_dly        = apply_delay(t_jitter,             delay_samples)
-# the delayed sideband is already physically delayed (recorded after the
-# signal passed through the delay line) -- do NOT shift it again in software.
-sb_phase      = channels['sb']['phase']
 
 # ── 5. CROP AFTER TIMESHIFT (IMPORTANT) ───────────────────────────────────
 def crop_edges(t, arrays, n_crop):
@@ -112,11 +90,8 @@ t, (
     ch3_phase,
     ch3_phase_dly,
     ch3_freq_dly,
-    ch3_freq,
     tj,
     tj_dly,
-    sb_phase,
-    sb_freq,
     #ch4_phase
 ) = crop_edges(
     t,
@@ -126,11 +101,8 @@ t, (
         channels[3]['phase'],
         ch3_phase_dly,
         ch3_freq_dly,
-        channels[3]['freq'],
         t_jitter,
         tj_dly,
-        sb_phase,
-        channels['sb']['freq'],
         #channels[4]['phase'],
     ],
     n_crop
@@ -140,12 +112,10 @@ print(f"Post-shift length: {len(t)} samples")
 
 # ── 6. DETREND ────────────────────────────────────────────────────────────
 #ch4_phase_d = detrend(ch4_phase)
-ch1_phase_d      = detrend(ch1_phase)
-ch3_phase_d      = detrend(ch3_phase_dly)
-tj_d             = detrend(tj)
-tj_dly_d         = detrend(tj_dly)
-sb_phase_d       = detrend(sb_phase)
-dcarrier_phase_d = detrend(ch3_phase)  # raw (unshifted) delayed-carrier phase
+ch1_phase_d = detrend(ch1_phase)
+ch3_phase_d = detrend(ch3_phase_dly)
+tj_d        = detrend(tj)
+tj_dly_d    = detrend(tj_dly)
 
 
 
@@ -156,41 +126,24 @@ tdi = (
     - ch3_freq_dly * (tj_d - tj_dly_d) # it looks like Dch3_freq and ch1_freq are equivalent here (theory also says so)
 )
 
-# ── 7b. ALTERNATIVE COMBINATION -- delayed SB vs delayed carrier, both raw
-# (unshifted), since they're recorded simultaneously by the same delayer unit
-# and so carry no relative delay between them. Jitter correction uses the
-# frequency *difference* between the two delayed-side channels, still
-# referenced to the delayer's own pilot tone (Input 2). ─────────────────────
-tdi_alt = (
-    sb_phase_d
-    - dcarrier_phase_d
-    - (np.mean(sb_freq - ch3_freq)) * (tj_d)
-)
-#print(np.mean(sb_freq - ch3_freq))
-
-if (False):
+if (True):
     # ── 8. PLOT ───────────────────────────────────────────────────────────────
-    fig, ax = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
+    fig, ax = plt.subplots(2, 1, figsize=(10, 12), sharex=True)
 
 
-    ax[0].plot(t, ch3_freq_dly * (tj_d - tj_dly_d), lw=0.5, label='ch3 freq * jitter')
-    ax[0].plot(t, ch1_freq * (tj_d - tj_dly_d), lw=0.5, label='ch1 freq * jitter')
-    ax[0].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
+    ax[0].plot(t, ch3_freq_dly, lw=0.5, label='ch3 freq * jitter')
+    ax[0].plot(t, -ch1_freq , lw=0.5, label='ch1 freq * jitter')
+    #ax[0].plot(t, -ch1_phase_d, lw=0.5, label='ch1 phase')
     ax[0].set_ylabel('Comparison of clock jitter cancelling')
     ax[0].legend(loc='upper right')
 
-    ax[1].plot(t, detrend(tdi), lw=0.5, label='TDI combo')
-    ax[1].plot(t, ch1_phase_d, lw=0.5, label='ch1 phase')
+    #ax[1].plot(t, detrend(tdi), lw=0.5, label='TDI combo')
+    ax[1].plot(t, -ch1_phase_d, lw=0.5, label='ch1 phase')
     ax[1].plot(t, ch3_phase_d, lw=0.5, label='ch3 phase')
     ax[1].set_ylabel('TDI vs ch3 phase to be subtracted')
     ax[1].set_xlabel('Time (s)')
     ax[1].legend(loc='upper right')
 
-    ax[2].plot(t, ch1_freq, lw=0.5, label='ch1 freq')
-    ax[2].plot(t, ch3_freq_dly, lw=0.5, label='ch3 freq (delayed)', alpha=0.8)
-    ax[2].set_ylabel('Frequency (Hz)')
-    ax[2].set_xlabel('Time (s)')
-    ax[2].legend(loc='upper right')
 
 
     plt.tight_layout()
@@ -220,52 +173,18 @@ def compute_asd(x, fs, fmin=1e-4, nperseg=None):
 f1, asd_ch1 = compute_asd(ch1_phase_d, fs)
 f2, asd_ch3 = compute_asd(detrend(ch3_phase), fs) # detrending gets rid of a lot of low-f noise
 f3, asd_tdi = compute_asd(detrend(tdi), fs)
-f4, asd_tdi_alt = compute_asd(detrend(tdi_alt), fs)
-f5, asd_sb = compute_asd(detrend(sb_phase), fs)
 
-np.savetxt("baseline.csv", np.column_stack((f3, asd_tdi)), header='Frequency (Hz),ASD (cyc/sqrt(Hz))', delimiter=',', comments='')
+#np.savetxt("baseline.csv", np.column_stack((f3, asd_tdi)), header='Frequency (Hz),ASD (cyc/sqrt(Hz))', delimiter=',', comments='')
 
-# ── 9b. RECOVER CLOCK NOISE ASD ───────────────────────────────────────────
-# tdi = clock(t) - clock(t - delay)  =>  |H(f)| = |1 - exp(-i2*pi*f*delay)| = 2|sin(pi*f*delay)|
-transfer_fn = 2 * np.abs(np.sin(np.pi * f3 * delay_s))
 
-# near its *interior* nulls (f = n/delay, n=1,2,3,...) this blows up to spikes
-# that are a division artifact, not real signal, so mask those points out
-# (purely cosmetic -- gaps instead of spikes). The n=0 null sits at f=0 itself,
-# where the transfer function just rises smoothly from zero rather than dipping
-# and recovering -- a global "< 0.15*max" threshold catches that whole low-f
-# rise too and wipes out the low-frequency band, so restrict the mask to bins
-# nearest an n>=1 null only, leaving the low-frequency data untouched
-"""
-with np.errstate(divide="ignore", invalid="ignore"):
-    asd_clock = asd_tdi / transfer_fn
-nearest_null_order = np.round(f3 * delay_s)
-near_interior_null = (nearest_null_order >= 1) & (transfer_fn < 0.15 * transfer_fn.max())
-asd_clock[near_interior_null] = np.nan
 
-clock_asd_path = os.path.join(os.path.dirname(__file__), '..', 'clock_noise', 'measured_clock_asd.csv')
-np.savetxt(
-    clock_asd_path,
-    np.column_stack((f3, asd_clock)),
-    header='Frequency (Hz),ASD (cyc/sqrt(Hz))',
-    delimiter=',',
-    comments=''
-)
-"""
 # ── 10. ASD PLOT ──────────────────────────────────────────────────────────
-# colors borrowed as-is from clock_noise/USO_phse_noise.py's validated palette
-color_extrapolated = "#d71b2f"  # red    -- main TDI-derived residual
-color_modulator     = "#821770"  # purple -- alt (sideband) residual
-color_delayline     = "#295f24"  # blue   -- raw sideband signal
-ink_secondary       = "#52514e"  # neutral gray -- pure/reference signal
-
 plt.figure(figsize=(8, 5))
 
-plt.loglog(f3, asd_tdi, lw=1.5, label='Residual (the usual)', color=color_extrapolated)
-plt.loglog(f4, asd_tdi_alt, lw=1.5, label='Residual with sideband', color=color_delayline, alpha=0.8)
-plt.loglog(f1, asd_ch1, lw=1.2, label='Carrier ASD', color=color_modulator, alpha=0.8)
-plt.loglog(f5, asd_sb, lw=1.2, label='Sideband ASD', color=ink_secondary, alpha=0.8)
-#plt.loglog(f3, asd_clock, lw=1.5, label='Clock Noise (recovered)', color='k')
+plt.loglog(f3, asd_tdi, lw=1.5, label='Residual Noise')
+plt.loglog(f1, asd_ch1, lw=2, label='Delayed Signal (ch1)', alpha=0.8)
+plt.loglog(f2, asd_ch3, lw=1, label='Pure Signal (ch3)', alpha=0.7)
+
 
 #plt.loglog(f0, asd_ch4, lw=1, label='ch4 phase')
 plt.xlabel('Frequency (Hz)')

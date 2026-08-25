@@ -21,6 +21,7 @@ color_requirement   = ink_primary                # black
 color_modulator     = "#821770"  # (130, 23, 112) magenta
 color_delayline     = "#2d13b4"  # (45, 19, 180)  blue
 color_pd_noise      = ink_secondary  # neutral, dotted -- another noise floor
+color_sideband      = "#eb6834"  # (235, 104, 52)  orange
 
 # noise-region washes: a plain gray ramp, kept separate from the four data colors
 region_colors = ["#f5f5f3", "#eaeae7", "#dfdfdc", "#d4d4d0", "#c9c9c5"]
@@ -242,6 +243,16 @@ if os.path.exists(modulator_path):
 else:
     print(f"No modulator noise found at {modulator_path}, skipping overlay")
 
+"""
+sideband_path = os.path.join(measured_noises_dir, 'PMtest_20260805_190157_USB-LSB_asd.csv')
+if os.path.exists(sideband_path):
+    f_sb, asd_sb_cyc = np.loadtxt(sideband_path, delimiter=',', skiprows=1, unpack=True)
+    keep = f_sb > 0
+    sb_jitter_fs = rad_asd_to_jitter_fs(asd_sb_cyc[keep] * 2 * np.pi, f_carrier_datasheet)
+    ax3.plot(f_sb[keep], sb_jitter_fs, color=color_sideband, lw=1, alpha=0.85, label="Moku Lab timing jitters")
+else:
+    print(f"No USB-LSB sideband ASD found at {sideband_path}, skipping overlay")
+"""
 ##############################################################################
 # Newport PD noise floor (total shot+Johnson+RIN, flat/white -> fs/sqrt(Hz))
 ##############################################################################
