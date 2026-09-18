@@ -1,0 +1,38 @@
+
+
+
+The primary readout noise sources entering the clock-noise correcting variables are relative intensity noise (RIN) of the lasers and shot noise on the photodetectors. As shown in Fig.~\ref{fig:readout_noise}, the analytical prediction for the readout noise contribution to $X_1$ remains below the 1\,pm allocation across the core LISA measurement band, suggesting that readout noise will not be the dominant limitation in the testbed. However, this assessment is based on individual noise characterisations, and the integrated system may reveal additional couplings or excess noise not captured by the current model. We therefore treat this as a provisional conclusion, to be revisited once the full optical and electronic chain is assembled.
+
+For the phase-domain correcting variable, the readout-noise contribution is
+\begin{equation*}
+    n^r_{ij}=\frac{N^{\mathrm{sb,+}}_{ij}-N^{\mathrm c}_{ij}}{\nu_j^m},
+\end{equation*}
+where $\nu_j^m$ is the transmitted modulation frequency in the one-laser-per-spacecraft testbed. Its one-sided PSD is
+\begin{equation*}
+    S_{n^r_{ij}}=
+    \frac{S_{N^{\mathrm{sb,+}}_{ij}}+S_{N^{\mathrm c}_{ij}}
+    -2\operatorname{Re}S_{N^{\mathrm{sb,+}}_{ij},N^{\mathrm c}_{ij}}}
+    {(\nu_j^m)^2}.
+\end{equation*}
+The carrier readout also appears in the science measurement, so its correlation with $n^r_{ij}$ must be retained when propagating noise through clock correction. For a fixed-delay configuration, writing the final observable as $X_1=\mathbf H\mathbf n$ gives $S_{X_1}=\mathbf H\mathbf S_n\mathbf H^\dagger$, where $\mathbf S_n$ is the cross-spectral matrix of the contributing noises.
+
+Should readout noise prove problematic in practice, two mitigation strategies are available. The first is balanced detection. This can suppress common-mode intensity noise with suitable detector balance, but does not in general remove modulation phase noise or shot noise.
+
+The second and more fundamental mitigation is to increase the sideband modulation frequency. In the clock-noise correcting variables $r_{ij}$, readout noise enters divided by the modulation frequency $\nu^m$ — the same factor that amplifies the clock jitter signal in the sideband beatnote. For fixed sideband phase-readout noise, the timing-noise ASD scales as $1/\nu^m$. Thus 24 MHz modulation gives a factor of 100 larger timing-readout noise than 2.4 GHz modulation under otherwise equal conditions. A GHz upgrade would require the spacecraft modulation to carry each spacecraft's clock at the higher frequency, together with suitable reference-laser modulation to downconvert the optical sidebands into the delay-line bandwidth. Modulating only the reference laser would not provide a GHz transfer coefficient for the independent spacecraft clocks. The additional reference modulation noise would also need to be included in the measurement model.
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{images/readouts.png}
+    \caption{Analytical readout noise contribution to the first-generation TDI Michelson combination $X_1$, evaluated under the equal-arm approximation with $L = 8.34$\,s and sideband modulation frequency $\nu^m = 24.0$\,MHz. We used LISA readout noise requirement as the input noise adjusted for a lower modulation frequency. The black curve shows the total readout noise before clock-noise correction and the blue curve shows the residual after correction. The left and right panels show the same quantity expressed in units of frequency and phase, respectively. The red dotted curve shows the 1 pm displacement allocation for $X_1$. The readout noise remains below the allocation across the core LISA measurement band ($0.1\,\text{mHz}$ to $0.1\,\text{Hz}$), under the assumed input-noise model. This is a projected budget, pending verification of the full readout covariance and integrated measurements.}
+    \label{fig:readout_noise}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{images/baseline.png}
+    \caption{Measured delay-line board phase noise propagated through the first-generation TDI Michelson combination $X_1$ and the clock-noise correction pipeline, evaluated under the equal-arm approximation with $L = 8.34$\,s. The black curve shows the total board-noise contribution to $X_1$ before clock-noise correction, and the blue curve shows the residual after spacecraft-clock noise correction, without an additional board-jitter subtraction. The left and right panels show the same quantity expressed in units of frequency and phase, respectively.}
+    \label{fig:board_baseline}
+\end{figure*}
+
+
+%Note To Self: OR what about doing a reference measurement between the undelayed sidebands of opposing SC to correct for modulation noise? It's not exactly like LISA, but similar. They also do a modulation correction via a no-delay measurement.

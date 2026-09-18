@@ -61,7 +61,7 @@ def S_modulation(freqs, psd_file=MODULATOR_PSD_FILE):
     data = data[data[:, 0] > 0]
     interp = interp1d(data[:, 0], data[:, 1], bounds_error=False,
                        fill_value=(data[0, 1], data[-1, 1]))
-    return interp(freqs) / freqs**2   # Hz^2/Hz -> cyc^2/Hz
+    return interp(freqs)   # already a phase PSD, cyc^2/Hz (CSV header is mislabeled)
 
 
 def evaluate_modulation_asd(tf_data, freqs, nu_m1, nu_m2, nu_m3):

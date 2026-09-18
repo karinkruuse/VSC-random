@@ -1,0 +1,86 @@
+{
+  "observable": "static X2",
+  "delays_seconds": {
+    "(1, 2)": 8.3391023799538,
+    "(2, 1)": 8.3391023799538,
+    "(1, 3)": 8.3391023799538,
+    "(3, 1)": 8.3391023799538
+  },
+  "gamma_hz": {
+    "(1, 2)": -4100000.0,
+    "(2, 1)": 4100000.0,
+    "(1, 3)": 6600000.0,
+    "(3, 1)": -6600000.0
+  },
+  "fourier_band_hz": [
+    0.0002,
+    1.0
+  ],
+  "scan_sc1_modulation_hz": 2000000000.0,
+  "nu_R_hz": {
+    "1": 15000000.0,
+    "2": 10900000.0,
+    "3": 21600000.0
+  },
+  "alpha_hz": {
+    "(1, 2)": -4100000.0,
+    "(2, 1)": 4100000.0,
+    "(1, 3)": 6600000.0,
+    "(3, 1)": -6600000.0
+  },
+  "nu_m_hz": {
+    "1": 35000000.0,
+    "2": 35000000.0,
+    "3": 35000000.0
+  },
+  "modulation_psd_kind": "phase_cycles",
+  "baseline_as_link_proxy": true,
+  "extra_carrier_asd": null,
+  "extra_sideband_asd": null,
+  "board_model": "None",
+  "input_sha256": {
+    "baseline.csv": "ceb713cc73f443e6b9f8f830ba64fb49054ad519538e4409878db35ef874b548",
+    "modulator_psd.csv": "43f3f7dea408c99d1cf98e01c52d71f6d5ae821bd40340d8cbe7a2f3a6f3705d"
+  },
+  "newport": {
+    "parameters": {
+      "Res": 0.6,
+      "het_eff": 0.9,
+      "m": 0.53,
+      "T": 300,
+      "RIN": 9e-09,
+      "R_term": 50,
+      "I_dark": 1e-07,
+      "G_total": 50,
+      "adc_FSR": 1,
+      "adc_bits": 14,
+      "adc_fs": 2000000000.0
+    },
+    "P_SC_W": 0.008,
+    "P_REF_W": 0.008,
+    "enabled": true,
+    "include_ADC": true,
+    "RIN_correlation": "fully_correlated",
+    "power_convention": "incident at PD; one modulated beam and one unmodulated beam",
+    "components_cycles_per_sqrt_Hz": {
+      "carrier": {
+        "shot (including dark)": 1.472318680384474e-09,
+        "Johnson": 4.832156721965394e-10,
+        "RIN": 2.2935461941737127e-09,
+        "ADC": 2.9581022550537344e-10
+      },
+      "sideband": {
+        "shot (including dark)": 5.358513197620662e-09,
+        "Johnson": 1.7586665110342376e-09,
+        "RIN": 8.347375955063704e-09,
+        "ADC": 1.0766031963594743e-09
+      }
+    },
+    "total_cycles_per_sqrt_Hz": {
+      "carrier": 2.7837164936084446e-09,
+      "sideband": 1.0131353876145837e-08
+    },
+    "source_sha256": "42aad7aff8c8bf118c43eb8de8425892b1524b02ee409d0863fccd30dcdcdd85"
+  },
+  "comparison": "existing OMS+acceleration single-link model, independent-equivalent-link propagation"
+}

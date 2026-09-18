@@ -66,7 +66,7 @@ def S_modulation(freqs):
     data = data[data[:,0] > 0]
     interp = interp1d(data[:,0], data[:,1], bounds_error=False,
                       fill_value=(data[0,1], data[-1,1]))
-    return interp(freqs) / freqs**2   # Hz^2/Hz -> cyc^2/Hz
+    return interp(freqs)   # already a phase PSD, cyc^2/Hz (CSV header is mislabeled)
 
 def S_optical(freqs):
     return (1.5e-12 / lambda_laser)**2 * np.ones_like(freqs)

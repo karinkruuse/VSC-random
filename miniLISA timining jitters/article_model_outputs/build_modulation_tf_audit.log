@@ -1,0 +1,5 @@
+Building clock-corrected X2 for modulation noise (omega1m/2m/3m kept symbolic)... this can take ~1 min for X2.
+  H[N1_m] = -41469023.0273853/\omega_3^m - 41469023.0273853*exp(-50.034608025396*I*omega)/\omega_3^m + 41469023.0273853*exp(-33.3564070180845*I*omega)/\omega_3^m + 41469023.0273853*exp(-16.6782043429525*I*omega)/\omega_3^m - 25761059.7594363/\omega_2^m - 25761059.7594363*exp(-50.034608025396*I*omega)/\omega_2^m + 25761059.7594363*exp(-33.3564070180845*I*omega)/\omega_2^m + 25761059.7594363*exp(-16.6782043429525*I*omega)/\omega_2^m
+  H[N2_m] = 25761059.7594363*exp(-58.3737079036191*I*omega)/\omega_2^m - 25761059.7594363*exp(-41.6955077302178*I*omega)/\omega_2^m - 25761059.7594363*exp(-25.017305888996*I*omega)/\omega_2^m + 25761059.7594363*exp(-8.3391023799538*I*omega)/\omega_2^m
+  H[N3_m] = 41469023.0273853*exp(-58.3737079036191*I*omega)/\omega_3^m - 41469023.0273853*exp(-41.6955077302178*I*omega)/\omega_3^m - 41469023.0273853*exp(-25.017305888996*I*omega)/\omega_3^m + 41469023.0273853*exp(-8.3391023799538*I*omega)/\omega_3^m
+Saved to C:\Users\37259\Desktop\kool\VSC-random\miniLISA timining jitters\article_model_outputs\audit_modulation_tf_X2.pkl
