@@ -153,7 +153,7 @@ ffU, PffU = psd(fU_dt_Hz, fs)
 # useful: SB splitting (should be ~2*f_mod if referenced that way)
 df_UL = fU_dt_Hz - fL_dt_Hz
 ffd, Pffd = psd(df_UL, fs)
-np.savetxt("modulator_psd.csv", np.column_stack((fM, PM, PUC, PCL)), header="Frequency(Hz),PSD(Hz^2/Hz),PSD(Hz^2/Hz),PSD(Hz^2/Hz)", delimiter=",")
+np.savetxt("modulator_psd.csv", np.column_stack((fM, PM, PUC, PCL)), header="Frequency(Hz),PSD(cyc^2/Hz),PSD(cyc^2/Hz),PSD(cyc^2/Hz)", delimiter=",")
 # -----------------------
 # outputs
 # -----------------------

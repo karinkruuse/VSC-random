@@ -49,16 +49,16 @@ Jean-Baptiste Bayle and Olaf Hartwig.
 \newblock Unified model for the {LISA} measurements and instrument simulations.
 \newblock 107(8):083019.
 
-\bibitem{tinto2018time}
-Massimo Tinto and Olaf Hartwig.
-\newblock Time-delay interferometry and clock-noise calibration.
-\newblock {\em Physical Review D}, 98(4):042003, 2018.
-
 \bibitem{otto2012tdi}
 Markus Otto, Gerhard Heinzel, and Karsten Danzmann.
 \newblock Tdi and clock noise removal for the split interferometry
   configuration of lisa.
 \newblock {\em Classical and Quantum Gravity}, 29(20):205003, 2012.
+
+\bibitem{tinto2018time}
+Massimo Tinto and Olaf Hartwig.
+\newblock Time-delay interferometry and clock-noise calibration.
+\newblock {\em Physical Review D}, 98(4):042003, 2018.
 
 \bibitem{hartwig_clock-jitter_2021}
 Olaf Hartwig and Jean-Baptiste Bayle.

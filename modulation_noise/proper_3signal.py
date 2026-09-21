@@ -8,7 +8,7 @@ print("RUNNING:", __file__)
 # -----------------------
 # hardcode input
 # -----------------------
-DATA = Path(r"data\EOM_PLL_20260224_160232.npy")   # <-- change
+DATA = Path(__file__).resolve().parent / "data" / "EOM_PLL_20260224_160232.npy"
 TXT  = DATA.with_suffix(".txt")
 
 # -----------------------
@@ -129,7 +129,7 @@ u_minus_c_cyc = (phiU_dt - phiC_dt)
 c_minus_l_cyc = (phiC_dt - phiL_dt)
 
 # -----------------------
-# frequency noise from frequency columns (detrend removes ramp)
+# frequency-noise diagnostics from the phasemeter frequency columns
 # -----------------------
 fC_dt_Hz = detrend(fC_Hz, type="linear")
 fL_dt_Hz = detrend(fL_Hz, type="linear")
@@ -153,7 +153,8 @@ ffU, PffU = psd(fU_dt_Hz, fs)
 # useful: SB splitting (should be ~2*f_mod if referenced that way)
 df_UL = fU_dt_Hz - fL_dt_Hz
 ffd, Pffd = psd(df_UL, fs)
-#np.savetxt("modulator_psd.csv", np.column_stack((fM, PM)), header="Frequency(Hz),PSD(Hz^2/Hz)", delimiter=",")
+# PM is a phase PSD in cycles^2/Hz. A frequency PSD would require
+# differentiation of theta_m or multiplication by (2*pi*fM)^2.
 
 # -----------------------
 # ratios between the phase-difference ASDs
@@ -209,9 +210,11 @@ plt.tight_layout()
 plt.savefig(out_psd_phase, dpi=200)
 plt.close()
 
-# Phase ASD (rad/sqrt(Hz))  [cycles -> rad via *2π]
+# Phase ASD in cycles/sqrt(Hz); convert the radian requirement by / (2*pi).
 plt.figure()
-S_req = 60e-6 * (1.0 + 0.07 / fC) /2/np.pi # rad/√Hz
+S_req = np.full_like(fC, np.nan)
+positive_f = fC > 0
+S_req[positive_f] = 60e-6 * (1.0 + 0.07 / fC[positive_f]) / (2 * np.pi)
 
 plt.loglog(fC, S_req,
            linestyle="--",

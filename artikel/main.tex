@@ -12,7 +12,10 @@
 \usepackage{amssymb}
 \usepackage{enumitem}
 \usepackage{physics}
-\usepackage{acronym}
+% nolist: acronyms are still defined (and expanded on first use), but the
+% list is not typeset. It also implies nohyperlinks, so \ac{} produces
+% plain text rather than links into the list.
+\usepackage[nolist]{acronym}
 \usepackage[pdftex,dvipsnames]{xcolor}
 \usepackage{xargs} 
 \usepackage{mathtools}
@@ -338,7 +341,7 @@ Several open questions remain under active investigation, including the extent t
 %\newpage
 %\listoftodos[Notes]
 
-\newpage
+% Definitions only - not typeset, see the nolist option in the preamble.
 \begin{acronym}
     %\acro{AC}{alternatng current}
     \acro{ADC}{analog to digital converter}
@@ -370,7 +373,9 @@ Several open questions remain under active investigation, including the extent t
 \end{acronym}
 
 \newpage
-\bibliographystyle{plain}
+% unsrt numbers references in order of first citation in the text
+% (plain would sort them alphabetically by author instead).
+\bibliographystyle{unsrt}
 \bibliography{citations}
 
 %\appendix

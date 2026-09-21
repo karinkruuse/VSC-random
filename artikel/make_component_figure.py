@@ -15,16 +15,18 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 MODEL = HERE.parent / 'miniLISA timining jitters'
+ROOT = HERE.parent
 OUT = HERE / 'images' / 'performance'
 OUT.mkdir(parents=True, exist_ok=True)
 config = json.loads((MODEL / 'article_model_outputs' / 'assumptions.json').read_text())
 assert config['modulation_psd_kind'] == 'phase_cycles'
 for name, expected in config['input_sha256'].items():
-    assert hashlib.sha256((MODEL / name).read_bytes()).hexdigest() == expected, (
+    source = ROOT / config['input_paths'][name]
+    assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, (
         f'{name} changed: rerun the modelling notebook before exporting.')
 
-baseline = np.loadtxt(MODEL / 'baseline.csv', delimiter=',', skiprows=1)
-modulation = np.loadtxt(MODEL / 'modulator_psd.csv', delimiter=',', comments='#')
+baseline = np.loadtxt(ROOT / config['input_paths']['baseline.csv'], delimiter=',', skiprows=1)
+modulation = np.loadtxt(ROOT / config['input_paths']['modulator_psd.csv'], delimiter=',', comments='#')
 fmin, fmax = config['fourier_band_hz']
 baseline = baseline[(baseline[:, 0] >= fmin) & (baseline[:, 0] <= fmax)]
 modulation = modulation[(modulation[:, 0] >= fmin) & (modulation[:, 0] <= fmax)]

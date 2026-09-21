@@ -13,7 +13,7 @@
     "(3, 1)": -6600000.0
   },
   "fourier_band_hz": [
-    0.0002,
+    0.00025,
     1.0
   ],
   "scan_sc1_modulation_hz": 2000000000.0,
@@ -38,9 +38,13 @@
   "extra_carrier_asd": null,
   "extra_sideband_asd": null,
   "board_model": "None",
+  "input_paths": {
+    "baseline.csv": "measured noises\\baseline.csv",
+    "modulator_psd.csv": "measured noises\\modulator_psd.csv"
+  },
   "input_sha256": {
-    "baseline.csv": "ceb713cc73f443e6b9f8f830ba64fb49054ad519538e4409878db35ef874b548",
-    "modulator_psd.csv": "43f3f7dea408c99d1cf98e01c52d71f6d5ae821bd40340d8cbe7a2f3a6f3705d"
+    "baseline.csv": "ba323f08cbba141cd6166450bb6a915935b8cab224317b1c1baca1b59942e4a7",
+    "modulator_psd.csv": "e1fdbd4df7c67da09ae8c63ef2a3bc15421179a29035eb7da92b9e56c1cff7af"
   },
   "newport": {
     "parameters": {
