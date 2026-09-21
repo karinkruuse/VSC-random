@@ -7,6 +7,7 @@ finesse_pdh_modelling/input_files/*
 *.png
 *.txt
 *.pdf
+*.npz
 
 # Exception: commit PDFs and images in the artikel folder
 !artikel/**/*.pdf
