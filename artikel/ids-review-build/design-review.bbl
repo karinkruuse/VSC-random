@@ -1,0 +1,70 @@
+\begin{thebibliography}{1}
+
+\bibitem{abbott2016observation}
+Benjamin~P Abbott, Richard Abbott, Thomas~D Abbott, Matthew~R Abernathy, Fausto
+  Acernese, Kendall Ackley, Carl Adams, Thomas Adams, Paolo Addesso, Rana~X
+  Adhikari, et~al.
+\newblock Observation of gravitational waves from a binary black hole merger.
+\newblock {\em Physical review letters}, 116(6):061102, 2016.
+
+\bibitem{colpi_lisa_2024}
+Monica Colpi, Karsten Danzmann, Martin Hewitson, Kelly Holley-Bockelmann,
+  Philippe Jetzer, Gijs Nelemans, Antoine Petiteau, David Shoemaker, Carlos
+  Sopuerta, Robin Stebbins, Nial Tanvir, Henry Ward, William~Joseph Weber, Ira
+  Thorpe, Anna Daurskikh, Atul Deep, Ignacio~Fernández Núñez, César~García
+  Marirrodriga, Martin Gehler, Jean-Philippe Halain, Oliver Jennrich, Uwe
+  Lammers, Jonan Larrañaga, Maike Lieser, Nora Lützgendorf, Waldemar Martens,
+  Linda Mondin, Ana~Piris Niño, Pau Amaro-Seoane, Manuel~Arca Sedda, Pierre
+  Auclair, Stanislav Babak, Quentin Baghi, Vishal Baibhav, Tessa Baker,
+  Jean-Baptiste Bayle, Christopher Berry, Emanuele Berti, Guillaume Boileau,
+  Matteo Bonetti, Richard Brito, Riccardo Buscicchio, Gianluca Calcagni,
+  Pedro~R. Capelo, Chiara Caprini, Andrea Caputo, Eleonora Castelli, Hsin-Yu
+  Chen, Xian Chen, Alvin Chua, Gareth Davies, Andrea Derdzinski, Valerie~Fiona
+  Domcke, Daniela Doneva, Irna Dvorkin, Jose~María Ezquiaga, Jonathan Gair,
+  Zoltan Haiman, Ian Harry, Olaf Hartwig, Aurelien Hees, Anna Heffernan, Sascha
+  Husa, David Izquierdo, Nikolaos Karnesis, Antoine Klein, Valeriya Korol,
+  Natalia Korsakova, Thomas Kupfer, Danny Laghi, Astrid Lamberts, Shane Larson,
+  Maude~Le Jeune, Marek Lewicki, Tyson Littenberg, Eric Madge, Alberto
+  Mangiagli, Sylvain Marsat, Ivan~Martin Vilchez, Andrea Maselli, Josh Mathews,
+  Maarten van~de Meent, Martina Muratore, Germano Nardini, Paolo Pani, Marco
+  Peloso, Mauro Pieroni, Adam Pound, Hippolyte Quelquejay-Leclere, Angelo
+  Ricciardone, Elena~Maria Rossi, Andrea Sartirana, Etienne Savalle, Laura
+  Sberna, Alberto Sesana, Deirdre Shoemaker, Jacob Slutsky, Thomas Sotiriou,
+  Lorenzo Speri, Martin Staab, Danièle Steer, Nicola Tamanini, Gianmassimo
+  Tasinato, Jesus Torrado, Alejandro Torres-Orjuela, Alexandre Toubiana,
+  Michele Vallisneri, Alberto Vecchio, Marta Volonteri, Kent Yagi, and Lorenz
+  Zwick.
+\newblock {LISA} definition study report.
+\newblock Version Number: 1.
+
+\bibitem{weaver2010performance}
+Gregory Weaver, Jeffrey Garstecki, and Samuel Reynolds.
+\newblock The performance of ultra-stable oscillators for the gravity recovery
+  and interior laboratory (grail).
+\newblock In {\em Proceedings of the 42nd Annual Precise Time and Time Interval
+  Systems and Applications Meeting}, pages 369--380, 2010.
+
+\bibitem{bayle_unified_2023}
+Jean-Baptiste Bayle and Olaf Hartwig.
+\newblock Unified model for the {LISA} measurements and instrument simulations.
+\newblock 107(8):083019.
+
+\bibitem{tinto2018time}
+Massimo Tinto and Olaf Hartwig.
+\newblock Time-delay interferometry and clock-noise calibration.
+\newblock {\em Physical Review D}, 98(4):042003, 2018.
+
+\bibitem{otto2012tdi}
+Markus Otto, Gerhard Heinzel, and Karsten Danzmann.
+\newblock Tdi and clock noise removal for the split interferometry
+  configuration of lisa.
+\newblock {\em Classical and Quantum Gravity}, 29(20):205003, 2012.
+
+\bibitem{hartwig_clock-jitter_2021}
+Olaf Hartwig and Jean-Baptiste Bayle.
+\newblock Clock-jitter reduction in {LISA} time-delay interferometry
+  combinations.
+\newblock 103(12):123027.
+\newblock Publisher: American Physical Society.
+
+\end{thebibliography}

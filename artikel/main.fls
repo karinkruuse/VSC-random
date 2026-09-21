@@ -362,13 +362,11 @@ INPUT .\images\3arm.pdf
 INPUT .\images\3arm.pdf
 INPUT .\images\3arm.pdf
 INPUT C:\Users\kakruu\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ecti1000.tfm
-INPUT C:\Users\kakruu\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\tcrm1000.tfm
 INPUT .\model.tex
 INPUT .\model.tex
 INPUT .\model.tex
 INPUT .\model.tex
 INPUT model.tex
-INPUT C:\Users\kakruu\AppData\Local\Programs\MiKTeX\fonts\tfm\jknappen\ec\ectt1000.tfm
 INPUT .\images\performance\component_inputs_caption.tex
 INPUT .\images\performance\component_inputs_caption.tex
 INPUT .\images\performance\component_inputs_caption.tex
@@ -407,10 +405,6 @@ INPUT main.bbl
 INPUT main.aux
 INPUT .\main.out
 INPUT .\main.out
-INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ectt1000.pk
-INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ectt1000.pk
-INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1000.pk
-INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\tcrm1000.pk
 INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecti1000.pk
 INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecti1000.pk
 INPUT C:\Users\kakruu\AppData\Local\MiKTeX\fonts\pk\ljfour\jknappen\ec\dpi600\ecrm0800.pk

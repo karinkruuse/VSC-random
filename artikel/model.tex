@@ -16,9 +16,9 @@ The modulation-noise estimator is formed from the upper- and lower-sideband phas
 \begin{equation}
     \widehat m(t)=\frac{\phi_{\mathrm U}(t)-\phi_{\mathrm L}(t)}{2}.
 \end{equation}
-The opposite modulation signs in the two sidebands allow the common optical phase to cancel in this difference. The resulting spectrum constrains the combined modulation phase noise $m_i=\nu_i^m N_i+N_i^m$ at the measurement operating point, together with differential readout contributions to the estimator. It does not independently determine the timing and direct phase-noise terms. We use the first phase-PSD column of \texttt{measured noises/modulator\_psd.csv}; the other PSD columns are diagnostic sideband differences. In the illustrative propagation calculation, the measured spectrum is assigned to three independent spacecraft modulation-noise sources.
+The opposite modulation signs in the two sidebands allow the common optical phase to cancel in this difference. The resulting spectrum constrains the combined modulation phase noise $m_i=\nu_i^m N_i+N_i^m$ at the measurement operating point, together with differential readout contributions to the estimator. It does not independently determine the timing and direct phase-noise terms. In the illustrative propagation calculation, the measured spectrum is assigned to three independent spacecraft modulation-noise sources.
 
-The electronic input is the measured delay-line residual from \texttt{measured noises/baseline.csv}, shown in Fig.~\ref{fig:component_inputs_single_link}. This spectrum is obtained after forming a delayed phase difference and applying the measurement's timing correction. It is thus a characterization of that measurement chain, rather than a direct determination of every individual board noise. Assigning its PSD to each final carrier and sideband readout is a provisional model of the electronic contribution. Its interpretation must retain the operating conditions and the noise contributions already present in the measurement. Both measured inputs support the plotted $0.25\,\mathrm{mHz}$--$1\,\mathrm{Hz}$ band without extrapolation.
+The electronic input is the measured delay-line residual, shown in Fig.~\ref{fig:component_inputs_single_link}. This spectrum is obtained after forming a delayed phase difference and applying the measurement's timing correction. It is thus a characterization of that measurement chain, rather than a direct determination of every individual board noise. Assigning its PSD to each final carrier and sideband readout is a provisional model of the electronic contribution. Its interpretation must retain the operating conditions and the noise contributions already present in the measurement. Both measured inputs support the plotted $0.25\,\mathrm{mHz}$--$1\,\mathrm{Hz}$ band without extrapolation.
 
 For comparison, we use the single-link reference adopted in the component analysis. With $\lambda=1064\,\mathrm{nm}$, its equivalent phase ASDs are
 \begin{align}
@@ -71,6 +71,27 @@ The factor $2\pi$ converts radians to cycles. No integration over the PLL bandwi
  \label{fig:newport_readout}
 \end{figure*}
 
+The signal levels explain why this readout operates differently from LISA's. The $8\,\mathrm{mW}$ laboratory beams produce strong carrier and sideband beats, whereas LISA must measure light received after propagation over millions of kilometres. miniLISA therefore has a much lower predicted detector readout noise than the LISA science-interferometer allocations, as summarized in Table~\ref{tab:readout_comparison}.
+
+The testbed does not need to reproduce LISA's weak-light, shot-noise-limited readout to test laser- and clock-noise suppression. A lower readout floor makes smaller residuals from the delay and clock-transfer chains accessible. Shot noise is included in the calculation, but the measured electronic and modulation contributions exceed the predicted detector noise and set the larger contributions in the present estimate. Thus the laboratory signal powers are chosen to support the noise-suppression tests, rather than to reproduce the mission's photon budget.
+
+\begin{table}[t]
+\centering
+\caption{Science-interferometer readout comparison. LISA values are allocation plateaus; miniLISA values are predictions for the optical operating point specified in the text, not measured total testbed noise.}
+\label{tab:readout_comparison}
+\small
+\begin{tabular}{lrr}
+\hline
+Readout ASD & LISA allocation & miniLISA prediction \\
+\hline
+Carrier [$\mathrm{pm}/\sqrt{\mathrm{Hz}}$] & 9 & 0.0030 \\
+Sideband [$\mu\mathrm{rad}/\sqrt{\mathrm{Hz}}$] & 600 & 0.0637 \\
+\hline
+\end{tabular}
+\end{table}
+
+The LISA allocations (IRD2--IDS--04010 and IRD2--IDS--04580) increase towards low frequencies as $\sqrt{1+(f_k/f)^4}$, with $f_k=2\,\mathrm{mHz}$ for the carrier and $0.7\,\mathrm{mHz}$ for the sidebands. They refer to individual readouts and are distinct from the total OMS-plus-acceleration comparison curve used above.
+
 \subsection{Propagation Through TDI and Clock Correction}
 
 The propagation calculation uses static delays and constant nominal frequencies. The illustrative frequency plan is $\nu_{\mathrm R,i}=(15.0,10.9,21.6)\,\mathrm{MHz}$ and $\nu_i^m=35\,\mathrm{MHz}$ for all three spacecraft, giving $(\alpha_{12},\alpha_{21},\alpha_{13},\alpha_{31})=(-4.1,4.1,6.6,-6.6)\,\mathrm{MHz}$. The nominal one-way delay is $L=2.5\times10^9\,\mathrm m/c\simeq8.339\,\mathrm s$. These specify the model operating point; they are not a reconstruction of the frequencies used in every component measurement.
@@ -113,3 +134,10 @@ Figure~\ref{fig:total_tdi2_noise} shows the predicted total after static second-
 For the specified optical operating point, the calculated Newport readout spectra lie below the measured electronic and modulation component spectra over the plotted band. This indicates that the predicted detector readout is not the leading component limitation under these assumptions. Whether increasing the modulation frequency improves the corrected observable depends on the relative modulation and additive-readout contributions, and on whether the measured excess behaves as timing or direct phase noise. A GHz implementation also requires a compatible RF and digitization chain; holding the readout spectrum fixed while changing modulation frequency is only a model extrapolation.
 
 A numerical total formed from the measured baseline and the predicted readout terms remains conditional on their separation. The explicit ADC estimate must not be counted again if the same ADC noise is already present in the baseline. Similarly, readout contamination of the modulation estimator must be accounted for before adding an independent estimate of that contribution. Board timing noise requires a measured spectrum or bound, and residual laser noise from imperfect delay knowledge requires a processing-error calculation. The figures therefore establish the component inputs and the predicted optical readout contribution; a validated total optical-testbed sensitivity requires these additional measurements and the consistent mapping of each measured residual into the final link equations.
+
+
+\subsection{Further Characterization}
+
+The ideal ADC quantization estimate should be checked against the measured electronic readout. Splitting the same electrical signal between two ADC channels and varying its frequency and amplitude can distinguish timing jitter, whose phase coupling grows with beat frequency, from additive voltage noise, whose equivalent phase contribution decreases with signal amplitude. Measurements with a digitally split input can separately constrain the phase-tracking and numerical noise added after conversion. A three-signal phase-closure measurement would complement these tests, since shared errors can cancel in a two-channel difference and conceal part of the readout noise.
+
+Temperature-dependent phase shifts in the RF input and output paths are another possible low-frequency contribution. Recording temperatures alongside long-duration phase measurements would allow these couplings to be estimated. The digital processing also requires checks of out-of-band noise folded into the measurement band by decimation, finite frequency-word precision, and fractional-delay interpolation. Comparing static and varying delays with a known input phase spectrum would help separate processing residuals from additive readout noise. These effects should be included in the numerical budget only when their spectra or transfer functions have been measured or bounded, and only to the extent that they are not already contained in the electronic baseline.

@@ -1,0 +1,56 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: design-review.aux
+Reallocating 'name_of_file' (item size: 1) to 19 items.
+Reallocating 'name_of_file' (item size: 1) to 10 items.
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: unsrt.bst
+Database file #1: design-reviewNotes.bib
+Database file #2: citations.bib
+Warning--I didn't find a database entry for ""
+Warning--empty journal in bayle_unified_2023
+Warning--empty year in bayle_unified_2023
+Warning--empty journal in hartwig_clock-jitter_2021
+Warning--empty year in hartwig_clock-jitter_2021
+You've used 7 entries,
+            1791 wiz_defined-function locations,
+            496 strings with 7192 characters,
+and the built_in function-call counts, 3177 in all, are:
+= -- 139
+> -- 416
+< -- 1
++ -- 141
+- -- 134
+* -- 353
+:= -- 606
+add.period$ -- 22
+call.type$ -- 7
+change.case$ -- 7
+chr.to.int$ -- 0
+cite$ -- 11
+duplicate$ -- 71
+empty$ -- 172
+format.name$ -- 134
+if$ -- 602
+int.to.chr$ -- 0
+int.to.str$ -- 7
+missing$ -- 6
+newline$ -- 39
+num.names$ -- 7
+pop$ -- 24
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 37
+stack$ -- 0
+substring$ -- 122
+swap$ -- 15
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 4
+while$ -- 15
+width$ -- 8
+write$ -- 75
+(There were 5 warnings)
