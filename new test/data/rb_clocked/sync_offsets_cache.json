@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "name": "MokuPhasemeterSlot1Data_20260804_143702.npy",
+      "size": 30231248
+    },
+    {
+      "name": "MokuPhasemeterSlot2Data_20260804_143703.npy",
+      "size": 30225528
+    },
+    {
+      "name": "MokuPhasemeterSlot3Data_20260804_143704.npy",
+      "size": 30221304
+    },
+    {
+      "name": "MokuPhasemeterSlot4Data_20260804_143705.npy",
+      "size": 30216992
+    }
+  ],
+  "offsets": [
+    0.0,
+    1.246784528257409,
+    2.095246023838234,
+    2.9166959083797503
+  ]
+}

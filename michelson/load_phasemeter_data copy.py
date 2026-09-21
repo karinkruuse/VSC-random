@@ -212,6 +212,8 @@ f, p_TDI22  = welch(TDI22[full], fs=fs, nperseg=nps)
 
 baseline_ref = np.loadtxt(os.path.join('..', 'measured noises', 'baselineX1.csv'), delimiter=',', skiprows=1)
 
+baseline_ref2 = np.loadtxt('baselinerwres.csv', delimiter=',', skiprows=1)
+
 
 
 color_extrapolated = "#d71b2f"   # (215, 27, 47)  red
@@ -229,6 +231,7 @@ plt.loglog(f, np.sqrt(p_fit), lw=1.4, color=color_modulator, label=f"TDI X1")
 #plt.loglog(f, np.sqrt(p_TDI22), lw=0.5, alpha=0.6, color="blue", label="TDI + board jitter correction")
 
 plt.loglog(baseline_ref[:, 0], baseline_ref[:, 1], lw=1.5, label='3-board baseline', color='k', alpha=0.3)
+plt.loglog(baseline_ref2[:, 0], np.sqrt(baseline_ref2[:, 1]), lw=0.6, label='TDI + board correction, less injected noise', color='blue', alpha=0.5)
 
 #plt.axvspan(FMIN, FMAX, color="tab:blue", alpha=0.06, label="fit band")
 plt.xlim(10e-4, 10)

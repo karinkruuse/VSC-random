@@ -56,8 +56,8 @@ TARGET_FREQ_HZ = 15e6  # eta12/eta21's demodulation frequency -- what the
 FMIN_PLOT = 1e-3 # Hz -- lowest frequency shown/used for nperseg sizing
 BAND_LO, BAND_HI = 1e-3, 1.0  # Hz -- band used for the printed RMS/suppression numbers
 
-delay1 = 8.14895613  # seed / fallback -- refined below by minimizing the "board
-delay2 = 8.21742184  
+delay1 = 8.31  # seed / fallback -- refined below by minimizing the "board
+delay2 = 8.31
 FIT_DELAY = False
 DELAY_SEARCH_HALFWIDTH = 0.5  # s, search window around the seed above
 
@@ -119,11 +119,13 @@ if FIT_DELAY:
     print(_result.x)
     delay1, delay2 = _result.x
 
-cc2 = (data["corr2_eta21"] ) - timeshift(data["corr1_eta12"], -fs*delay2)
-r2 = (data["corr2_zeta_U_21"]-data["corr2_eta21"])/2e6*data["corr2_eta21_freq"]
+clk_diff = corrections["SYSREF1"] - corrections["SYSREF2"]
 
-cc = (data["corr1_eta12"] ) - timeshift(data["corr2_eta21"], -fs*delay1)
-r1 = -(data["corr1_zeta_U_12"]-data["corr1_zeta_L_12"])/1e6*data["corr1_eta12_freq"]
+cc2 = (data["corr2_eta21"] ) - timeshift(data["corr1_eta12"], -fs*delay2)
+r2 = (data["corr2_zeta_U_21"]-data["corr2_eta21"])/2*15
+
+cc1 = (data["corr1_eta12"] ) - timeshift(data["corr2_eta21"], -fs*delay1)
+r1 = -(data["corr1_zeta_U_12"]-data["corr1_zeta_L_12"])/2*15*1
 
 
 r2c = r2 + timeshift(corrections["SYSREF2"], -fs*delay2) - corrections["SYSREF2"]
@@ -134,26 +136,39 @@ eta12c = data["corr1_eta12"] + timeshift(corrections["SYSREF1"], -fs*delay1)
 eta21c = data["corr2_eta21"] + timeshift(corrections["SYSREF2"], -fs*delay2)
 
 cc2c = (eta21c) - timeshift(eta12c, -fs*delay1)
-cc1c = (eta12c) - timeshift(eta21c, -fs*delay1)
+cc1c = (eta12c) - timeshift(eta21c, -fs*delay2)
 
 cc3 = (data["corr2_eta21"] ) - data["corr1_eta12"]
-r3 = (data["corr2_zeta_U_21"]-data["corr2_eta21"])/2e6*15e6
+r3 = (data["corr2_zeta_U_21"]-data["corr2_eta21"])/2*15
 
 cc3_swap = (data["corr1_eta12"] ) - data["corr2_eta21"]
-r3_swap = (data["corr1_zeta_U_12"]-data["corr1_eta12"])/1e6*15e6
+r3_swap = (data["corr1_zeta_U_12"]-data["corr1_eta12"])*15
 
 # assume q_1 = 0
 cc3c = eta21c - eta12c
 r3c = r3 + timeshift(corrections["SYSREF2"], -fs*delay2) - corrections["SYSREF2"]
 
+
+cc4 = (data["corr1_eta12"] ) - data["corr2_eta21"]
+
 carrier_minus_carrier = {
    # "cc1 - r1": cc - r1,
    # "r1 - r2": [eta12c + timeshift(eta21c, -fs*delay1), "black"]  ,
-   # "r1-r2": r1 +timeshift(r2, -fs*delay)  ,
-    "$\eta_{12} - \eta_{21}$" : [cc3, color_extrapolated],
-    "sideband correction" : [cc3 -r2, color_measured] ,
-    "board jitter correction" : [cc3c -r3c, color_modulator],
-    "cc1- r14": [(cc1c - r1c), "black" ], #-(cc1c - r1c) limits
+    #"eta12": [data["corr1_eta12"], "blue"],
+    #"15 x eta12^SB": [15*data["corr1_zeta_U_12"], "pink"],
+    #"eta21": [data["corr2_eta21"], "red"],
+    r"$\text{isi}_{21} - \mathbf{D}\text{isi}_{12} -\omega r_{21}$" : [cc2 - r2, color_extrapolated],
+    r"$\text{isi}_{12} - \mathbf{D}\text{isi}_{21} -\omega r_{12}$" : [cc1 - r1, color_measured],
+    r"$\text{isi}_{21} $" : [eta21c, "purple"],
+   
+    #"diff" : [(cc1 - r1) - (cc2 - r2), "blue"],
+  
+  
+    r"$\text{isi}_{21} - \text{isi}_{12} -\omega r_{21}$" : [cc3 -r3, "black"] ,
+    r"$\text{isi}_{12} - \text{isi}_{21} -\omega r_{12}$" : [cc4 -r1, "gray"] ,
+    #"sideband correction false" : [(data["corr2_eta21"] ) +timeshift(r1,fs*delay2), "black"] ,
+    #"sideband + board correction" : [cc3c -r3c, color_modulator],
+    #"cc1- r14": [(cc1c - r1c), "black" ], #-(cc1c - r1c) limits
 }
 
 
@@ -167,8 +182,8 @@ for label, x in carrier_minus_carrier.items():
     f, asd = welch_asd(x[0], fs)
     ax1.loglog(f[1:], asd[1:], lw=0.9, label=label, color=x[1])
     print(f"{label}: band RMS [{BAND_LO}, {BAND_HI}] Hz = {band_rms(f, asd):.3e} cyc")
-
-ax1.loglog(baseline_ref[:, 0], np.sqrt(3)*baseline_ref[:, 1], lw=1.5, label='2-board baseline', color='k', alpha=0.3)
+ax1.vlines([1/16.6, 1/8.3], ymin=4e-7, ymax=5e1, color='k', ls='--', lw=0.8, alpha=0.5)
+#ax1.loglog(baseline_ref[:, 0], np.sqrt(3)*baseline_ref[:, 1], lw=1.5, label='2-board baseline', color='k', alpha=0.3)
 ax1.set_xlabel("Frequency (Hz)")
 ax1.set_ylabel("ASD (cyc/√Hz)")
 #ax1.set_title("carrier_minus_carrier (uncorrected)")
@@ -176,6 +191,6 @@ ax1.grid(True, which="both", ls="--", alpha=0.4)
 plt.legend( fontsize=12, frameon=True, fancybox=False)
 ax1.set_xlim(FMIN_PLOT, 10)
 fig1.tight_layout()
-out1 = os.path.join(OUT_DIR, "asd_carrier_minus_sb_raw.png")
+out1 = os.path.join(OUT_DIR, "asd_carrier_minus_sb.png")
 fig1.savefig(out1)
 print(f"saved {out1}")

@@ -30,7 +30,7 @@ print(f'Loading: {npy_file}')
 
 
 fmin = 1e-4
-nr_of_channels = 6
+nr_of_channels = 3
 
 CROP_FRACTION = 1.0    # keep only this fraction of the record (0-1], from the start
 M             = 0      # samples dropped from the very start before cropping
