@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{abbott2016observation}
 Benjamin~P Abbott, Richard Abbott, Thomas~D Abbott, Matthew~R Abernathy, Fausto
@@ -34,8 +34,13 @@ Monica Colpi, Karsten Danzmann, Martin Hewitson, Kelly Holley-Bockelmann,
   Tasinato, Jesus Torrado, Alejandro Torres-Orjuela, Alexandre Toubiana,
   Michele Vallisneri, Alberto Vecchio, Marta Volonteri, Kent Yagi, and Lorenz
   Zwick.
-\newblock {LISA} definition study report.
+\newblock {LISA} definition study report, 2024.
 \newblock Version Number: 1.
+
+\bibitem{bayle_unified_2023}
+Jean-Baptiste Bayle and Olaf Hartwig.
+\newblock Unified model for the {LISA} measurements and instrument simulations.
+\newblock {\em Physical Review D}, 107(8):083019, 2023.
 
 \bibitem{weaver2010performance}
 Gregory Weaver, Jeffrey Garstecki, and Samuel Reynolds.
@@ -44,15 +49,47 @@ Gregory Weaver, Jeffrey Garstecki, and Samuel Reynolds.
 \newblock In {\em Proceedings of the 42nd Annual Precise Time and Time Interval
   Systems and Applications Meeting}, pages 369--380, 2010.
 
-\bibitem{bayle_unified_2023}
-Jean-Baptiste Bayle and Olaf Hartwig.
-\newblock Unified model for the {LISA} measurements and instrument simulations.
-\newblock 107(8):083019.
+\bibitem{tinto_time-delay_2002}
+Massimo Tinto, F.~B. Estabrook, and J.~W. Armstrong.
+\newblock Time-delay interferometry for {LISA}.
+\newblock {\em Physical Review D}, 65(8):082003, 2002.
+\newblock Publisher: American Physical Society.
 
-\bibitem{tinto2018time}
-Massimo Tinto and Olaf Hartwig.
-\newblock Time-delay interferometry and clock-noise calibration.
-\newblock {\em Physical Review D}, 98(4):042003, 2018.
+\bibitem{mitryk_hardware-based_2012}
+Shawn~J. Mitryk, Guido Mueller, and Josep Sanjuan.
+\newblock Hardware-based demonstration of time-delay interferometry and
+  {TDI}-ranging with spacecraft motion effects.
+\newblock {\em Physical Review D}, 86(12):122006, 2012.
+
+\bibitem{devine2010}
+Glenn de~Vine, Brent Ware, Kirk McKenzie, Robert~E. Spero, William~M.
+  Klipstein, and Daniel~A. Shaddock.
+\newblock Experimental demonstration of time-delay interferometry for the laser
+  interferometer space antenna.
+\newblock {\em Physical Review Letters}, 104:211103, 2010.
+
+\bibitem{laporte2017lot}
+M.~Laporte, H.~Halloin, E.~Br{\'e}elle, C.~Buy, P.~Gr{\"u}ning, and P.~Prat.
+\newblock Status of the {LISA On Table} experiment: a electro-optical simulator
+  for {LISA}.
+\newblock {\em Journal of Physics: Conference Series}, 840:012014, 2017.
+
+\bibitem{ferguson2025applying}
+Reid Ferguson, Olaf Hartwig, and Guido Mueller.
+\newblock Applying tdi to hardware-simulated data.
+\newblock {\em arXiv preprint arXiv:2505.22579}, 2025.
+
+\bibitem{heinzel_auxiliary_2011}
+Gerhard Heinzel, Juan~José Esteban, Simon Barke, Markus Otto, Yan Wang,
+  Antonio~F Garcia, and Karsten Danzmann.
+\newblock Auxiliary functions of the \textbf{{LISA}} laser link: ranging, clock
+  noise transfer and data communication.
+\newblock {\em Classical and Quantum Gravity}, 28(9):094008, 2011.
+
+\bibitem{heinzel_frequency_2024}
+Gerhard Heinzel, Javier Álvarez Vizoso, Miguel Dovale-Álvarez, and Karsten
+  Wiesner.
+\newblock Frequency planning for {LISA}, 2024.
 
 \bibitem{otto2012tdi}
 Markus Otto, Gerhard Heinzel, and Karsten Danzmann.
@@ -60,11 +97,34 @@ Markus Otto, Gerhard Heinzel, and Karsten Danzmann.
   configuration of lisa.
 \newblock {\em Classical and Quantum Gravity}, 29(20):205003, 2012.
 
+\bibitem{tinto2018time}
+Massimo Tinto and Olaf Hartwig.
+\newblock Time-delay interferometry and clock-noise calibration.
+\newblock {\em Physical Review D}, 98(4):042003, 2018.
+
 \bibitem{hartwig_clock-jitter_2021}
 Olaf Hartwig and Jean-Baptiste Bayle.
 \newblock Clock-jitter reduction in {LISA} time-delay interferometry
   combinations.
-\newblock 103(12):123027.
+\newblock {\em Physical Review D}, 103(12):123027, 2021.
+\newblock Publisher: American Physical Society.
+
+\bibitem{srs_rb_standard}
+{Stanford Research Systems}.
+\newblock {FS725} rubidium frequency standard: specifications.
+\newblock \url{https://www.thinksrs.com/products/fs725.html}.
+\newblock Accessed 22 September 2026.
+
+\bibitem{newport1064}
+{Newport}.
+\newblock {F-PD-30-D-1064-FCA} fiber-optic photodetector specifications.
+\newblock \url{https://www.newport.com/p/F-PD-30-D-1064-FCA}.
+\newblock Accessed 22 September 2026.
+
+\bibitem{bayle_adapting_2021}
+Jean-Baptiste Bayle, Olaf Hartwig, and Martin Staab.
+\newblock Adapting time-delay interferometry for {LISA} data in frequency.
+\newblock {\em Physical Review D}, 104(2):023006, 2021.
 \newblock Publisher: American Physical Society.
 
 \end{thebibliography}

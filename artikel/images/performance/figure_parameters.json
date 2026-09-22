@@ -7,10 +7,10 @@
     "(3, 1)": 8.3391023799538
   },
   "gamma_hz": {
-    "(1, 2)": -4100000.0,
-    "(2, 1)": 4100000.0,
-    "(1, 3)": 6600000.0,
-    "(3, 1)": -6600000.0
+    "(1, 2)": -3100000.0,
+    "(2, 1)": 3100000.0,
+    "(1, 3)": 5600000.0,
+    "(3, 1)": -5600000.0
   },
   "fourier_band_hz": [
     0.00025,
@@ -30,8 +30,8 @@
   },
   "nu_m_hz": {
     "1": 35000000.0,
-    "2": 35000000.0,
-    "3": 35000000.0
+    "2": 36000000.0,
+    "3": 34000000.0
   },
   "modulation_psd_kind": "phase_cycles",
   "baseline_as_link_proxy": true,
@@ -55,36 +55,45 @@
       "RIN": 9e-09,
       "R_term": 50,
       "I_dark": 1e-07,
-      "G_total": 50,
+      "G_total": 28.86751345948129,
       "adc_FSR": 1,
       "adc_bits": 14,
-      "adc_fs": 2000000000.0
+      "adc_fs": 2000000000.0,
+      "fanout_voltage_ratio": 0.5773502691896258
     },
-    "P_SC_W": 0.008,
-    "P_REF_W": 0.008,
+    "P_SC_W": 0.004,
+    "P_REF_W": 0.004,
     "enabled": true,
     "include_ADC": true,
     "RIN_correlation": "fully_correlated",
-    "power_convention": "incident at PD; one modulated beam and one unmodulated beam",
+    "power_convention": "4 mW per beam incident at detector; ideal three-way RF split",
     "components_cycles_per_sqrt_Hz": {
       "carrier": {
-        "shot (including dark)": 1.472318680384474e-09,
-        "Johnson": 4.832156721965394e-10,
+        "shot (including dark)": 2.082183890445058e-09,
+        "Johnson": 9.664313443930788e-10,
         "RIN": 2.2935461941737127e-09,
-        "ADC": 2.9581022550537344e-10
+        "ADC": 1.0247166799474276e-09
       },
       "sideband": {
-        "shot (including dark)": 5.358513197620662e-09,
-        "Johnson": 1.7586665110342376e-09,
+        "shot (including dark)": 7.57812150689373e-09,
+        "Johnson": 3.5173330220684752e-09,
         "RIN": 8.347375955063704e-09,
-        "ADC": 1.0766031963594743e-09
+        "ADC": 3.729462871371324e-09
       }
     },
     "total_cycles_per_sqrt_Hz": {
-      "carrier": 2.7837164936084446e-09,
-      "sideband": 1.0131353876145837e-08
+      "carrier": 3.402921937985873e-09,
+      "sideband": 1.2384956027596205e-08
     },
     "source_sha256": "42aad7aff8c8bf118c43eb8de8425892b1524b02ee409d0863fccd30dcdcdd85"
   },
-  "comparison": "existing OMS+acceleration single-link model, independent-equivalent-link propagation"
+  "comparison": "existing OMS+acceleration single-link model, independent-equivalent-link propagation",
+  "article_budget": {
+    "electronics": "same measured PSD per carrier/sideband link; independent equivalent link noises",
+    "detector": "shared before fanout; independent detector channels; exclude ADC from this term",
+    "modulation": "existing estimator assigned to independent source modulation phases; measurement to be repeated",
+    "ADC": "shown in input readout prediction; not added again to measured electronic baseline",
+    "primary_noises": "ideal cancellation; static delays",
+    "detector_difference_psd": 1.500080759384174e-16
+  }
 }

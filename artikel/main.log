@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  21 SEP 2026 14:22
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  22 SEP 2026 17:35
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -636,32 +636,32 @@ File: tikzlibrarypositioning.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 )
 \c@@todonotes@numberoftodonotes=\count362
 )
-Class revtex4-2 Info: Unrecognized array package. Please update this document class! (Proceeding with fingers crossed.) on input line 34.
-Class revtex4-2 Info: cite was not loaded (OK!) on input line 34.
-Class revtex4-2 Info: mcite was not loaded (OK!) on input line 34.
-Class revtex4-2 Info: multicol was not loaded (OK!) on input line 34.
-Package translations Info: No language package found. I am going to use `english' as default language. on input line 34.
+Class revtex4-2 Info: Unrecognized array package. Please update this document class! (Proceeding with fingers crossed.) on input line 36.
+Class revtex4-2 Info: cite was not loaded (OK!) on input line 36.
+Class revtex4-2 Info: mcite was not loaded (OK!) on input line 36.
+Class revtex4-2 Info: multicol was not loaded (OK!) on input line 36.
+Package translations Info: No language package found. I am going to use `english' as default language. on input line 36.
  (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 34.
-LaTeX Font Info:    ... okay on input line 34.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
 
 
 Package siunitx Warning: Detected the "physics" package:
@@ -677,7 +677,7 @@ Package siunitx Warning: Detected the "physics" package:
 (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/latex/translations/dicts\translations-basic-dictionary-english.trsl
 File: translations-basic-dictionary-english.trsl (english translation file `translations-basic-dictionary')
 )
-Package translations Info: loading dictionary `translations-basic-dictionary' for `english'. on input line 34.
+Package translations Info: loading dictionary `translations-basic-dictionary' for `english'. on input line 36.
  (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count363
@@ -697,21 +697,19 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-Package hyperref Info: Link coloring OFF on input line 34.
+Package hyperref Info: Link coloring OFF on input line 36.
  (main.out) (main.out)
 \@outlinefile=\write6
 \openout6 = `main.out'.
 
 
 
-Package todonotes Warning: The length marginparwidth is less than 2cm and will most likely cause issues with the appearance of inserted todonotes. The issue can be solved by adding a line like \setlength {\marginparwidth }{2cm} prior to loading the todonotes package. on input line 34.
+Package todonotes Warning: The length marginparwidth is less than 2cm and will most likely cause issues with the appearance of inserted todonotes. The issue can be solved by adding a line like \setlength {\marginparwidth }{2cm} prior to loading the todonotes package. on input line 36.
 
-Class revtex4-2 Info: Taking \maketitle back from hyperref on input line 34.
+Class revtex4-2 Info: Taking \maketitle back from hyperref on input line 36.
 \openout3 = `mainNotes.bib'.
 
 (intro.tex
-Package acronym Info: Label `acro:LVK' newly defined as it shall be overridden
-although it is yet undefined on input line 2.
 Package acronym Info: Label `acro:LISA' newly defined as it shall be overridden
 although it is yet undefined on input line 2.
 Package acronym Info: Label `acro:TDI' newly defined as it shall be overridden
@@ -726,171 +724,188 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 6.
  (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+Underfull \hbox (badness 1946) in paragraph at lines 10--11
+[][][] \T1/cmr/m/n/10 has been de-vel-oped an-a-lyt-i-cally and tested
+ []
+
 Package acronym Info: Label `acro:UFLIS' newly defined as it shall be overridden
 although it is yet undefined on input line 12.
 
-Underfull \hbox (badness 1226) in paragraph at lines 14--15
+Underfull \hbox (badness 1226) in paragraph at lines 15--16
 []\T1/cmr/m/n/10 Here, we present an overview of an on-go-ing ef-
  []
 
 Package acronym Info: Label `acro:FPGA' newly defined as it shall be overridden
-although it is yet undefined on input line 16.
-[1{C:/Users/kakruu/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]) (IDS.tex
+although it is yet undefined on input line 17.
+) [1{C:/Users/kakruu/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (IDS.tex
 Package acronym Info: Label `acro:IDS' newly defined as it shall be overridden
 although it is yet undefined on input line 3.
 Package acronym Info: Label `acro:MOSA' newly defined as it shall be overridden
 although it is yet undefined on input line 9.
 
-Underfull \hbox (badness 4181) in paragraph at lines 12--15
+Underfull \hbox (badness 4181) in paragraph at lines 12--14
 \OML/cmm/m/it/10 ^^N^^^[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t\OT1/cmr/m/n/10 )$ \T1/cmr/m/n/10 rep-re-sents the in-trin-sic laser phase noise.
  []
 
-<images/LISAarm-analysis.pdf, id=130, 781.92125pt x 470.75874pt>
+<images/LISAarm-analysis.pdf, id=142, 781.92125pt x 470.75874pt>
 File: images/LISAarm-analysis.pdf Graphic file (type pdf)
 <use images/LISAarm-analysis.pdf>
-Package pdftex.def Info: images/LISAarm-analysis.pdf  used on input line 18.
+Package pdftex.def Info: images/LISAarm-analysis.pdf  used on input line 17.
 (pdftex.def)             Requested size: 510.0pt x 307.04549pt.
 Package acronym Info: Label `acro:ADC' newly defined as it shall be overridden
-although it is yet undefined on input line 19.
+although it is yet undefined on input line 18.
 Package acronym Info: Label `acro:EOM' newly defined as it shall be overridden
-although it is yet undefined on input line 24.
+although it is yet undefined on input line 23.
 Package acronym Info: Label `acro:PLL' newly defined as it shall be overridden
-although it is yet undefined on input line 26.
-[2]
+although it is yet undefined on input line 25.
 Package acronym Info: Label `acro:PMS' newly defined as it shall be overridden
-although it is yet undefined on input line 53.
+although it is yet undefined on input line 52.
+[2]
 Package acronym Info: Label `acro:DPLL' newly defined as it shall be overridden
-although it is yet undefined on input line 67.
+although it is yet undefined on input line 66.
  [3 <./images/LISAarm-analysis.pdf>]
-Overfull \hbox (4.78801pt too wide) detected at line 101
-[]
- []
-
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
 (hyperref)                removing `\@ac' on input line 111.
 
 
-Underfull \hbox (badness 1460) in paragraph at lines 115--116
+Underfull \hbox (badness 1460) in paragraph at lines 114--115
 []\T1/cmr/m/n/10 For scale, con-sider a rep-re-sen-ta-tive pre-stabilized
  []
 
-[4]
-Underfull \hbox (badness 1845) in paragraph at lines 126--128
+
+Underfull \hbox (badness 1845) in paragraph at lines 122--124
 \T1/cmr/m/n/10 Within the common-optical-frequency ap-prox-i-ma-tion
  []
 
-
-Underfull \hbox (badness 1248) in paragraph at lines 153--154
-[]\T1/cmr/m/n/10 Further, as an ex-am-ple, a com-monly used first-
- []
-
-
-Overfull \hbox (21.73772pt too wide) detected at line 162
-[]
- []
-
-[5]
-<images/FDM.png, id=276, 462.97969pt x 215.30438pt>
+[4]
+<images/FDM.png, id=285, 462.97969pt x 215.30438pt>
 File: images/FDM.png Graphic file (type png)
 <use images/FDM.png>
-Package pdftex.def Info: images/FDM.png  used on input line 198.
+Package pdftex.def Info: images/FDM.png  used on input line 191.
 (pdftex.def)             Requested size: 246.0pt x 114.39987pt.
 Package acronym Info: Label `acro:PT' newly defined as it shall be overridden
-although it is yet undefined on input line 199.
+although it is yet undefined on input line 192.
 Package acronym Info: Label `acro:PM' newly defined as it shall be overridden
-although it is yet undefined on input line 199.
-<images/3arm.pdf, id=278, 860.21375pt x 847.165pt>
-File: images/3arm.pdf Graphic file (type pdf)
-<use images/3arm.pdf>
-Package pdftex.def Info: images/3arm.pdf  used on input line 206.
-(pdftex.def)             Requested size: 246.0pt x 242.25891pt.
-)
-Package acronym Info: Label `acro:SC' newly defined as it shall be overridden
-although it is yet undefined on input line 84.
- [6 <./images/FDM.png>]
+although it is yet undefined on input line 192.
 
-LaTeX Warning: A float is stuck (cannot be placed); try class option [floatfix] on input line 101.
+Underfull \hbox (badness 8094) in paragraph at lines 188--195
+[]\T1/cmr/m/n/10 The two modulation-frequency syn-the-sis chains
+ []
+
+
+Underfull \hbox (badness 2134) in paragraph at lines 188--195
+\T1/cmr/m/n/10 can add dif-fer-ent ex-cess noises. Lo-cal reference-
+ []
+
+
+Underfull \hbox (badness 1533) in paragraph at lines 188--195
+\T1/cmr/m/n/10 interferometer side-band mea-sure-ments pro-vide ad-di-
+ []
+
+[5])
+Package acronym Info: Label `acro:LFN' newly defined as it shall be overridden
+although it is yet undefined on input line 86.
+Package acronym Info: Label `acro:SC' newly defined as it shall be overridden
+although it is yet undefined on input line 86.
+
+Underfull \hbox (badness 1490) in paragraph at lines 86--87
+\T1/cmr/m/n/10 space-craft, al-low-ing LISA TDI com-bi-na-tions to be
+ []
 
 Package acronym Info: Label `acro:ULE' newly defined as it shall be overridden
-although it is yet undefined on input line 106.
-Package acronym Info: Label `acro:LFN' newly defined as it shall be overridden
-although it is yet undefined on input line 107.
-[7 <./images/3arm.pdf>]
-Underfull \hbox (badness 1184) in paragraph at lines 133--134
-[]\T1/cmr/m/n/10 Our modulation-noise mea-sure-ment con-strains the
- []
-
+although it is yet undefined on input line 108.
+[6 <./images/FDM.png>]
+<images/3arm.pdf, id=306, 860.21375pt x 847.165pt>
+File: images/3arm.pdf Graphic file (type pdf)
+<use images/3arm.pdf>
+Package pdftex.def Info: images/3arm.pdf  used on input line 142.
+(pdftex.def)             Requested size: 246.0pt x 242.25891pt.
 Package acronym Info: Label `acro:PS' newly defined as it shall be overridden
-although it is yet undefined on input line 148.
-[8]
-Underfull \hbox (badness 1308) in paragraph at lines 228--230
-\T1/cmr/m/n/10 The terms pro-por-tional to $\OML/cmm/m/it/10 q[]$ \T1/cmr/m/n/10 come from the fi-nal
- []
-
-
-Underfull \hbox (badness 3271) in paragraph at lines 241--242
+although it is yet undefined on input line 155.
+ [7 <./images/3arm.pdf>] [8]
+Underfull \hbox (badness 3271) in paragraph at lines 257--258
 []\T1/cmr/m/n/10 Finally, the upper-sideband-minus-carrier vari-able
  []
 
-[9] (model.tex
-Underfull \hbox (badness 1742) in paragraph at lines 23--24
+[9] (model.tex [10]
+Underfull \hbox (badness 1742) in paragraph at lines 27--28
 []\T1/cmr/m/n/10 For com-par-i-son, we use the single-link ref-er-ence
  []
 
 (images/performance/component_inputs_caption.tex
-<images/performance/component_inputs_single_link.pdf, id=428, 505.89pt x 346.89601pt>
+<images/performance/component_inputs_single_link.pdf, id=478, 505.89pt x 346.89601pt>
 File: images/performance/component_inputs_single_link.pdf Graphic file (type pdf)
 <use images/performance/component_inputs_single_link.pdf>
 Package pdftex.def Info: images/performance/component_inputs_single_link.pdf  used on input line 5.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [10] [11 <./images/performance/component_inputs_single_link.pdf>]
-<images/performance/newport_readout_breakdown.pdf, id=539, 505.89pt x 238.49101pt>
+) [11]
+<images/performance/newport_readout_breakdown.pdf, id=497, 505.89pt x 238.49101pt>
 File: images/performance/newport_readout_breakdown.pdf Graphic file (type pdf)
 <use images/performance/newport_readout_breakdown.pdf>
-Package pdftex.def Info: images/performance/newport_readout_breakdown.pdf  used on input line 69.
+Package pdftex.def Info: images/performance/newport_readout_breakdown.pdf  used on input line 76.
 (pdftex.def)             Requested size: 510.0pt x 240.43367pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 93--94
+ [12 <./images/performance/component_inputs_single_link.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 85--86
 []\T1/cmr/m/n/10 The LISA al-lo-ca-tions (IRD2--IDS--04010 and
  []
 
 
-Underfull \hbox (badness 3758) in paragraph at lines 93--94
+Underfull \hbox (badness 3758) in paragraph at lines 85--86
 \T1/cmr/m/n/10 IRD2--IDS--04580) in-crease to-wards low fre-quen-cies
  []
 
-[12]
-<images/performance/total_noise_tdi2_corrected_budget.pdf, id=556, 505.89pt x 346.89601pt>
+[13 <./images/performance/newport_readout_breakdown.pdf>]
+<images/performance/total_noise_tdi2_corrected_budget.pdf, id=570, 505.89pt x 346.89601pt>
 File: images/performance/total_noise_tdi2_corrected_budget.pdf Graphic file (type pdf)
 <use images/performance/total_noise_tdi2_corrected_budget.pdf>
-Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.pdf  used on input line 129.
+Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.pdf  used on input line 143.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-
-Underfull \hbox (badness 1769) in paragraph at lines 141--142
-[]\T1/cmr/m/n/10 The ideal ADC quan-ti-za-tion es-ti-mate should be
+) [14] Excluding 'comment' comment. [15 <./images/performance/total_noise_tdi2_corrected_budget.pdf>] (main.bbl
+Underfull \hbox (badness 1983) in paragraph at lines 11--39
+ \T1/cmr/m/n/9 mans, An-toine Pe-titeau, David Shoe-maker, Car-los
  []
 
-) [13 <./images/performance/newport_readout_breakdown.pdf>] [14 <./images/performance/total_noise_tdi2_corrected_budget.pdf>] Excluding 'comment' comment. (main.bbl [15]) [16] (main.aux)
+
+Underfull \hbox (badness 2318) in paragraph at lines 11--39
+ \T1/cmr/m/n/9 Atul Deep, Ig-na-cio Fer-nán-dez Núñez, César Gar-
+ []
+
+
+Underfull \hbox (badness 1092) in paragraph at lines 11--39
+ \T1/cmr/m/n/9 cía Marir-ro-driga, Mar-tin Gehler, Jean-Philippe Ha-
+ []
+
+
+Underfull \hbox (badness 7522) in paragraph at lines 46--51
+ []\T1/cmr/m/n/9 Gregory Weaver, Jef-frey Garstecki, and Samuel
+ []
+
+
+Underfull \hbox (badness 2564) in paragraph at lines 119--123
+ \T1/cmr/m/n/9 tec-tor spec-i-fi-ca-tions.  []$\T1/cmtt/m/n/9 https : / / www . newport . com / p /
+ []
+
+[16]) [17] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: FE5A08EECBBE3B6412E721905C406D98;5072.
+(rerunfilecheck)             Checksum: 655EAB67A93FE2058AB46623E086C57F;4548.
  ) 
 Here is how much of TeX's memory you used:
- 29731 strings out of 467871
- 589235 string characters out of 5417892
- 987856 words of memory out of 5000000
- 58053 multiletter control sequences out of 15000+600000
- 647872 words of font info for 95 fonts, out of 8000000 for 9000
+ 29785 strings out of 467871
+ 590437 string characters out of 5417892
+ 990097 words of memory out of 5000000
+ 58087 multiletter control sequences out of 15000+600000
+ 648185 words of font info for 96 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,108p,1660b,1166s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0700.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
-Output written on main.pdf (16 pages, 747176 bytes).
+ 99i,12n,108p,1722b,1315s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0700.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmmib9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
+Output written on main.pdf (17 pages, 796350 bytes).
 PDF statistics:
- 1166 PDF objects out of 1200 (max. 8388607)
- 85 named destinations out of 1000 (max. 500000)
- 251 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 1107 PDF objects out of 1200 (max. 8388607)
+ 104 named destinations out of 1000 (max. 500000)
+ 243 words of extra memory for PDF output out of 10000 (max. 10000000)
 
