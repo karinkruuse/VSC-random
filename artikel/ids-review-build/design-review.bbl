@@ -89,7 +89,8 @@ Gerhard Heinzel, Juan~José Esteban, Simon Barke, Markus Otto, Yan Wang,
 \bibitem{heinzel_frequency_2024}
 Gerhard Heinzel, Javier Álvarez Vizoso, Miguel Dovale-Álvarez, and Karsten
   Wiesner.
-\newblock Frequency planning for {LISA}, 2024.
+\newblock Frequency planning for {LISA}.
+\newblock {\em Physical Review D}, 110(4):042002, 2024.
 
 \bibitem{otto2012tdi}
 Markus Otto, Gerhard Heinzel, and Karsten Danzmann.
@@ -113,12 +114,6 @@ Olaf Hartwig and Jean-Baptiste Bayle.
 {Stanford Research Systems}.
 \newblock {FS725} rubidium frequency standard: specifications.
 \newblock \url{https://www.thinksrs.com/products/fs725.html}.
-\newblock Accessed 22 September 2026.
-
-\bibitem{newport1064}
-{Newport}.
-\newblock {F-PD-30-D-1064-FCA} fiber-optic photodetector specifications.
-\newblock \url{https://www.newport.com/p/F-PD-30-D-1064-FCA}.
 \newblock Accessed 22 September 2026.
 
 \bibitem{bayle_adapting_2021}

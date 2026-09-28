@@ -375,11 +375,11 @@ TDI generation considered
 
 
 \section{Conclusion}\label{Conclusion}
-We have presented the miniLISA design, which extends an electronic delay-line testbed with optical sources and independently referenced spacecraft measurements. Building on hardware demonstrations with electronic propagation delays \cite{mitryk_hardware-based_2012,ferguson2025applying}, it is intended to test laser-noise suppression, a reduced clock-transfer model, and GW signal recovery within the same measurement chain.
+miniLISA is being developed to test whether laser and clock noise can be removed from laboratory measurements while preserving a gravitational-wave signal. The design combines optical signals, independent spacecraft clocks and electronic delays that represent the light-travel times between spacecraft. Its six directed links will support different TDI combinations. Here, we use the four links needed for the Michelson $X$ combination to estimate performance.
 
-The estimate combines the measured electronic and modulation spectra with a prospective detector readout model, using the appropriate source and link transfer functions. Bright laboratory beams keep the predicted photodetector readout noise below the LISA science-interferometer allocations. Board timing introduces an additional coupling, including fluctuations of the effective delay, whose residual depends on differential board jitter and the delays used in processing. This component estimate provides a reference for the performance of the assembled optical testbed.
+The noise estimate combines component measurements with a calculation of the optical readout noise. For the assumed operating conditions, the detector contribution is smaller than the electronic and modulation contributions. miniLISA does not need to reproduce LISA's weak-light readout: strong laboratory signals make it easier to study the remaining noise after laser and clock correction. The estimate assumes ideal cancellation with static delays; the performance of the complete optical setup remains to be tested.
 
-The next steps are to repeat the modulation-noise measurement, assemble the optical readout, and test noise suppression and GW recovery with the six-link setup. Varying delays and higher modulation frequencies would extend these tests.
+The next steps are to repeat the modulation-noise measurement and assemble the optical setup. The main experimental test will then be to suppress laser and clock noise and recover an injected gravitational-wave signal with the expected amplitude and phase.
 
 %\newpage
 %\listoftodos[Notes]
