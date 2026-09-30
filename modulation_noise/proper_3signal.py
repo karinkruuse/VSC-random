@@ -1,284 +1,180 @@
+"""Frequency-only, three-signal ASD analysis; no phase data are used."""
 from pathlib import Path
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import welch, detrend
+from scipy.signal import detrend, windows
 
-print("RUNNING:", __file__)
 
-# -----------------------
-# hardcode input
-# -----------------------
-DATA = Path(__file__).resolve().parent / "data" / "EOM_PLL_20260224_160232.npy"
-TXT  = DATA.with_suffix(".txt")
+def amplitude_spectra(x, fs, starts, size):
+    """One-sided amplitude density per Hann-windowed, linearly detrended segment.
 
-# -----------------------
-# styling
-# -----------------------
-c_purple = (130/255, 23/255, 112/255)
-c_green  = (41/255, 95/255, 36/255)
+    RMS-average these amplitudes for a Welch-equivalent ASD. No PSD arrays
+    or PSD products are calculated. DC is excluded from all output.
+    """
+    window = windows.hann(size, sym=False)
+    scale = np.full(size // 2 + 1, np.sqrt(2 / (fs * np.dot(window, window))))
+    scale[0] /= np.sqrt(2)
+    if size % 2 == 0:
+        scale[-1] /= np.sqrt(2)
+    return np.array([np.abs(np.fft.rfft(detrend(x[s:s + size], type="linear") * window)) * scale
+                     for s in starts])
 
-# -----------------------
-# load
-# -----------------------
-arr = np.load(DATA, allow_pickle=True)
 
-# -----------------------
-# sampling rate from header (fallback)
-# -----------------------
-fs = None
-if TXT.exists():
-    for line in TXT.read_text(encoding="utf-8", errors="ignore").splitlines():
-        if "Acquisition rate:" in line:
-            fs = float(line.split("Acquisition rate:")[1].split("Hz")[0].strip())
-            break
-if fs is None:
-    dt = np.median(np.diff(arr["Time (s)"]))
-    fs = 1.0 / dt
+def rms_amplitude(amplitudes):
+    # Vector norm gives the RMS of segment amplitude densities directly.
+    return np.linalg.norm(amplitudes, axis=0) / np.sqrt(len(amplitudes))
 
-print("fs =", fs)
 
-# -----------------------
-# pull columns (structured array!)
-# NOTE: these must match your file's field names exactly.
-# If yours are different, print(arr.dtype.names) and rename below.
-# -----------------------
-t = arr["Time (s)"]
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("data", nargs="?", type=Path,
+                        default=Path(__file__).resolve().parent / "data" / "mod_nois_20260930_124152.npy")
+    parser.add_argument("--channels", nargs=3, type=int, metavar=("CARRIER", "LSB", "USB"))
+    parser.add_argument("--cut-start", type=float, default=0)
+    parser.add_argument("--cut-end", type=float, default=0, help="Seconds discarded at end (default: 0, full recording)")
+    parser.add_argument("--segment-seconds", type=float, default=256)
+    parser.add_argument("--fmin", type=float, default=0.01)
+    parser.add_argument("--transient-threshold", type=float, default=5,
+                        help="Hz from median in either sideband-carrier difference; diagnostic only")
+    args = parser.parse_args()
+    if min(args.cut_start, args.cut_end) < 0 or min(args.segment_seconds, args.fmin, args.transient_threshold) <= 0:
+        parser.error("Cuts must be nonnegative; segment length, fmin and threshold must be positive")
+    data = args.data.resolve()
+    arr = np.load(data, allow_pickle=False)
+    t = arr["Time (s)"]
+    fs = 1 / np.median(np.diff(t))
+    header = data.with_suffix(".txt")
+    if header.exists():
+        for line in header.read_text(encoding="utf-8").splitlines():
+            if "Acquisition rate:" in line:
+                fs = float(line.split("Acquisition rate:")[1].split("Hz")[0])
+                break
+    if not np.all(np.isfinite(t)) or not np.allclose(np.diff(t), 1 / fs, rtol=1e-4, atol=1e-8):
+        raise ValueError("Time samples must be finite and uniformly spaced")
+    if args.channels:
+        carrier, lower, upper = args.channels
+    else:
+        inputs = [int(n.split()[1]) for n in arr.dtype.names
+                  if n.startswith("Input ") and n.endswith(" Frequency (Hz)") and "Set Frequency" not in n]
+        if len(inputs) != 3:
+            raise ValueError("Specify --channels CARRIER LSB USB for this file")
+        lower, carrier, upper = sorted(inputs, key=lambda ch: np.median(arr[f"Input {ch} Frequency (Hz)"]))
+    keep = (t >= t[0] + args.cut_start) & (t <= t[-1] - args.cut_end)
+    t = t[keep]
+    c, l, u = [arr[f"Input {ch} Frequency (Hz)"][keep] for ch in (carrier, lower, upper)]
+    if not all(np.all(np.isfinite(x)) for x in (c, l, u)):
+        raise ValueError("Non-finite frequency samples")
+    size = int(round(args.segment_seconds * fs))
+    if size < 8 or len(t) < 2 * size:
+        raise ValueError("Need at least two full segments; reduce --segment-seconds or cuts")
+    starts = np.arange(0, len(t) - size + 1, size // 2)
+    frequency = np.fft.rfftfreq(size, 1 / fs)
+    band = frequency >= max(args.fmin, 2 * fs / size)
+    if not np.any(band):
+        raise ValueError("fmin exceeds the available frequency range")
+    uc, cl = u - c, c - l
+    signals = {"Carrier": c, "LSB": l, "USB": u,
+               "USB - Carrier": uc, "Carrier - LSB": cl,
+               "(USB - LSB) / 2": (u - l) / 2,
+               "USB + LSB - 2 Carrier": uc - cl}
+    bad = (np.abs(uc - np.median(uc)) > args.transient_threshold) | (np.abs(cl - np.median(cl)) > args.transient_threshold)
+    quiet = np.array([not np.any(bad[s:s + size]) for s in starts])
+    spectra = {name: amplitude_spectra(x - np.median(x), fs, starts, size)[:, band]
+               for name, x in signals.items()}
+    full = {name: rms_amplitude(x) for name, x in spectra.items()}
+    clean = {name: rms_amplitude(x[quiet]) for name, x in spectra.items()} if np.any(quiet) else {}
+    f = frequency[band]
+    prefix = data.with_suffix("")
+    colors = {"Carrier": "black", "LSB": "#295f24", "USB": "#821770",
+              "USB - Carrier": "#821770", "Carrier - LSB": "#295f24",
+              "(USB - LSB) / 2": "tab:blue", "USB + LSB - 2 Carrier": "tab:orange"}
 
-# Carrier / LSB / USB phase (cycles)
-phiC_cyc = arr["Input 1 Phase (cyc)"]        # <-- rename if needed
-phiL_cyc = arr["Input 2 Phase (cyc)"]            # <-- rename if needed
-phiU_cyc = arr["Input 3 Phase (cyc)"]            # <-- rename if needed
+    # Show every sample so narrow transients are not lost by downsampling.
+    # Each row has its own full scale and a second view of the central 99.8%.
+    with plt.rc_context({"path.simplify": False}):
+        fig, axes = plt.subplots(4, 2, figsize=(13, 10), sharex=True)
+        hours = (t - t[0]) / 3600
+        for row, name in enumerate(list(signals)[3:]):
+            offset = np.median(signals[name])
+            residual = signals[name] - offset
+            lo, hi = np.quantile(residual, [.001, .999])
+            margin = max((hi - lo) * .15, 1e-6)
+            for col in range(2):
+                ax = axes[row, col]
+                ax.plot(hours, residual, color=colors[name], linewidth=.4, rasterized=True)
+                ax.set_ylabel("Frequency residual (Hz)")
+                ax.set_title(f"{name}; median removed: {offset:.9g} Hz", fontsize=9)
+                ax.grid(True, alpha=.25)
+                ax.set_xlim(hours[0], hours[-1])
+            axes[row, 1].set_ylim(lo - margin, hi + margin)
+        for ax in axes[-1]:
+            ax.set_xlabel("Time since analysed start (hours)")
+        fig.suptitle("Frequency differences: full scale (left), vertical zoom (right)\n"
+                     "All samples retained; zoom clips large transients; no detrending")
+        fig.tight_layout(rect=(0, 0, 1, .95))
+        for ext in ("png", "pdf"):
+            fig.savefig(f"{prefix}_freq_differences_timeseries.{ext}", dpi=200)
+        plt.close(fig)
 
-# Carrier / LSB / USB frequency (Hz) (optional but useful)
-fC_Hz = arr["Input 1 Frequency (Hz)"]        # <-- rename if needed
-fL_Hz = arr["Input 2 Frequency (Hz)"]            # <-- rename if needed
-fU_Hz = arr["Input 3 Frequency (Hz)"]            # <-- rename if needed
+    def plot(values, names, suffix, title):
+        fig, ax = plt.subplots(figsize=(9, 5))
+        for name in names:
+            ax.loglog(f, values[name], label=name, color=colors[name], linewidth=1)
+        ax.set(xlabel="Fourier frequency (Hz)", ylabel=r"Frequency ASD (Hz/$\sqrt{Hz}$)",
+               title=title, xlim=(f[0], f[-1]))
+        ax.grid(True, which="both", alpha=.25)
+        ax.legend(fontsize=9)
+        fig.tight_layout()
+        for ext in ("png", "pdf"):
+            fig.savefig(f"{prefix}_{suffix}.{ext}", dpi=200)
+        plt.close(fig)
 
-# -----------------------
-# optional cut start/end (copy your style; set to 0 if not needed)
-# -----------------------
-cut_start_s = 0.0
-cut_end_s   = 0.2 * 3600
+    plot(full, list(signals)[:3] + ["(USB - LSB) / 2"], "asd_freq", "All segments: measured frequency noise")
+    plot(full, list(signals)[3:], "asd_freq_differences", "All segments: modulation estimates and closure residual")
+    if clean:
+        fig, ax = plt.subplots(figsize=(9, 5))
+        for name in list(signals)[3:]:
+            ax.loglog(f, full[name], color=colors[name], alpha=.25, linewidth=.7)
+            ax.loglog(f, clean[name], label=name, color=colors[name], linewidth=1)
+        ax.set(xlabel="Fourier frequency (Hz)", ylabel=r"Frequency ASD (Hz/$\sqrt{Hz}$)",
+               title=f"Transient diagnostic: {quiet.sum()}/{len(starts)} segments retained (faint: all)", xlim=(f[0], f[-1]))
+        ax.grid(True, which="both", alpha=.25)
+        ax.legend(fontsize=9)
+        fig.tight_layout()
+        for ext in ("png", "pdf"):
+            fig.savefig(f"{prefix}_asd_freq_transient_comparison.{ext}", dpi=200)
+        plt.close(fig)
+    lines = [f"Source: {data.name}", f"Channels: carrier={carrier}, LSB={lower}, USB={upper}",
+             f"fs={fs:.12g} Hz; samples={len(t)}; duration={t[-1]-t[0]:.6f} s",
+             f"Cuts: start={args.cut_start:g} s, end={args.cut_end:g} s",
+             f"Hann segments: {size/fs:.6f} s; 50% overlap; linear detrend per segment",
+             f"Frequency spacing: {fs/size:.8g} Hz; plotted minimum: {f[0]:.8g} Hz",
+             f"Segments: {len(starts)} total, {quiet.sum()} without detected transients (overlapping, not independent)",
+             f"Transient rule: either sideband-carrier difference > {args.transient_threshold:g} Hz from its median",
+             f"Flagged samples: {bad.sum()} ({100*bad.mean():.6f}%)",
+             "Full-data spectra retain every segment; diagnostic rejects whole affected segments, without interpolation.",
+             "Selected quiet segments are conditional diagnostics, not an unbiased full-record noise estimate.",
+             "Closure = USB + LSB - 2 Carrier: ideal common carrier and opposite modulation terms both cancel.",
+             "Residual spectra include source noise, readout noise and differential path effects.", ""]
+    for name, x in signals.items():
+        residual = x - np.median(x)
+        lines.append(f"{name}: median={np.median(x):.12g} Hz; std={np.std(x):.8g} Hz; residual 1/50/99 percentiles={np.quantile(residual,[.01,.5,.99])} Hz; max absolute residual={np.max(abs(residual)):.8g} Hz")
+    lines.append("\nMedian ASD in bands (Hz/sqrt(Hz)); these are band summaries, not integrated RMS:")
+    for lo, hi in ((.01,.1),(.1,1),(1,10)):
+        pick = (f >= lo) & (f < hi)
+        if np.any(pick):
+            for name in list(signals)[3:]:
+                lines.append(f"{lo:g}-{hi:g} Hz, {name}: all={np.median(full[name][pick]):.6g}" +
+                             (f", quiet={np.median(clean[name][pick]):.6g}" if clean else ""))
+    Path(f"{prefix}_frequency_summary.txt").write_text("\n".join(lines)+"\n", encoding="utf-8")
+    np.savetxt(f"{prefix}_frequency_transients.csv", np.column_stack((t[bad], (uc-np.median(uc))[bad], (cl-np.median(cl))[bad])),
+               delimiter=",", header="time_s,USB_minus_carrier_residual_Hz,carrier_minus_LSB_residual_Hz", comments="")
+    np.savez(f"{prefix}_frequency_asd.npz", frequency_Hz=f,
+             **{f"all_{name}": x for name, x in full.items()}, **{f"quiet_{name}": x for name, x in clean.items()})
+    print("\n".join(lines))
+    print(f"Saved frequency ASD plots, arrays, summary and transient list beside {data.name}")
 
-mask = (t >= (t[0] + cut_start_s)) & (t <= (t[-1] - cut_end_s))
-t = t[mask]
-phiC_cyc = phiC_cyc[mask]; phiL_cyc = phiL_cyc[mask]; phiU_cyc = phiU_cyc[mask]
-fC_Hz = fC_Hz[mask]; fL_Hz = fL_Hz[mask]; fU_Hz = fU_Hz[mask]
 
-# -----------------------
-# full time series (mean-subtracted frequency) like your other script
-# -----------------------
-fC_centered = fC_Hz - np.mean(fC_Hz)
-fL_centered = fL_Hz - np.mean(fL_Hz)
-fU_centered = fU_Hz - np.mean(fU_Hz)
-
-target_fs_plot = 2.0
-stride = max(1, int(round(fs / target_fs_plot)))
-
-t_plot = (t - t[0])[::stride]
-fC_plot = fC_centered[::stride]
-fL_plot = fL_centered[::stride]
-fU_plot = fU_centered[::stride]
-
-stem = DATA.with_suffix("").name
-out_ts = DATA.with_name(stem + "_freq_full_timeseries.png")
-
-plt.figure(figsize=(10, 4))
-plt.plot(t_plot/3600.0, fC_plot, label="Carrier (mean subtracted)", linewidth=1, color="k")
-plt.plot(t_plot/3600.0, fL_plot, label="LSB (mean subtracted)", linewidth=0.6, color=c_green)
-plt.plot(t_plot/3600.0, fU_plot, label="USB (mean subtracted)", linewidth=0.6, color=c_purple, alpha=0.7)
-plt.xlabel("Time (hours)")
-plt.ylabel("Frequency deviation (Hz)")
-plt.grid(True, alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_ts, dpi=200)
-plt.close()
-
-print("Saved:", out_ts)
-
-# -----------------------
-# PSD helper (same style as yours)
-# -----------------------
-def psd(x, fs, seg_s=8*2048):
-    nperseg = int(seg_s * fs)
-    nperseg = max(256, min(nperseg, len(x)))
-    f, Pxx = welch(
-        x, fs=fs, window="hann",
-        nperseg=nperseg, noverlap=nperseg//2,
-        detrend=False, scaling="density"
-    )
-    return f, Pxx
-
-# -----------------------
-# detrend phases (removes constant freq offsets/drift)
-# -----------------------
-phiC_dt = detrend(phiC_cyc, type="linear")
-phiL_dt = detrend(phiL_cyc, type="linear")
-phiU_dt = detrend(phiU_cyc, type="linear")
-
-# -----------------------
-# Best modulation-phase-noise estimator:
-# φ_RF (cycles) = 0.5*(USB - LSB)
-# cancels common optical phase noise
-# -----------------------
-theta_m_cyc = 0.5 * (phiU_dt - phiL_dt)
-
-# diagnostics
-u_minus_c_cyc = (phiU_dt - phiC_dt)
-c_minus_l_cyc = (phiC_dt - phiL_dt)
-
-# -----------------------
-# frequency-noise diagnostics from the phasemeter frequency columns
-# -----------------------
-fC_dt_Hz = detrend(fC_Hz, type="linear")
-fL_dt_Hz = detrend(fL_Hz, type="linear")
-fU_dt_Hz = detrend(fU_Hz, type="linear")
-
-# -----------------------
-# PSDs
-# -----------------------
-fC, PC = psd(phiC_dt, fs)
-fL, PL = psd(phiL_dt, fs)
-fU, PU = psd(phiU_dt, fs)
-fM, PM = psd(theta_m_cyc, fs)
-
-fUC, PUC = psd(u_minus_c_cyc, fs)
-fCL, PCL = psd(c_minus_l_cyc, fs)
-
-ffC, PffC = psd(fC_dt_Hz, fs)
-ffL, PffL = psd(fL_dt_Hz, fs)
-ffU, PffU = psd(fU_dt_Hz, fs)
-
-# useful: SB splitting (should be ~2*f_mod if referenced that way)
-df_UL = fU_dt_Hz - fL_dt_Hz
-ffd, Pffd = psd(df_UL, fs)
-# PM is a phase PSD in cycles^2/Hz. A frequency PSD would require
-# differentiation of theta_m or multiplication by (2*pi*fM)^2.
-
-# -----------------------
-# ratios between the phase-difference ASDs
-# theta_m = 0.5*(USB-LSB) is the modulator phase noise estimator; compare it
-# (not the un-halved USB-LSB) against each single sideband-vs-carrier term,
-# and compare those two single terms against each other.
-# (fUC, fCL, fM share the same frequency grid since they use the same fs/nperseg)
-# -----------------------
-ASD_UC = np.sqrt(PUC)
-ASD_CL = np.sqrt(PCL)
-ASD_M  = np.sqrt(PM)
-
-ratio_M_CL  = ASD_M / ASD_CL    # theta_m / (Carrier-LSB)
-ratio_M_UC  = ASD_M / ASD_UC    # theta_m / (USB-Carrier)
-ratio_UC_CL = ASD_UC / ASD_CL   # (USB-Carrier) / (Carrier-LSB)
-
-print("Median ASD ratio theta_m/(Carrier-LSB)        = %.3f" % np.median(ratio_M_CL))
-print("Median ASD ratio theta_m/(USB-Carrier)         = %.3f" % np.median(ratio_M_UC))
-print("Median ASD ratio (USB-Carrier)/(Carrier-LSB)  = %.3f" % np.median(ratio_UC_CL))
-
-out_ratio_summary = DATA.with_name(stem + "_asd_phase_ratio_summary.txt")
-out_ratio_summary.write_text(
-    "\n".join([
-        f"Source file: {DATA.name}",
-        "",
-        "Ratio of phase-difference ASDs (median / mean over Fourier frequency)",
-        f"theta_m/(Carrier-LSB):       median={np.median(ratio_M_CL):.4f}  mean={np.mean(ratio_M_CL):.4f}",
-        f"theta_m/(USB-Carrier):       median={np.median(ratio_M_UC):.4f}  mean={np.mean(ratio_M_UC):.4f}",
-        f"(USB-Carrier)/(Carrier-LSB): median={np.median(ratio_UC_CL):.4f}  mean={np.mean(ratio_UC_CL):.4f}",
-    ]) + "\n",
-    encoding="utf-8",
-)
-print("Saved:", out_ratio_summary)
-# -----------------------
-# outputs
-# -----------------------
-out_psd_phase = DATA.with_name(stem + "_psd_phase.png")
-out_asd_phase = DATA.with_name(stem + "_asd_phase.pdf")
-out_psd_freq  = DATA.with_name(stem + "_psd_freq.png")
-out_asd_freq  = DATA.with_name(stem + "_asd_freq.png")
-
-# Phase PSD (cycles^2/Hz)
-plt.figure()
-plt.loglog(fC, PC, label="Carrier phase", color="k")
-plt.loglog(fL, PL, label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
-plt.loglog(fU, PU, label="USB phase", color=c_purple, alpha=0.7, linewidth=0.5)
-plt.loglog(fM, PM, label="theta_m = 0.5*(USB-LSB)", color="tab:blue")
-plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("PSD (cyc^2/Hz)")
-plt.grid(True, which="both", alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_psd_phase, dpi=200)
-plt.close()
-
-# Phase ASD in cycles/sqrt(Hz); convert the radian requirement by / (2*pi).
-plt.figure()
-S_req = np.full_like(fC, np.nan)
-positive_f = fC > 0
-S_req[positive_f] = 60e-6 * (1.0 + 0.07 / fC[positive_f]) / (2 * np.pi)
-
-plt.loglog(fC, S_req,
-           linestyle="--",
-           color="k",
-           linewidth=1.2,
-           label=r"Requirement: $60\left(1+\frac{70\,\mathrm{mHz}}{f}\right)\,\mu$rad/$\sqrt{\mathrm{Hz}}$")
-plt.loglog(fC, np.sqrt(PC), label="Carrier phase", color="k")
-plt.loglog(fL, np.sqrt(PL), label="LSB phase", color=c_green, alpha=0.7, linewidth=0.6)
-plt.loglog(fU, np.sqrt(PU), label="USB phase", color=c_purple, alpha=0.7, linewidth=0.6)
-plt.loglog(fM, np.sqrt(PM), label=r'$\delta\phi_m = \frac{1}{2}(\mathrm{USB} - \mathrm{LSB})$', color="tab:blue")
-plt.loglog(fUC, np.sqrt(PUC), label="USB-Carrier", color=c_purple, alpha=0.35)
-plt.loglog(fCL, np.sqrt(PCL), label="Carrier-LSB", color=c_green, alpha=0.35)
-plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("ASD (cyc/√Hz)")
-plt.grid(True, which="both", alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_asd_phase, dpi=400)
-plt.close()
-
-# Ratios between the phase-difference ASDs (theta_m, Carrier-LSB, USB-Carrier)
-out_asd_phase_ratio = DATA.with_name(stem + "_asd_phase_ratio.png")
-plt.figure()
-plt.semilogx(fM, ratio_M_CL, label=r"$\theta_m$ / (Carrier-LSB)", color="tab:orange")
-plt.semilogx(fM, ratio_M_UC, label=r"$\theta_m$ / (USB-Carrier)", color="tab:blue")
-plt.semilogx(fUC, ratio_UC_CL, label="(USB-Carrier) / (Carrier-LSB)", color="tab:gray", alpha=0.7)
-plt.axhline(1.0, linestyle=":", color="k", linewidth=1, alpha=0.5)
-plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("ASD ratio")
-plt.grid(True, which="both", alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_asd_phase_ratio, dpi=200)
-plt.close()
-print("Saved:", out_asd_phase_ratio)
-
-# Frequency PSD (Hz^2/Hz)
-plt.figure()
-plt.loglog(ffC, PffC, label="Carrier frequency", color="k")
-plt.loglog(ffL, PffL, label="LSB frequency", color=c_green, alpha=0.7, linewidth=0.6)
-plt.loglog(ffU, PffU, label="USB frequency", color=c_purple, alpha=0.7, linewidth=0.6)
-plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("PSD (Hz^2/Hz)")
-plt.grid(True, which="both", alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_psd_freq, dpi=200)
-plt.close()
-
-# Frequency ASD (Hz/√Hz)
-plt.figure()
-plt.loglog(ffC, np.sqrt(PffC), label="Carrier frequency", color="k")
-plt.loglog(ffL, np.sqrt(PffL), label="LSB frequency", color=c_green, alpha=0.7, linewidth=0.6)
-plt.loglog(ffU, np.sqrt(PffU), label="USB frequency", color=c_purple, alpha=0.7, linewidth=0.6)
-plt.loglog(ffd, np.sqrt(Pffd), label="USB-LSB (diag)", color="tab:blue", alpha=0.8)
-plt.xlabel("Fourier frequency (Hz)")
-plt.ylabel("ASD (Hz/√Hz)")
-plt.grid(True, which="both", alpha=0.3)
-plt.legend()
-plt.tight_layout()
-plt.savefig(out_asd_freq, dpi=200)
-plt.close()
-
-print("Saved:", out_psd_phase)
-print("Saved:", out_asd_phase)
-print("Saved:", out_psd_freq)
-print("Saved:", out_asd_freq)
+if __name__ == "__main__":
+    main()

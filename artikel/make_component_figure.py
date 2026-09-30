@@ -1,7 +1,8 @@
 """Export article component figures from the audited notebook inputs.
 
 Run: python artikel/make_component_figure.py
-Component inputs are unsmoothed. The static corrected-X2 calculation retains shared detector inputs and four independent equivalent electronic link readouts.
+Component inputs are unsmoothed. Ordered varying-delay X2 retains shared
+detector inputs, electronic link readouts and an assumed board-clock spectrum.
 """
 from pathlib import Path
 import hashlib
@@ -15,6 +16,7 @@ from matplotlib.ticker import LogLocator, NullFormatter
 import numpy as np
 from scipy.special import jv
 from scipy.constants import elementary_charge, Boltzmann
+from tdi_component_model import LINKS, readouts, michelson, source, mean_gains, validate
 
 HERE = Path(__file__).resolve().parent
 MODEL = HERE.parent / 'miniLISA timining jitters'
@@ -24,8 +26,8 @@ OUT.mkdir(parents=True, exist_ok=True)
 config = json.loads((MODEL / 'article_model_outputs' / 'assumptions.json').read_text())
 assert config['modulation_psd_kind'] == 'phase_cycles'
 for name, expected in config['input_sha256'].items():
-    source = ROOT / config['input_paths'][name]
-    assert hashlib.sha256(source.read_bytes()).hexdigest() == expected, (
+    input_source = ROOT / config['input_paths'][name]
+    assert hashlib.sha256(input_source.read_bytes()).hexdigest() == expected, (
         f'{name} changed: rerun the modelling notebook before exporting.')
 
 baseline = np.loadtxt(ROOT / config['input_paths']['baseline.csv'], delimiter=',', skiprows=1)
@@ -73,7 +75,7 @@ config['article_budget'] = {
     'detector':'shared before fanout; independent detector channels; exclude ADC from this term',
     'modulation':'existing estimator assigned to independent source modulation phases; measurement to be repeated',
     'ADC':'shown in input readout prediction; not added again to measured electronic baseline',
-    'primary_noises':'ideal cancellation; static delays',
+    'primary_noises':'LISA laser/clock levels; ideal phase-delay realization, constant beat frequencies',
 }
 assert np.isclose(sideband/carrier, abs(jv(0,par['m'])/jv(1,par['m'])))
 peak_power = 2*power*(1+np.sqrt(par['het_eff']))
@@ -163,34 +165,26 @@ with plt.rc_context({'font.size': 9, 'axes.labelsize': 10, 'legend.fontsize': 8}
     plt.close(fig)
 (OUT / 'figure_parameters.json').write_text(json.dumps(config, indent=2))
 
-# Static Michelson and clock correction, with the article's source placement.
-links = [(1,2),(2,1),(1,3),(3,1)]
+# Ordered phase-domain X2, evaluated at retarded times for changing arms.
+links = LINKS
 output_f = freq
 nu_R = {int(i):v for i,v in config['nu_R_hz'].items()}
 nu_m = {int(i):v for i,v in config['nu_m_hz'].items()}
-alpha = {(i,j):nu_R[j]-nu_R[i] for i,j in links}
-z = {l:np.exp(-2j*np.pi*freq*config['delays_seconds'][str(l)]) for l in links}
-A, B = z[1,2]*z[2,1], z[1,3]*z[3,1]
-P = {(1,2):-(1-B), (2,1):-(1-B)*z[1,2], (1,3):1-A, (3,1):(1-A)*z[1,3]}
-K = {(1,2):-(alpha[1,3]+B*alpha[3,1]),
-     (2,1):-z[1,2]*(alpha[1,3]+B*alpha[3,1])+(1-B)*z[1,2]*alpha[2,1],
-     (1,3):alpha[1,2]+A*alpha[2,1],
-     (3,1):z[1,3]*(alpha[1,2]+A*alpha[2,1])-(1-A)*z[1,3]*alpha[3,1]}
-P = {l:(1-A*B)*v for l,v in P.items()}
-K = {l:(1-A*B)*v for l,v in K.items()}
-
-# Cancel each physical laser and common clock source, before forming PSDs.
-for sc in [1,2,3]:
-    hp=sum(P[i,j]*(z[i,j]*(j==sc)-(i==sc)) for i,j in links)
-    hq=sum(-P[i,j]*alpha[i,j]*(i==sc)+K[i,j]*(z[i,j]*(j==sc)-(i==sc)) for i,j in links)
-    assert np.max(abs(hp)) < 1e-12
-    assert np.max(abs(hq)) < 1e-6
-# Four equal unit-weight independent channels yield sqrt(4) in ASD.
-assert np.isclose(np.sqrt(sum(1.0 for l in links)), 2.0)
-# Equal-arm raw X2 weights have the known extra differencing factors.
-tau=config['delays_seconds'][str(links[0])]
-raw_gain=np.sqrt(sum(abs(v)**2 for v in P.values()))
-assert np.allclose(raw_gain,8*abs(np.sin(2*np.pi*freq*tau)*np.sin(4*np.pi*freq*tau)),atol=1e-12)
+lengths = {link: config['delays_seconds'][str(link)] for link in links}
+rates = {link: (5e-8 if 2 in link else -5e-8) for link in links}
+epochs = (np.arange(25)+0.5)/25*86400-43200
+config['observable'] = 'ordered varying-delay phase X2, with reduced-model clock correction'
+config['delay_rates_s_per_s'] = {str(link): value for link,value in rates.items()}
+config['spectral_estimate'] = {'method':'mean local squared responses, adiabatic approximation',
+                             'epochs_seconds':epochs.tolist(),
+                             'clock_correction':'R_1j corrected by -alpha_1j*r_1j; alpha_j1=-alpha_1j constant'}
+config['validation'] = validate(nu_R,nu_m)
+eta,r = readouts(nu_R,nu_m)
+corrected = michelson(eta,r,nu_R)
+gains = mean_gains(corrected,freq,epochs,lengths,rates)
+raw_link_signals = {link: source(f'link{link}') for link in links}
+raw_observable = michelson(raw_link_signals,{},nu_R,corrected=False)
+raw_gain = np.sqrt(sum(mean_gains(raw_observable,freq,epochs,lengths,rates).values()))
 
 def interp_psd(data, is_asd):
     good=(data[:,0]>0)&np.isfinite(data[:,1])&(data[:,1]>0)
@@ -202,21 +196,35 @@ baseline_full=np.loadtxt(ROOT/config['input_paths']['baseline.csv'],delimiter=',
 modulation_full=np.loadtxt(ROOT/config['input_paths']['modulator_psd.csv'],delimiter=',',comments='#')
 Sb=interp_psd(baseline_full,True)
 Sm=interp_psd(modulation_full,False)
-hc={l:P[l]-K[l]/nu_m[l[1]] for l in links}
-hs={l:K[l]/nu_m[l[1]] for l in links}
-electronic=np.sqrt(Sb*sum(abs(hc[l])**2+abs(hs[l])**2 for l in links))
-# chi_i = p_i^SB - p_i^c and source modulation have the same delayed-source map.
-H={sc:sum(K[i,j]/nu_m[j]*(z[i,j]*(j==sc)-(i==sc)) for i,j in links) for sc in [1,2,3]}
-source_gain=sum(abs(v)**2 for v in H.values())
-detector_difference_psd=sum(value**2 for terms in pd['components_cycles_per_sqrt_Hz'].values()
-                            for name,value in terms.items() if name!='ADC')
-readout=np.sqrt(source_gain*detector_difference_psd)
-mod=np.sqrt(source_gain*Sm)
-total=np.sqrt(electronic**2+readout**2+mod**2)
+electronic=np.sqrt(Sb*sum(g for name,g in gains.items() if name.startswith(('ec','es'))))
+detector_psd = {ch:sum(value**2 for name,value in terms.items() if name!='ADC')
+                for ch,terms in pd['components_cycles_per_sqrt_Hz'].items()}
+readout=np.sqrt(sum(g*(detector_psd['carrier'] if name.startswith('pc') else detector_psd['sideband'])
+                    for name,g in gains.items() if name.startswith(('pc','ps'))))
+mod=np.sqrt(Sm*sum(g for name,g in gains.items() if name.startswith('m')))
+# Rb model ONLY for independent delay-board timing, not spacecraft q_i.
+# 10 MHz reference, L(10 Hz)=-130 dBc/Hz; PSD slopes -1, -2, -3.
+rb_phase_psd=np.where(freq>=1,2e-13*(freq/10)**-1,
+                     np.where(freq>=.01,2e-12*freq**-2,2e-8*(freq/.01)**-3))
+rb_timing_psd=rb_phase_psd/(2*np.pi*10e6)**2
+board=np.sqrt(rb_timing_psd*sum(g for name,g in gains.items() if name.startswith('eps')))
+config['board_model']={'reference':'Rb phase-noise extrapolation',
+                       'reference_hz':10e6, 'SSB_dBc_per_Hz_at_10Hz':-130,
+                       'assumption':'independent board timing sources; no extra board correction',
+                       'timing_ASD_at_10mHz':float(np.sqrt(2e-8)/(2*np.pi*10e6))}
+total=np.sqrt(electronic**2+readout**2+mod**2+board**2)
 budget={'single_link_reference_in_TDI_ASD':raw_gain*reference}
-config['article_budget']['detector_difference_psd']=detector_difference_psd
+config['article_budget']['detector_channel_psds']=detector_psd
+# Store inputs and source gains so assumptions can be changed without guessing.
+np.savez(OUT/'tdi2_source_gains.npz',frequency_hz=freq,**gains)
+config['laser_frequency_ASD']='30*sqrt(1+(2e-3/f)^4) Hz/sqrt(Hz)'
+config['spacecraft_clock_fractional_frequency_PSD']='4e-27/f per Hz, f in Hz'
+config['levels_at_10mHz']={
+    'electronic_cycles_per_sqrtHz':float(np.sqrt(np.exp(np.interp(np.log(.01),np.log(freq),np.log(Sb))))),
+    'modulation_estimator_cycles_per_sqrtHz':float(np.sqrt(np.exp(np.interp(np.log(.01),np.log(freq),np.log(Sm)))))}
 (OUT/'figure_parameters.json').write_text(json.dumps(config,indent=2))
-print('Source and four-link transfer checks passed; total uses shared detector inputs.')
+print('Ordered varying-arm checks passed; component sum includes assumed independent board jitter.')
+print('Measured input examples at 10 mHz:',config['levels_at_10mHz'])
 
 for show_components, name in [(False, 'total_noise_tdi2_corrected'),
                               (True, 'total_noise_tdi2_corrected_budget')]:
@@ -229,11 +237,13 @@ for show_components, name in [(False, 'total_noise_tdi2_corrected'),
                       label='Modulation estimate')
             ax.loglog(output_f, readout, color=colors['carrier'], lw=0.9,
                       label='Shared detector contribution')
+            ax.loglog(output_f, board, color='#29658a', lw=1.1, ls='-.',
+                      label='Board jitter (assumed Rb model)')
         ax.loglog(output_f, budget['single_link_reference_in_TDI_ASD'],
                   color='#777777', ls='--', lw=1.2,
                   label='Single-link reference propagated through TDI 2')
         ax.loglog(output_f, total, color='black', lw=1.6, zorder=6,
-                  label=r'Estimated $X_{2\mathrm{c}}$ noise')
+                  label='Sum of included contributions')
         ax.set(xlim=(fmin, fmax), xlabel='Fourier frequency (Hz)',
                ylabel=r'Phase ASD (cycles/$\sqrt{\mathrm{Hz}}$)')
         ax.grid(which='major', color='#dedede', lw=0.5, ls='--')
@@ -243,7 +253,7 @@ for show_components, name in [(False, 'total_noise_tdi2_corrected'),
         ax.legend(loc='lower left', frameon=True)
         modulation_values = ', '.join(f'{config["nu_m_hz"][str(i)]/1e6:g}' for i in [1,2,3])
         electrical_values = ', '.join(f'{config["nu_R_hz"][str(i)]/1e6:g}' for i in [1,2,3])
-        ax.set_title('Static TDI 2 + clock correction; ideal primary-noise cancellation', fontsize=9)
+        ax.set_title('Varying-arm TDI 2 + clock correction; component estimate', fontsize=9)
         fig.text(0.54, 0.025,
                  f'Modulation (SC1,2,3): {modulation_values} MHz; electrical carriers: {electrical_values} MHz\n'
                  f'Linear model: {pd["P_SC_W"]*1e3:g} mW/beam, '
@@ -254,7 +264,10 @@ for show_components, name in [(False, 'total_noise_tdi2_corrected'),
             fig.savefig(OUT / f'{name}.{suffix}', dpi=600)
         plt.close(fig)
 np.savetxt(OUT / 'total_noise_tdi2_corrected.csv',
-           np.column_stack([output_f, total, electronic, mod, readout,
+           np.column_stack([output_f, total, electronic, mod, readout, board,
                             budget['single_link_reference_in_TDI_ASD']]),
-           delimiter=',', header='Hz,total_ASD,electronic_ASD,modulation_ASD,readout_ASD,reference_ASD')
+           delimiter=',', header='Hz,included_sum_ASD,electronic_ASD,modulation_ASD,readout_ASD,assumed_board_ASD,reference_ASD')
+# Keep the generated SVG text clean for repository diffs.
+for svg in OUT.glob('*.svg'):
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')
 print(f'Saved PDF, SVG and 600-dpi PNG variants in {OUT}')

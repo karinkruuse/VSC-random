@@ -1,5 +1,5 @@
 {
-  "observable": "static X2",
+  "observable": "ordered varying-delay phase X2, with reduced-model clock correction",
   "delays_seconds": {
     "(1, 2)": 8.3391023799538,
     "(2, 1)": 8.3391023799538,
@@ -37,7 +37,13 @@
   "baseline_as_link_proxy": true,
   "extra_carrier_asd": null,
   "extra_sideband_asd": null,
-  "board_model": "None",
+  "board_model": {
+    "reference": "Rb phase-noise extrapolation",
+    "reference_hz": 10000000.0,
+    "SSB_dBc_per_Hz_at_10Hz": -130,
+    "assumption": "independent board timing sources; no extra board correction",
+    "timing_ASD_at_10mHz": 2.2507907903927653e-12
+  },
   "input_paths": {
     "baseline.csv": "measured noises\\baseline.csv",
     "modulator_psd.csv": "measured noises\\modulator_psd.csv"
@@ -93,7 +99,62 @@
     "detector": "shared before fanout; independent detector channels; exclude ADC from this term",
     "modulation": "existing estimator assigned to independent source modulation phases; measurement to be repeated",
     "ADC": "shown in input readout prediction; not added again to measured electronic baseline",
-    "primary_noises": "ideal cancellation; static delays",
-    "detector_difference_psd": 1.500080759384174e-16
+    "primary_noises": "LISA laser/clock levels; ideal phase-delay realization, constant beat frequencies",
+    "detector_channel_psds": {
+      "carrier": 1.0529833441863052e-17,
+      "sideband": 1.3947824249655433e-16
+    }
+  },
+  "delay_rates_s_per_s": {
+    "(1, 2)": 5e-08,
+    "(2, 1)": 5e-08,
+    "(1, 3)": -5e-08,
+    "(3, 1)": -5e-08
+  },
+  "spectral_estimate": {
+    "method": "mean local squared responses, adiabatic approximation",
+    "epochs_seconds": [
+      -41472.0,
+      -38016.0,
+      -34560.0,
+      -31104.0,
+      -27648.0,
+      -24192.0,
+      -20736.0,
+      -17280.0,
+      -13823.999999999996,
+      -10368.0,
+      -6912.0,
+      -3456.0,
+      0.0,
+      3456.0,
+      6912.0,
+      10368.0,
+      13824.0,
+      17279.999999999993,
+      20736.0,
+      24192.0,
+      27648.0,
+      31104.0,
+      34560.0,
+      38016.0,
+      41472.0
+    ],
+    "clock_correction": "R_1j corrected by -alpha_1j*r_1j; alpha_j1=-alpha_1j constant"
+  },
+  "validation": {
+    "clock_terms_cancel": true,
+    "laser_cancels_to_first_order_in_rates": true,
+    "static_limit_checked": true,
+    "noncommuting_arms_checked": true,
+    "shared_board_jitter_is_laser_like": true,
+    "direct_tone_nested_delay_check": true,
+    "25_vs_101_epoch_power_convergence_better_than_0.3_percent": true
+  },
+  "laser_frequency_ASD": "30*sqrt(1+(2e-3/f)^4) Hz/sqrt(Hz)",
+  "spacecraft_clock_fractional_frequency_PSD": "4e-27/f per Hz, f in Hz",
+  "levels_at_10mHz": {
+    "electronic_cycles_per_sqrtHz": 4.713107459481238e-06,
+    "modulation_estimator_cycles_per_sqrtHz": 4.0241256763528524e-06
   }
 }

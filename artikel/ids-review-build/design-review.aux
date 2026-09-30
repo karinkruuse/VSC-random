@@ -38,6 +38,7 @@
 \acronymused{FPGA}
 \citation{heinzel_auxiliary_2011}
 \citation{bayle_unified_2023}
+\citation{heinzel_frequency_2024}
 \acronymused{TDI}
 \acronymused{TDI}
 \@writefile{toc}{\contentsline {section}{\numberline {II}LISA Interferometric Detection System}{2}{section*.4}\protected@file@percent }
@@ -62,7 +63,6 @@
 \acronymused{MOSA}
 \acronymused{MOSA}
 \newlabel{eq:gw_phase}{{4}{2}{}{equation.4}{}}
-\citation{heinzel_frequency_2024}
 \@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A comparison of the two-way links as implemented in LISA (upper) and the testbed (lower). The upper panel shows the conceptual LISA configuration: the laser on Spacecraft 1 (MOSA 12) is phase-modulated at approximately 2.4 GHz using the local USO and transmitted to Spacecraft 2 (MOSA 21). The received beam interferes with the local laser, producing heterodyne beat notes in the MHz range that contain gravitational-wave phase fluctuations, Doppler shifts due to orbital motion, and laser frequency noise. These beat notes are tracked by the phasemeter, which is clocked by the onboard 80 MHz sampling reference derived from the USO. The lower panel depicts the laboratory implementation of the same signal topology. Instead of physical light propagation over millions of kilometres, the inter-spacecraft delay is emulated electronically using digital delay lines between ADC and DAC stages. A common reference laser is used to downconvert the laser fields from hundreds of terahertz to tens of megahertz, which can then be sampled by the delay line \acp {ADC}. The actual LISA-like heterodyne beat notes are created in the mixers.}}{3}{figure.1}\protected@file@percent }
 \acronymused{ADC}
 \newlabel{fig:armlink}{{1}{3}{A comparison of the two-way links as implemented in LISA (upper) and the testbed (lower). The upper panel shows the conceptual LISA configuration: the laser on Spacecraft 1 (MOSA 12) is phase-modulated at approximately 2.4 GHz using the local USO and transmitted to Spacecraft 2 (MOSA 21). The received beam interferes with the local laser, producing heterodyne beat notes in the MHz range that contain gravitational-wave phase fluctuations, Doppler shifts due to orbital motion, and laser frequency noise. These beat notes are tracked by the phasemeter, which is clocked by the onboard 80 MHz sampling reference derived from the USO. The lower panel depicts the laboratory implementation of the same signal topology. Instead of physical light propagation over millions of kilometres, the inter-spacecraft delay is emulated electronically using digital delay lines between ADC and DAC stages. A common reference laser is used to downconvert the laser fields from hundreds of terahertz to tens of megahertz, which can then be sampled by the delay line \acp {ADC}. The actual LISA-like heterodyne beat notes are created in the mixers}{figure.1}{}}
@@ -118,8 +118,8 @@
 \acronymused{SC}
 \acronymused{SC}
 \acronymused{SC}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Planned six-link routing architecture for miniLISA. Each spacecraft has an optical source and an Rb-referenced Moku phasemeter that also supplies its EOM drive; each delay-line board can synthesize two incoming links. The complete routing supports six directed links, whereas the Michelson calculation in Section~\ref {sec:performance} uses links $12$, $21$, $13$ and $31$. The spacecraft-1 and reference lasers are stabilized to separate optical cavities; the other spacecraft lasers are phase-locked to synthesized beat notes. The common reference laser supplies the optical heterodyne reference.}}{7}{figure.2}\protected@file@percent }
-\newlabel{fig:triangular}{{2}{7}{Planned six-link routing architecture for miniLISA. Each spacecraft has an optical source and an Rb-referenced Moku phasemeter that also supplies its EOM drive; each delay-line board can synthesize two incoming links. The complete routing supports six directed links, whereas the Michelson calculation in Section~\ref {sec:performance} uses links $12$, $21$, $13$ and $31$. The spacecraft-1 and reference lasers are stabilized to separate optical cavities; the other spacecraft lasers are phase-locked to synthesized beat notes. The common reference laser supplies the optical heterodyne reference}{figure.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Planned six-link routing architecture for miniLISA. Each spacecraft has an optical source and an independently referenced Moku phasemeter that also supplies its EOM drive; each delay-line board can synthesize two incoming links. The complete routing supports six directed links, whereas the Michelson calculation in Section~\ref {sec:performance} uses links $12$, $21$, $13$ and $31$. The spacecraft-1 and reference lasers are stabilized to separate optical cavities; the other spacecraft lasers are phase-locked to synthesized beat notes. The common reference laser supplies the optical heterodyne reference.}}{7}{figure.2}\protected@file@percent }
+\newlabel{fig:triangular}{{2}{7}{Planned six-link routing architecture for miniLISA. Each spacecraft has an optical source and an independently referenced Moku phasemeter that also supplies its EOM drive; each delay-line board can synthesize two incoming links. The complete routing supports six directed links, whereas the Michelson calculation in Section~\ref {sec:performance} uses links $12$, $21$, $13$ and $31$. The spacecraft-1 and reference lasers are stabilized to separate optical cavities; the other spacecraft lasers are phase-locked to synthesized beat notes. The common reference laser supplies the optical heterodyne reference}{figure.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {D}The Delay Line}{7}{section*.12}\protected@file@percent }
 \newlabel{sec:delay_line}{{III\,D}{7}{}{section*.12}{}}
 \AC@undonewlabel{acro:PS}
@@ -132,35 +132,60 @@
 \@writefile{toc}{\contentsline {subsection}{\numberline {E}GW Signal Injection}{8}{section*.13}\protected@file@percent }
 \newlabel{sec:gw_injection}{{III\,E}{8}{}{section*.13}{}}
 \newlabel{eq:gw_frequency_command}{{17}{8}{}{equation.17}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {F}Readout and Data Processing}{8}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {F}Readout and Data Processing}{9}{section*.14}\protected@file@percent }
 \newlabel{eq:shared_readout}{{18}{9}{}{equation.18}{}}
 \citation{bayle_unified_2023}
-\citation{srs_rb_standard}
-\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Noise sources shared with LISA or introduced by the miniLISA implementation, and their treatment in the present static analysis. Sources omitted from the testbed are described in Section~\ref {sec:setup}.}}{10}{table.1}\protected@file@percent }
-\newlabel{tab:noise_comparison}{{I}{10}{Noise sources shared with LISA or introduced by the miniLISA implementation, and their treatment in the present static analysis. Sources omitted from the testbed are described in Section~\ref {sec:setup}}{table.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {IV}Performance Modelling}{10}{section*.15}\protected@file@percent }
+\citation{hartwig_clock-jitter_2021}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces LISA noise scales and the corresponding miniLISA inputs. Laser and readout allocations are plateau values; clock and measured component levels are quoted at 10 mHz. Predictions and experimental targets are not measured performance. The frequency dependence and measurement assumptions are given in Section~\ref {sec:performance}.}}{10}{table.1}\protected@file@percent }
+\newlabel{tab:noise_comparison}{{I}{10}{LISA noise scales and the corresponding miniLISA inputs. Laser and readout allocations are plateau values; clock and measured component levels are quoted at 10 mHz. Predictions and experimental targets are not measured performance. The frequency dependence and measurement assumptions are given in Section~\ref {sec:performance}}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Additional sources associated with the laboratory implementation. Levels at 10 mHz are illustrative input values. The electronic spectrum is measured; the board-timing spectrum and its independence between boards are assumptions.}}{10}{table.2}\protected@file@percent }
+\newlabel{tab:lab_noise}{{II}{10}{Additional sources associated with the laboratory implementation. Levels at 10 mHz are illustrative input values. The electronic spectrum is measured; the board-timing spectrum and its independence between boards are assumptions}{table.2}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Noise Contributions}{10}{section*.15}\protected@file@percent }
 \newlabel{sec:performance}{{IV}{10}{}{section*.15}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {A}Noise Inputs and Comparison Reference}{10}{section*.16}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B}Predicted Carrier and Sideband Readout Noise}{11}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A}Laser and Clock Noise}{10}{section*.16}\protected@file@percent }
+\citation{wissel_rin_2022}
+\citation{ferguson2025applying}
+\citation{srs_rb_standard}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B}Modulation and Optical Readout Noise}{11}{section*.17}\protected@file@percent }
 \newlabel{sec:readout_noise}{{IV\,B}{11}{}{section*.17}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {C}Propagation Through TDI and Clock Correction}{11}{section*.18}\protected@file@percent }
-\newlabel{sec:noise_propagation}{{IV\,C}{11}{}{section*.18}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Component phase-noise amplitude spectral densities compared with the single-link reference formed from optical metrology and acceleration noise. Solid curves show the measured delay-line residual and modulation phase-noise estimator; measured Fourier bins are plotted without smoothing. The illustrative linear-receiver carrier and first-order sideband readout noises include shot noise, dark-current shot noise, Johnson noise, relative intensity noise and ADC quantization noise. The optical model assumes one phase-modulated beam and one unmodulated reference beam, each delivering $4\,\mathrm  {mW}$ at the detector, with modulation depth $0.53\,\mathrm  {rad}$. The detector responsivity is $0.6\,\mathrm  {A/W}$, heterodyne efficiency is $0.9$, and the termination is $50\,\Omega $ at $300\,\mathrm  {K}$. The ADC model uses a $1\,\mathrm  {V}$ full-scale span, 14 bits and $2\,\mathrm  {GS/s}$, with an ideal three-way electrical split. The assumed white RIN is $0.9\times 10^{-8}/\sqrt  {\mathrm  {Hz}}$, summed coherently between the beams. The model uses $(35,36,34)\,\mathrm  {MHz}$ modulation and electrical carrier frequencies of $15.0$, $10.9$ and $21.6\,\mathrm  {MHz}$; the readout prediction assumes white noise across the corresponding RF bands. All curves are shown before propagation through TDI and clock correction; the measured electronic residual is shown as characterized and is not deconvolved into individual board noise sources. The assumptions of the component budget are stated in Section~\ref {sec:performance}. }}{12}{figure.3}\protected@file@percent }
-\newlabel{fig:component_inputs_single_link}{{3}{12}{Component phase-noise amplitude spectral densities compared with the single-link reference formed from optical metrology and acceleration noise. Solid curves show the measured delay-line residual and modulation phase-noise estimator; measured Fourier bins are plotted without smoothing. The illustrative linear-receiver carrier and first-order sideband readout noises include shot noise, dark-current shot noise, Johnson noise, relative intensity noise and ADC quantization noise. The optical model assumes one phase-modulated beam and one unmodulated reference beam, each delivering $4\,\mathrm {mW}$ at the detector, with modulation depth $0.53\,\mathrm {rad}$. The detector responsivity is $0.6\,\mathrm {A/W}$, heterodyne efficiency is $0.9$, and the termination is $50\,\Omega $ at $300\,\mathrm {K}$. The ADC model uses a $1\,\mathrm {V}$ full-scale span, 14 bits and $2\,\mathrm {GS/s}$, with an ideal three-way electrical split. The assumed white RIN is $0.9\times 10^{-8}/\sqrt {\mathrm {Hz}}$, summed coherently between the beams. The model uses $(35,36,34)\,\mathrm {MHz}$ modulation and electrical carrier frequencies of $15.0$, $10.9$ and $21.6\,\mathrm {MHz}$; the readout prediction assumes white noise across the corresponding RF bands. All curves are shown before propagation through TDI and clock correction; the measured electronic residual is shown as characterized and is not deconvolved into individual board noise sources. The assumptions of the component budget are stated in Section~\ref {sec:performance}}{figure.3}{}}
-\newlabel{eq:detector_clock_residual}{{27}{12}{}{equation.27}{}}
-\citation{bayle_adapting_2021}
-\@writefile{toc}{\contentsline {subsection}{\numberline {D}Estimated Residual Noise}{13}{section*.19}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {V}Future Extensions}{13}{section*.20}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {A}Injection of Secondary Noise}{13}{section*.21}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {B}Time-Dependent Delays}{13}{section*.22}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {C}Changes to the Clock-Transfer and Locking Configuration}{13}{section*.23}\protected@file@percent }
-\newlabel{sec:clock_extensions}{{V\,C}{13}{}{section*.23}{}}
+\newlabel{eq:perf_phase_asd}{{21}{11}{}{equation.21}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {C}Electronic Noise and Board Timing}{11}{section*.18}\protected@file@percent }
+\newlabel{sec:electronic_noise}{{IV\,C}{11}{}{section*.18}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {D}Propagation Through TDI with Changing Arms}{11}{section*.19}\protected@file@percent }
+\newlabel{sec:noise_propagation}{{IV\,D}{11}{}{section*.19}{}}
+\citation{hartwig_clock-jitter_2021}
+\citation{colpi_lisa_2024}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Calculated carrier and first-order sideband readout noise for the stated bright-beam operating point. The model uses a $50\,\Omega $ load at $300\,\mathrm  K$, $100\,\mathrm  {nA}$ dark current, and white fractional intensity noise of $9\times 10^{-9}/\sqrt  {\mathrm  {Hz}}$, with the two beams' additive intensity noise summed coherently. The assumed current-to-voltage gain at each ADC is $50/\sqrt  {3}\,\mathrm  {V/A}$, with a $1\,\mathrm  V$ full-scale span, 14 bits and $2\,\mathrm  {GS/s}$. The ADC curve is ideal quantization noise. The calculation assumes linear detection and adequate filtering before sampling and decimation; it does not include a measured receiver or phasemeter noise floor.}}{12}{figure.3}\protected@file@percent }
+\newlabel{fig:newport_readout}{{3}{12}{Calculated carrier and first-order sideband readout noise for the stated bright-beam operating point. The model uses a $50\,\Omega $ load at $300\,\mathrm K$, $100\,\mathrm {nA}$ dark current, and white fractional intensity noise of $9\times 10^{-9}/\sqrt {\mathrm {Hz}}$, with the two beams' additive intensity noise summed coherently. The assumed current-to-voltage gain at each ADC is $50/\sqrt {3}\,\mathrm {V/A}$, with a $1\,\mathrm V$ full-scale span, 14 bits and $2\,\mathrm {GS/s}$. The ADC curve is ideal quantization noise. The calculation assumes linear detection and adequate filtering before sampling and decimation; it does not include a measured receiver or phasemeter noise floor}{figure.3}{}}
+\newlabel{eq:performance_x2}{{24}{12}{}{equation.24}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {E}Combined Noise Contributions}{12}{section*.20}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Input component spectra before TDI and clock correction. The measured electronic residual and sideband-difference estimator are plotted without smoothing over $0.25\,\mathrm  {mHz}$--$1\,\mathrm  {Hz}$. The calculated carrier and sideband readout use the operating point of Fig.~\ref {fig:newport_readout}, including ideal ADC quantization. The dashed curve is the single-link OMS-plus-acceleration comparison. The separate board-timing contribution is included after propagation in Fig.~\ref {fig:total_tdi2_noise}.}}{13}{figure.4}\protected@file@percent }
+\newlabel{fig:component_inputs_single_link}{{4}{13}{Input component spectra before TDI and clock correction. The measured electronic residual and sideband-difference estimator are plotted without smoothing over $0.25\,\mathrm {mHz}$--$1\,\mathrm {Hz}$. The calculated carrier and sideband readout use the operating point of Fig.~\ref {fig:newport_readout}, including ideal ADC quantization. The dashed curve is the single-link OMS-plus-acceleration comparison. The separate board-timing contribution is included after propagation in Fig.~\ref {fig:total_tdi2_noise}}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Future Extensions}{13}{section*.21}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {A}Injection of Secondary Noise}{13}{section*.22}\protected@file@percent }
 \citation{otto2012tdi}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Included noise contributions after ordered, varying-arm TDI~2 and clock correction. The black curve is their quadrature sum. The board-jitter curve uses independent Rb-model timing fluctuations; it is not measured board performance. The calculation uses the changing delays and constant frequency plan of Section~\ref {sec:noise_propagation}. The dashed reference is the OMS-plus-acceleration model propagated as four independent equivalent link noises. Delay-implementation residuals are excluded, so the sum is not a sensitivity prediction for the assembled testbed.}}{14}{figure.5}\protected@file@percent }
+\newlabel{fig:total_tdi2_noise}{{5}{14}{Included noise contributions after ordered, varying-arm TDI~2 and clock correction. The black curve is their quadrature sum. The board-jitter curve uses independent Rb-model timing fluctuations; it is not measured board performance. The calculation uses the changing delays and constant frequency plan of Section~\ref {sec:noise_propagation}. The dashed reference is the OMS-plus-acceleration model propagated as four independent equivalent link noises. Delay-implementation residuals are excluded, so the sum is not a sensitivity prediction for the assembled testbed}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {B}Orbit-Based Delays}{14}{section*.23}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {C}Changes to the Clock-Transfer and Locking Configuration}{14}{section*.24}\protected@file@percent }
+\newlabel{sec:clock_extensions}{{V\,C}{14}{}{section*.24}{}}
 \bibdata{design-reviewNotes,citations}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Estimated phase-noise ASD of the clock-corrected static Michelson observable $X_{2\mathrm  c}$. The black curve sums the electronic, assumed source-modulation and shared-detector contributions in quadrature. The calculation uses four links with $8.339\,\mathrm  s$ delays, modulation frequencies $(35,36,34)\,\mathrm  {MHz}$, and the optical operating point of Section~\ref {sec:readout_noise}. ADC noise is represented by the measured electronic baseline. The dashed comparison curve treats the single-link OMS-plus-acceleration reference as independent equivalent link noises propagated through the same TDI observable. Laser and common clock noise cancel ideally in this static estimate.}}{14}{figure.4}\protected@file@percent }
-\newlabel{fig:total_tdi2_noise}{{4}{14}{Estimated phase-noise ASD of the clock-corrected static Michelson observable $X_{2\mathrm c}$. The black curve sums the electronic, assumed source-modulation and shared-detector contributions in quadrature. The calculation uses four links with $8.339\,\mathrm s$ delays, modulation frequencies $(35,36,34)\,\mathrm {MHz}$, and the optical operating point of Section~\ref {sec:readout_noise}. ADC noise is represented by the measured electronic baseline. The dashed comparison curve treats the single-link OMS-plus-acceleration reference as independent equivalent link noises propagated through the same TDI observable. Laser and common clock noise cancel ideally in this static estimate}{figure.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{14}{section*.24}\protected@file@percent }
-\newlabel{Conclusion}{{VI}{14}{}{section*.24}{}}
+\bibcite{abbott2016observation}{{1}{}{{}}{{}}}
+\bibcite{colpi_lisa_2024}{{2}{}{{}}{{}}}
+\bibcite{bayle_unified_2023}{{3}{}{{}}{{}}}
+\bibcite{weaver2010performance}{{4}{}{{}}{{}}}
+\bibcite{tinto_time-delay_2002}{{5}{}{{}}{{}}}
+\bibcite{mitryk_hardware-based_2012}{{6}{}{{}}{{}}}
+\bibcite{devine2010}{{7}{}{{}}{{}}}
+\bibcite{laporte2017lot}{{8}{}{{}}{{}}}
+\bibcite{ferguson2025applying}{{9}{}{{}}{{}}}
+\bibcite{heinzel_auxiliary_2011}{{10}{}{{}}{{}}}
+\bibcite{heinzel_frequency_2024}{{11}{}{{}}{{}}}
+\bibcite{otto2012tdi}{{12}{}{{}}{{}}}
+\bibcite{tinto2018time}{{13}{}{{}}{{}}}
+\bibcite{hartwig_clock-jitter_2021}{{14}{}{{}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Conclusion}{15}{section*.25}\protected@file@percent }
+\newlabel{Conclusion}{{VI}{15}{}{section*.25}{}}
 \newacro{ADC}[\AC@hyperlink{ADC}{ADC}]{analog to digital converter}
 \newacro{EOM}[\AC@hyperlink{EOM}{EOM}]{electro-optic modulator}
 \newacro{DAC}[\AC@hyperlink{DAC}{DAC}]{digital to analog converter}
@@ -184,25 +209,11 @@
 \newacro{UFLIS}[\AC@hyperlink{UFLIS}{UFLIS}]{University of Florida Laser Interferometry Simulator}
 \newacro{ULE}[\AC@hyperlink{ULE}{ULE}]{ultra-low expansion}
 \newacro{USO}[\AC@hyperlink{USO}{USO}]{ultra-stable oscillator}
-\bibcite{abbott2016observation}{{1}{}{{}}{{}}}
-\bibcite{colpi_lisa_2024}{{2}{}{{}}{{}}}
-\bibcite{bayle_unified_2023}{{3}{}{{}}{{}}}
-\bibcite{weaver2010performance}{{4}{}{{}}{{}}}
-\bibcite{tinto_time-delay_2002}{{5}{}{{}}{{}}}
-\bibcite{mitryk_hardware-based_2012}{{6}{}{{}}{{}}}
-\bibcite{devine2010}{{7}{}{{}}{{}}}
-\bibcite{laporte2017lot}{{8}{}{{}}{{}}}
-\bibcite{ferguson2025applying}{{9}{}{{}}{{}}}
-\bibcite{heinzel_auxiliary_2011}{{10}{}{{}}{{}}}
-\bibcite{heinzel_frequency_2024}{{11}{}{{}}{{}}}
-\bibcite{otto2012tdi}{{12}{}{{}}{{}}}
-\bibcite{tinto2018time}{{13}{}{{}}{{}}}
-\bibcite{hartwig_clock-jitter_2021}{{14}{}{{}}{{}}}
-\bibcite{srs_rb_standard}{{15}{}{{}}{{}}}
-\bibcite{bayle_adapting_2021}{{16}{}{{}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {}References}{15}{section*.26}\protected@file@percent }
+\bibcite{wissel_rin_2022}{{15}{}{{}}{{}}}
+\bibcite{srs_rb_standard}{{16}{}{{}}{{}}}
 \bibstyle{unsrt}
 \providecommand\NAT@force@numbers{}\NAT@force@numbers
-\@writefile{toc}{\contentsline {section}{\numberline {}References}{15}{section*.25}\protected@file@percent }
-\newlabel{LastBibItem}{{16}{15}{}{section*.25}{}}
-\newlabel{LastPage}{{}{15}{}{}{}}
-\gdef \@abspage@last{15}
+\newlabel{LastBibItem}{{16}{16}{}{section*.26}{}}
+\newlabel{LastPage}{{}{16}{}{}{}}
+\gdef \@abspage@last{16}

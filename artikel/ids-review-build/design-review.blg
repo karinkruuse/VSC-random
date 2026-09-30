@@ -9,30 +9,30 @@ Database file #1: design-reviewNotes.bib
 Database file #2: citations.bib
 You've used 16 entries,
             1791 wiz_defined-function locations,
-            549 strings with 8904 characters,
-and the built_in function-call counts, 5245 in all, are:
-= -- 305
-> -- 541
+            552 strings with 8996 characters,
+and the built_in function-call counts, 5270 in all, are:
+= -- 303
+> -- 550
 < -- 1
-+ -- 186
-- -- 170
-* -- 514
-:= -- 967
-add.period$ -- 52
++ -- 189
+- -- 173
+* -- 517
+:= -- 974
+add.period$ -- 51
 call.type$ -- 16
 change.case$ -- 16
 chr.to.int$ -- 0
 cite$ -- 16
 duplicate$ -- 147
-empty$ -- 363
-format.name$ -- 170
-if$ -- 1047
+empty$ -- 362
+format.name$ -- 173
+if$ -- 1050
 int.to.chr$ -- 0
 int.to.str$ -- 16
 missing$ -- 14
-newline$ -- 87
+newline$ -- 86
 num.names$ -- 16
-pop$ -- 32
+pop$ -- 33
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
@@ -47,4 +47,4 @@ type$ -- 0
 warning$ -- 0
 while$ -- 31
 width$ -- 18
-write$ -- 182
+write$ -- 180

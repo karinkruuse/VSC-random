@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  28 SEP 2026 12:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  30 SEP 2026 17:46
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -698,183 +698,27 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
 Package hyperref Info: Link coloring OFF on input line 36.
- (main.out) (main.out)
 \@outlinefile=\write6
 \openout6 = `main.out'.
 
 
+c:/Users/kakruu/Desktop/stuff/VSC-random/artikel/main.tex:36: I can't write on file `main.pdf'.
+(Press Enter to retry, or Control-C to exit; default file extension is `.pdf')
+Please type another file name for output
+c:/Users/kakruu/Desktop/stuff/VSC-random/artikel/main.tex:36: Emergency stop.
+<to be read again> 
+                   \edef 
+l.36 \begin{document}
+                     
+*** (job aborted, file error in nonstop mode)
 
-Package todonotes Warning: The length marginparwidth is less than 2cm and will most likely cause issues with the appearance of inserted todonotes. The issue can be solved by adding a line like \setlength {\marginparwidth }{2cm} prior to loading the todonotes package. on input line 36.
-
-Class revtex4-2 Info: Taking \maketitle back from hyperref on input line 36.
-\openout3 = `mainNotes.bib'.
-
-(intro.tex
-Package acronym Info: Label `acro:LISA' newly defined as it shall be overridden
-although it is yet undefined on input line 2.
-Package acronym Info: Label `acro:TDI' newly defined as it shall be overridden
-although it is yet undefined on input line 4.
-Package acronym Info: Label `acro:USO' newly defined as it shall be overridden
-although it is yet undefined on input line 6.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 6.
- (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 6.
- (C:\Users\kakruu\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-)
-Underfull \hbox (badness 1946) in paragraph at lines 10--11
-[][][] \T1/cmr/m/n/10 has been de-vel-oped an-a-lyt-i-cally and tested
- []
-
-Package acronym Info: Label `acro:UFLIS' newly defined as it shall be overridden
-although it is yet undefined on input line 12.
-
-Underfull \hbox (badness 1226) in paragraph at lines 15--16
-[]\T1/cmr/m/n/10 Here, we present an overview of an on-go-ing ef-
- []
-
-Package acronym Info: Label `acro:FPGA' newly defined as it shall be overridden
-although it is yet undefined on input line 17.
-[1{C:/Users/kakruu/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]) (IDS.tex
-Package acronym Info: Label `acro:IDS' newly defined as it shall be overridden
-although it is yet undefined on input line 3.
-Package acronym Info: Label `acro:MOSA' newly defined as it shall be overridden
-although it is yet undefined on input line 9.
-
-Underfull \hbox (badness 4181) in paragraph at lines 12--14
-\OML/cmm/m/it/10 ^^N^^^[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 t\OT1/cmr/m/n/10 )$ \T1/cmr/m/n/10 rep-re-sents the in-trin-sic laser phase noise.
- []
-
-<images/LISAarm-analysis.pdf, id=142, 781.92125pt x 470.75874pt>
-File: images/LISAarm-analysis.pdf Graphic file (type pdf)
-<use images/LISAarm-analysis.pdf>
-Package pdftex.def Info: images/LISAarm-analysis.pdf  used on input line 17.
-(pdftex.def)             Requested size: 510.0pt x 307.04549pt.
-Package acronym Info: Label `acro:ADC' newly defined as it shall be overridden
-although it is yet undefined on input line 18.
-Package acronym Info: Label `acro:EOM' newly defined as it shall be overridden
-although it is yet undefined on input line 24.
-Package acronym Info: Label `acro:PLL' newly defined as it shall be overridden
-although it is yet undefined on input line 26.
-[2]
-Package acronym Info: Label `acro:PMS' newly defined as it shall be overridden
-although it is yet undefined on input line 53.
-Package acronym Info: Label `acro:DPLL' newly defined as it shall be overridden
-although it is yet undefined on input line 67.
- [3 <./images/LISAarm-analysis.pdf>]
-
-Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `\@ac' on input line 112.
-
-
-Underfull \hbox (badness 1460) in paragraph at lines 115--116
-[]\T1/cmr/m/n/10 For scale, con-sider a rep-re-sen-ta-tive pre-stabilized
- []
-
-[4]
-Underfull \hbox (badness 1845) in paragraph at lines 123--125
-\T1/cmr/m/n/10 Within the common-optical-frequency ap-prox-i-ma-tion
- []
-
-[5]
-Underfull \hbox (badness 8094) in paragraph at lines 189--190
-[]\T1/cmr/m/n/10 The two modulation-frequency syn-the-sis chains
- []
-
-
-Underfull \hbox (badness 2134) in paragraph at lines 189--190
-\T1/cmr/m/n/10 can add dif-fer-ent ex-cess noises. Lo-cal reference-
- []
-
-
-Underfull \hbox (badness 1533) in paragraph at lines 189--190
-\T1/cmr/m/n/10 interferometer side-band mea-sure-ments pro-vide ad-di-
- []
-
-)
-Package acronym Info: Label `acro:LFN' newly defined as it shall be overridden
-although it is yet undefined on input line 80.
-Package acronym Info: Label `acro:SC' newly defined as it shall be overridden
-although it is yet undefined on input line 80.
-
-Underfull \hbox (badness 1490) in paragraph at lines 80--81
-\T1/cmr/m/n/10 space-craft, al-low-ing LISA TDI com-bi-na-tions to be
- []
-
-Package acronym Info: Label `acro:ULE' newly defined as it shall be overridden
-although it is yet undefined on input line 102.
-[6]
-<images/3arm.pdf, id=302, 860.21375pt x 847.165pt>
-File: images/3arm.pdf Graphic file (type pdf)
-<use images/3arm.pdf>
-Package pdftex.def Info: images/3arm.pdf  used on input line 134.
-(pdftex.def)             Requested size: 246.0pt x 242.25891pt.
-Package acronym Info: Label `acro:PS' newly defined as it shall be overridden
-although it is yet undefined on input line 148.
- [7 <./images/3arm.pdf>] [8]
-Underfull \hbox (badness 3271) in paragraph at lines 245--246
-[]\T1/cmr/m/n/10 Finally, the upper-sideband-minus-carrier vari-able
- []
-
-[9] (model.tex [10]
-Underfull \hbox (badness 1742) in paragraph at lines 30--31
-[]\T1/cmr/m/n/10 For com-par-i-son, we use the single-link ref-er-ence
- []
-
-(images/performance/component_inputs_caption.tex
-<images/performance/component_inputs_single_link.pdf, id=464, 505.89pt x 346.89601pt>
-File: images/performance/component_inputs_single_link.pdf Graphic file (type pdf)
-<use images/performance/component_inputs_single_link.pdf>
-Package pdftex.def Info: images/performance/component_inputs_single_link.pdf  used on input line 5.
-(pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [11] [12 <./images/performance/component_inputs_single_link.pdf>]
-<images/performance/total_noise_tdi2_corrected_budget.pdf, id=522, 505.89pt x 346.89601pt>
-File: images/performance/total_noise_tdi2_corrected_budget.pdf Graphic file (type pdf)
-<use images/performance/total_noise_tdi2_corrected_budget.pdf>
-Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.pdf  used on input line 102.
-(pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [13] Excluding 'comment' comment. (main.bbl [14 <./images/performance/total_noise_tdi2_corrected_budget.pdf>]
-Underfull \hbox (badness 1983) in paragraph at lines 11--39
- \T1/cmr/m/n/9 mans, An-toine Pe-titeau, David Shoe-maker, Car-los
- []
-
-
-Underfull \hbox (badness 2318) in paragraph at lines 11--39
- \T1/cmr/m/n/9 Atul Deep, Ig-na-cio Fer-nán-dez Núñez, César Gar-
- []
-
-
-Underfull \hbox (badness 1092) in paragraph at lines 11--39
- \T1/cmr/m/n/9 cía Marir-ro-driga, Mar-tin Gehler, Jean-Philippe Ha-
- []
-
-
-Underfull \hbox (badness 7522) in paragraph at lines 46--51
- []\T1/cmr/m/n/9 Gregory Weaver, Jef-frey Garstecki, and Samuel
- []
-
-) [15] (main.aux)
- ***********
-LaTeX2e <2025-11-01>
-L3 programming layer <2025-12-24>
- ***********
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 86B0D0EBCAAAE42DEA5C8EA928B15CFE;5006.
- ) 
+ 
 Here is how much of TeX's memory you used:
- 29742 strings out of 467871
- 589508 string characters out of 5417892
- 989369 words of memory out of 5000000
- 58056 multiletter control sequences out of 15000+600000
- 648961 words of font info for 97 fonts, out of 8000000 for 9000
+ 29103 strings out of 467871
+ 577934 string characters out of 5417892
+ 947916 words of memory out of 5000000
+ 57590 multiletter control sequences out of 15000+600000
+ 628484 words of font info for 41 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,108p,1735b,1166s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0700.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
-Output written on main.pdf (15 pages, 721767 bytes).
-PDF statistics:
- 1060 PDF objects out of 1200 (max. 8388607)
- 91 named destinations out of 1000 (max. 500000)
- 233 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+ 99i,1n,108p,568b,541s stack positions out of 10000i,1000n,20000p,200000b,200000s
+c:/Users/kakruu/Desktop/stuff/VSC-random/artikel/main.tex:36:  ==> Fatal error occurred, no output PDF file produced!

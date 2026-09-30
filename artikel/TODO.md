@@ -1,27 +1,29 @@
 # miniLISA article TODO
 
-Updated 28 September 2026. This is the central checklist. Purple draft notes also remain in `main.tex`, `model.tex` and `IDS.tex`; some describe later extensions rather than requirements for the current paper.
+Updated 30 September 2026. This is the central checklist. Purple draft notes also remain in `main.tex`, `model.tex` and `IDS.tex`; some describe later extensions rather than requirements for the current paper.
 
 ## Finish the current draft
 
-- [ ] **Write the title and abstract, and complete the author information.** These are still placeholders in `main.tex`.
-- [ ] **Update the drawings.** Show the six directed links, independent Rb → Moku references, and Moku → EOM drives. Match the example modulation frequencies (35, 36, 34 MHz). Keep the signal-generator alternative in the text unless it becomes the chosen setup. Check labels against both optical input tones and synthesized output tones.
+- [ ] **Review the title and abstract, and complete the author information.** The title and abstract are drafted; the author list is still a placeholder in `main.tex`.
+- [ ] **Update the drawings.** Show the six directed links, independent spacecraft clock → Moku references, and Moku → EOM drives. Match the example modulation frequencies (35, 36, 34 MHz). Keep the signal-generator alternative in the text unless it becomes the chosen setup. Check labels against both optical input tones and synthesized output tones.
 - [ ] **Clarify the delay-board clock connections.** State what drives the board ADCs, DACs and delay counters, and whether the boards share a reference or use separate spacecraft references. This determines how board jitter relates to the common clock term `q_i`.
-- [ ] **Settle the detector operating point used for the prediction.** The current example uses 4 mW per beam and an ideal three-way electrical split. Confirm that these are the intended assumptions and keep the text, table and figures consistent. Detector measurements can wait until the hardware is available.
+- [ ] **Settle the detector operating point used for the prediction.** The current example uses 4 mW per beam and an ideal three-way electrical split; see [the readout calculation](READOUT_CALCULATION.md). Confirm that these are the intended assumptions and keep the text, table and figures consistent. Detector measurements can wait until the hardware is available.
 - [ ] **Choose one simple GW injection example.** Specify its frequency and amplitude and give the expected processed amplitude and phase. A monochromatic signal is sufficient to make the proposed test concrete.
-- [ ] **Keep the scope of the noise figure clear.** It is a component estimate with static delays and ideal laser/clock cancellation. Differential board timing and delay-error residuals are not yet quantified. This can remain a stated limitation; it does not require a new numerical floor for this draft.
+- [ ] **Keep the scope of the noise figure clear.** It combines optical noise estimates, the electronic baseline and assumed independent Rb-model board jitter through ordered, changing-arm TDI 2. Current delay-implementation residuals are excluded. It must not be described as the expected performance of the complete testbed.
 - [ ] **Resolve or move the purple notes before submission.** Keep only decisions needed for the present design and calculation. Put work on varying delays and additional hardware in future work.
 
 ## Planned measurements and their follow-up
 
-- [ ] **Remeasure the modulation noise.** Use the planned Rb-referenced Moku EOM drive. Establish how much of the sideband-difference spectrum comes from the readout before assigning the full spectrum to modulation noise. Replace the current input spectrum and regenerate the noise figures afterwards.
+- [ ] **Remeasure the modulation noise.** Use the planned Moku EOM drive and spacecraft timing reference. Establish how much of the sideband-difference spectrum comes from the readout before assigning the full spectrum to modulation noise. Replace the current input spectrum and regenerate the noise figures afterwards.
 - [ ] **Use the Moku report to guide the readout check.** Request the existing same-DAC, two-ADC phase records and the signal amplitudes/readout settings. Those data may already provide the differential readout estimate needed; start there before arranging another measurement.
 - [ ] **Decide whether an external signal generator is needed after the modulation test.** The relevant quantity is excess modulation-path noise relative to the phasemeter timing reference. The DAC report alone does not determine it.
-- [ ] **After assembly, test noise suppression and GW recovery.** Compare the recovered signal with the amplitude and phase predicted using the same delays. Use the adopted laser requirement and Rb estimate for planning; new laser and clock spectra are not prerequisites for finishing the design paper.
+- [ ] **After assembly, test noise suppression and GW recovery.** Compare the recovered signal with the amplitude and phase predicted using the same delays. Use the adopted LISA laser and spacecraft-clock noise levels for planning. The Rb spectrum now applies only to board timing. The experiment is to reproduce the LISA spacecraft-clock level; it is not claimed to do so already.
 
-## Later, if varying-delay results are added
+## Later, for a full orbit-dependent model
 
-- [ ] Extend the static calculation to ordered, time-varying delays and the corresponding clock correction. Check the delayed-frequency scaling, command range and tone separation for that configuration. The current static calculation does not demonstrate flexing-arm cancellation.
+- [ ] Extend the current growing/shrinking-arm example to orbit-derived delays and changing beat-frequency coefficients. Check the hardware delayed-frequency scaling, command range and tone separation. The current model uses ideal phase delays and constant beat-frequency coefficients; it does not validate the present firmware.
+
+Completed in this revision: ordered varying-delay propagation and source-correlation checks ([calculation note](TDI_CALCULATION.md)); two noise tables; spacecraft-clock and board-clock models separated; readout calculation audited and documented.
 
 ## What the new Moku report tells us
 

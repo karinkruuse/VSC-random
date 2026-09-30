@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  28 SEP 2026 12:57
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.21)  30 SEP 2026 14:12
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -983,6 +983,11 @@ Underfull \hbox (badness 1226) in paragraph at lines 15--16
 []\T1/cmr/m/n/10 Here, we present an overview of an on-go-ing ef-
  []
 
+
+Underfull \hbox (badness 1014) in paragraph at lines 15--16
+\T1/cmr/m/n/10 gravitational-wave sig-nal sur-vives [][] pro-cess-ing of
+ []
+
 Package acronym Info: Label `acro:FPGA' newly defined as it shall be overridden
 
 although it is yet undefined on input line 17.
@@ -998,7 +1003,7 @@ Underfull \hbox (badness 4181) in paragraph at lines 12--14
 \T1/cmr/m/n/10 rep-re-sents the in-trin-sic laser phase noise.
  []
 
-<images/LISAarm-analysis.pdf, id=142, 781.92125pt x 470.75874pt>
+<images/LISAarm-analysis.pdf, id=146, 781.92125pt x 470.75874pt>
 File: images/LISAarm-analysis.pdf Graphic file (type pdf)
 <use images/LISAarm-analysis.pdf>
 Package pdftex.def Info: images/LISAarm-analysis.pdf  used on input line 17.
@@ -1058,7 +1063,7 @@ Underfull \hbox (badness 1490) in paragraph at lines 80--81
 Package acronym Info: Label `acro:ULE' newly defined as it shall be overridden
 although it is yet undefined on input line 102.
 [6]
-<images/3arm.pdf, id=302, 860.21375pt x 847.165pt>
+<images/3arm.pdf, id=306, 860.21375pt x 847.165pt>
 File: images/3arm.pdf Graphic file (type pdf)
 <use images/3arm.pdf>
 Package pdftex.def Info: images/3arm.pdf  used on input line 134.
@@ -1070,13 +1075,17 @@ Underfull \hbox (badness 3271) in paragraph at lines 245--246
 []\T1/cmr/m/n/10 Finally, the upper-sideband-minus-carrier vari-able
  []
 
-[9] (model.tex [10]
-Underfull \hbox (badness 1742) in paragraph at lines 30--31
-[]\T1/cmr/m/n/10 For com-par-i-son, we use the single-link ref-er-ence
- []
+(noise_tables.tex) [9] (model.tex [10]
+<images/performance/newport_readout_breakdown.pdf, id=472, 505.89pt x 238.49101
+pt>
+File: images/performance/newport_readout_breakdown.pdf Graphic file (type pdf)
+<use images/performance/newport_readout_breakdown.pdf>
+Package pdftex.def Info: images/performance/newport_readout_breakdown.pdf  used
+ on input line 37.
+(pdftex.def)             Requested size: 510.0pt x 240.43367pt.
 
 (images/performance/component_inputs_caption.tex
-<images/performance/component_inputs_single_link.pdf, id=464, 505.89pt x 346.89
+<images/performance/component_inputs_single_link.pdf, id=477, 505.89pt x 346.89
 601pt>
 File: images/performance/component_inputs_single_link.pdf Graphic file (type pd
 f)
@@ -1084,18 +1093,20 @@ f)
 Package pdftex.def Info: images/performance/component_inputs_single_link.pdf  u
 sed on input line 5.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [11] [12 <./images/performance/component_inputs_single_link.pdf>]
-<images/performance/total_noise_tdi2_corrected_budget.pdf, id=522, 505.89pt x 3
+) [11]
+<images/performance/total_noise_tdi2_corrected_budget.pdf, id=495, 505.89pt x 3
 46.89601pt>
 File: images/performance/total_noise_tdi2_corrected_budget.pdf Graphic file (ty
 pe pdf)
 <use images/performance/total_noise_tdi2_corrected_budget.pdf>
 Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.p
-df  used on input line 102.
+df  used on input line 98.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [13] Excluding 'comment' comment.
+ [12 <./images/performance/newport_readout_breakdown.pdf>]) [13 <./images/perfo
+rmance/component_inputs_single_link.pdf>] Excluding 'comment' comment. [14 <./i
+mages/performance/total_noise_tdi2_corrected_budget.pdf>]
 (C:\Users\kakruu\Desktop\stuff\VSC-random\artikel\ids-review-build\design-revie
-w.bbl [14 <./images/performance/total_noise_tdi2_corrected_budget.pdf>]
+w.bbl
 Underfull \hbox (badness 1983) in paragraph at lines 11--39
  \T1/cmr/m/n/9 mans, An-toine Pe-titeau, David Shoe-maker, Car-los
  []
@@ -1115,7 +1126,7 @@ Underfull \hbox (badness 7522) in paragraph at lines 46--51
  []\T1/cmr/m/n/9 Gregory Weaver, Jef-frey Garstecki, and Samuel
  []
 
-) [15]
+[15]) [16]
 (C:\Users\kakruu\Desktop\stuff\VSC-random\artikel\ids-review-build\design-revie
 w.aux)
  ***********
@@ -1123,16 +1134,16 @@ LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `design-review.out' has not changed.
-(rerunfilecheck)             Checksum: 86B0D0EBCAAAE42DEA5C8EA928B15CFE;5006.
+(rerunfilecheck)             Checksum: 3D78C94F32CC679B9305C3527FC0ABFA;5099.
  ) 
 Here is how much of TeX's memory you used:
- 29741 strings out of 467871
- 590199 string characters out of 5417892
- 989414 words of memory out of 5000000
- 58056 multiletter control sequences out of 15000+600000
+ 29762 strings out of 467871
+ 590887 string characters out of 5417892
+ 985461 words of memory out of 5000000
+ 58074 multiletter control sequences out of 15000+600000
  648961 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,108p,1688b,1166s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,12n,108p,1277b,1307s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ect
 t0900.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi
 600\ecbx1000.pk> <C:\Users\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen
@@ -1149,25 +1160,23 @@ ers\kakruu\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk>
 mbx10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
 fonts/cm/cmex10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/
 public/amsfonts/cm/cmmi10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fo
-nts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/kakruu/AppData/Local/Programs/
-MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kakruu/AppData/Local/
-Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kakruu/AppDa
-ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/kak
-ruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C
+nts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/kakruu/AppData/Local/Programs/
+MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/kakruu/AppData/Local/
+Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/kakruu/AppDa
+ta/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/k
+akruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C
 :/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr
-10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
-ts/cm/cmr5.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/publi
-c/amsfonts/cm/cmr6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/typ
-e1/public/amsfonts/cm/cmr7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/f
-onts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/kakruu/AppData/Local/Programs/
-MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kakruu/AppData/Local
-/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kakruu/AppD
-ata/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/ka
-kruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
+6.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfont
+s/cm/cmr7.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmr9.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/fonts/type
+1/public/amsfonts/cm/cmsy10.pfb><C:/Users/kakruu/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/kakruu/AppData/Local/Program
+s/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/kakruu/AppData/Loca
+l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
 Output written on C:\Users\kakruu\Desktop\stuff\VSC-random\artikel\ids-review-b
-uild\design-review.pdf (15 pages, 721767 bytes).
+uild\design-review.pdf (16 pages, 736239 bytes).
 PDF statistics:
- 1060 PDF objects out of 1200 (max. 8388607)
+ 1086 PDF objects out of 1200 (max. 8388607)
  91 named destinations out of 1000 (max. 500000)
- 233 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 246 words of extra memory for PDF output out of 10000 (max. 10000000)
 
