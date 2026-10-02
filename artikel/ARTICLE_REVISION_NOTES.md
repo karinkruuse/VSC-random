@@ -1,3 +1,17 @@
+## Additional inline comments addressed
+
+- Renamed the design subsections and removed modulation frequency from the list of stochastic spacecraft variables; defined it alongside the equations instead.
+- Shortened the LISA comparison while retaining the distinction between the full and reduced clock-transfer models.
+- Explained the ADC/DAC contributions using the spacecraft indices rather than undefined local/remote terminology.
+- Defined the buffer input time and stated why physical-versus-processing delay errors matter.
+- Distinguished modulation noise from optical readout noise, and additive electronic noise from board timing. Added the Ferguson citation at the electronic baseline description.
+- Removed "bright-beam" language, shortened the readout discussion, and removed the requested detector-correlation paragraph from Noise Contributions.
+- Explained that common timing shares the laser residual operator, not a guaranteed residual amplitude: input spectra and delay errors still matter.
+- Retained a visible draft note at the readout equation because the detector correlation assumption is unverified. The current detector curve was not silently relabelled as an independent-noise calculation.
+- Removed the addressed inline review comments; retained outstanding hardware notes. Updated stale Rb wording in the TODO list.
+
+Validation: article rebuilt successfully; final log has no undefined citation/reference or acronym warnings and no overfull boxes.
+
 ## Final update: shared-reference model and build fixes
 
 This update supersedes the older pending-work and independent-board conclusions below.

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.9)  2 OCT 2026 09:46
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.9)  2 OCT 2026 09:53
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -794,44 +794,44 @@ Underfull \hbox (badness 1533) in paragraph at lines 193--98
 
 [5]
 Package acronym Info: Label `acro:ULE' newly defined as it shall be overridden
-although it is yet undefined on input line 135.
+although it is yet undefined on input line 133.
 Package acronym Info: Label `acro:SC' newly defined as it shall be overridden
-although it is yet undefined on input line 148.
-<images/3arm.pdf, id=296, 860.21375pt x 847.165pt>
+although it is yet undefined on input line 146.
+<images/3arm.pdf, id=295, 860.21375pt x 847.165pt>
 File: images/3arm.pdf Graphic file (type pdf)
 <use images/3arm.pdf>
-Package pdftex.def Info: images/3arm.pdf  used on input line 168.
+Package pdftex.def Info: images/3arm.pdf  used on input line 166.
 (pdftex.def)             Requested size: 246.0pt x 242.25891pt.
  [6]
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 180.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 178.
 
 
-LaTeX Warning: A float is stuck (cannot be placed) on input line 180.
+LaTeX Warning: A float is stuck (cannot be placed) on input line 178.
 
 
 Class revtex4-2 Warning: Deferred float stuck during \clearpage processing.
 
 Package acronym Info: Label `acro:PS' newly defined as it shall be overridden
-although it is yet undefined on input line 181.
+although it is yet undefined on input line 179.
 [7 <./images/3arm.pdf>]
-Underfull \hbox (badness 3271) in paragraph at lines 281--282
+Underfull \hbox (badness 3271) in paragraph at lines 277--278
 []\T1/cmr/m/n/10 Finally, the upper-sideband-minus-carrier vari-able
  []
 
-(noise_tables.tex) [8] (model.tex [9] (images/performance/component_inputs_caption.tex
-<images/performance/component_inputs_clean.pdf, id=461, 505.89pt x 346.89601pt>
+[8] (noise_tables.tex) (model.tex [9] [10] (images/performance/component_inputs_caption.tex
+<images/performance/component_inputs_clean.pdf, id=464, 505.89pt x 346.89601pt>
 File: images/performance/component_inputs_clean.pdf Graphic file (type pdf)
 <use images/performance/component_inputs_clean.pdf>
 Package pdftex.def Info: images/performance/component_inputs_clean.pdf  used on input line 3.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-)
-<images/performance/total_noise_tdi2_corrected_budget.pdf, id=466, 505.89pt x 346.89601pt>
+) [11]
+<images/performance/total_noise_tdi2_corrected_budget.pdf, id=476, 505.89pt x 346.89601pt>
 File: images/performance/total_noise_tdi2_corrected_budget.pdf Graphic file (type pdf)
 <use images/performance/total_noise_tdi2_corrected_budget.pdf>
-Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.pdf  used on input line 56.
+Package pdftex.def Info: images/performance/total_noise_tdi2_corrected_budget.pdf  used on input line 50.
 (pdftex.def)             Requested size: 510.0pt x 349.72173pt.
-) [10] [11 <./images/performance/component_inputs_clean.pdf>] [12 <./images/performance/total_noise_tdi2_corrected_budget.pdf>] (noise_parameters.tex) (main.bbl
+) [12 <./images/performance/component_inputs_clean.pdf>] [13 <./images/performance/total_noise_tdi2_corrected_budget.pdf>] (noise_parameters.tex) (main.bbl
 Underfull \hbox (badness 1983) in paragraph at lines 11--39
  \T1/cmr/m/n/9 mans, An-toine Pe-titeau, David Shoe-maker, Car-los
  []
@@ -846,31 +846,31 @@ Underfull \hbox (badness 1092) in paragraph at lines 11--39
  \T1/cmr/m/n/9 cía Marir-ro-driga, Mar-tin Gehler, Jean-Philippe Ha-
  []
 
-
+[14]
 Underfull \hbox (badness 7522) in paragraph at lines 46--51
  []\T1/cmr/m/n/9 Gregory Weaver, Jef-frey Garstecki, and Samuel
  []
 
-[13]) [14] (main.aux)
+) [15] (main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: D9A1385565B4C37D1901C0BB72BABE3C;4929.
+(rerunfilecheck)             Checksum: E6AF64627BD320DFDE920398E4E7BDF3;5032.
  ) 
 Here is how much of TeX's memory you used:
- 29714 strings out of 467870
- 588746 string characters out of 5418356
- 989337 words of memory out of 5000000
- 58032 multiletter control sequences out of 15000+600000
+ 29716 strings out of 467870
+ 588763 string characters out of 5418356
+ 987341 words of memory out of 5000000
+ 58033 multiletter control sequences out of 15000+600000
  648648 words of font info for 96 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 99i,12n,108p,1078b,1263s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,12n,108p,1078b,1255s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1000.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti1000.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0800.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0600.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0700.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx0900.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm0900.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecti0900.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1000.pk> <C:\Users\37259\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi5.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmib10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr6.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr9.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/37259/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
-Output written on main.pdf (14 pages, 655653 bytes).
+Output written on main.pdf (15 pages, 657286 bytes).
 PDF statistics:
- 1040 PDF objects out of 1200 (max. 8388607)
- 83 named destinations out of 1000 (max. 500000)
+ 1044 PDF objects out of 1200 (max. 8388607)
+ 84 named destinations out of 1000 (max. 500000)
  233 words of extra memory for PDF output out of 10000 (max. 10000000)
 
