@@ -1,0 +1,24 @@
+{
+  "reference_file": "C:\\Users\\kakruu\\Desktop\\stuff\\VSC-random\\modulation_noise\\data\\multi_PM\\mod35_20261002_161034.npy",
+  "shifted_file": "C:\\Users\\kakruu\\Desktop\\stuff\\VSC-random\\modulation_noise\\data\\multi_PM\\mod35_20261002_161035.npy",
+  "offset_definition": "shifted file sample j occurs at reference sample j + offset_samples",
+  "offset_samples": 45.06846555381429,
+  "offset_seconds": 1.2097974102159341,
+  "thirds_offset_seconds": [
+    1.2098698305152276,
+    1.2098386732597706,
+    1.209661871088253
+  ],
+  "aligned_B_correlation": 0.9869449499399843,
+  "aligned_B_difference_std_Hz": 0.0016214550562939716,
+  "sample_rate_Hz": 37.25290298461634,
+  "overlap_samples": 4743,
+  "overlap_duration_seconds": 127.29209323520956,
+  "channel_mapping": {
+    "1": "shifted file A: carrier",
+    "2": "reference file A: LSB",
+    "3": "reference file B: USB"
+  },
+  "method": "constant offset from B frequency correlation and cubic interpolation refinement; no clock-drift correction",
+  "interpolation": "carrier only; cubic interpolation can change noise near Nyquist; both sidebands remain unresampled"
+}

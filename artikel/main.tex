@@ -270,7 +270,6 @@ The additive phase noise $b^a_{ij}$ combines optical readout, residual board, an
     \label{eq:shared_readout}
 \end{equation}
 where $p_i^a$ is the equivalent input phase noise in channel $a$ before the split, and $e_{ij}^a$ contains noise added by the individual electronic paths. This expression assumes matched tracking responses and demodulation phases, so that shared photocurrent noise gives the same phase error in each copy. Any mismatch must be included in the transfer functions rather than treating copies of $p_i^a$ as independent sources.
-\reviewnote{Check the detector-noise correlations between the phase estimates formed from the split signal. Equation~\eqref{eq:shared_readout} and the current detector curve assume matched responses; this has not been established experimentally. If the channel errors are independent or only partly correlated, replace this assumption with the measured cross-spectra and regenerate the detector contribution.}
 
 The effective laser phases $\delta\phi_i^{\mathrm{eff}}$ enter with the same delayed-difference structure as the LISA laser phases. TDI therefore suppresses both the spacecraft and reference laser noise.
 
