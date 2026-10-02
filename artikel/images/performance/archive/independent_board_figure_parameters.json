@@ -38,10 +38,11 @@
   "extra_carrier_asd": null,
   "extra_sideband_asd": null,
   "board_model": {
-    "source_basis": "eps_i = eps_common + deps_i",
-    "common": "coherently suppressed to laser-noise cancellation order",
-    "differential": "assumed negligible; no measured PSD assigned",
-    "independent_Rb_spectra": false
+    "reference": "Rb phase-noise extrapolation",
+    "reference_hz": 10000000.0,
+    "SSB_dBc_per_Hz_at_10Hz": -130,
+    "assumption": "independent board timing sources; no extra board correction",
+    "timing_ASD_at_10mHz": 2.2507907903927653e-12
   },
   "input_paths": {
     "baseline.csv": "measured noises\\baseline.csv",
@@ -155,11 +156,5 @@
   "levels_at_10mHz": {
     "electronic_cycles_per_sqrtHz": 4.713107459481238e-06,
     "modulation_estimator_cycles_per_sqrtHz": 4.0241256763528524e-06
-  },
-  "curve_provenance": {
-    "method": "Saved SVG component vertices; log-log interpolation and PSD sum",
-    "source": "archive\\independent_board_total_noise_tdi2_corrected_budget.svg",
-    "sha256": "a10c64b7f909a62a27a2962111ac568e8c42f95a8cf067417f6151133e571632",
-    "limitation": "Original input CSVs unavailable; vector-export precision only. No new raw-data evaluation."
   }
 }

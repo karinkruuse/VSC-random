@@ -78,6 +78,22 @@ def michelson(eta, r, nu, corrected=True, generation=2):
                    (1, polynomial(roundtrips[3], P13)))
 
 
+def split_board_timing(signal):
+    """Use eps_i = eps_common + deps_i, before squaring source responses.
+
+    deps_i are differential timing errors in seconds. Their spectra must come
+    from differential timing information, not from the shared oscillator PSD.
+    """
+    terms = []
+    for (name, path), coefficient in signal.items():
+        if name.startswith('eps'):
+            terms.append((coefficient, {('eps_common', path): 1.0}))
+            terms.append((coefficient, {('deps'+name[3:], path): 1.0}))
+        else:
+            terms.append((coefficient, {(name, path): 1.0}))
+    return combine(*terms)
+
+
 def path_lag(path, epoch, lengths, rates):
     """Exact nested affine delays d_ij(t)=lengths[ij]+rates[ij]*t."""
     lag = np.longdouble(0)
@@ -150,6 +166,18 @@ def validate(nu, modulation):
             common = combine((1, common), (c, {('eps', path): 1}))
     expected_common = {('eps', path): -nu[1]*c for (_, path), c in laser.items()}
     assert common == expected_common
+    decomposed = split_board_timing(corrected)
+    # The common source is collected at the amplitude level and is exactly
+    # -nu_1 times the surviving local laser path polynomial.
+    shared = {(name, path): c for (name, path), c in decomposed.items()
+              if name == 'eps_common'}
+    assert shared == {('eps_common', path): c for (_, path), c in expected_common.items()}
+    # Differential coefficients are unchanged by the change of source basis.
+    differential = {(name.replace('deps', 'eps', 1), path): c
+                    for (name, path), c in decomposed.items() if name.startswith('deps')}
+    assert differential == {(name, path): c for (name, path), c in corrected.items()
+                            if name.startswith('eps')}
+
     # Independently evaluate the nested operators on a complex sinusoid.
     # This tests the stored-path orientation against direct function composition.
     f_test = 0.073
@@ -175,5 +203,6 @@ def validate(nu, modulation):
     return {'clock_terms_cancel': True, 'laser_cancels_to_first_order_in_rates': True,
             'static_limit_checked': True, 'noncommuting_arms_checked': True,
             'shared_board_jitter_is_laser_like': True,
+            'common_differential_decomposition_checked': True,
             'direct_tone_nested_delay_check': True,
             '25_vs_101_epoch_power_convergence_better_than_0.3_percent': True}

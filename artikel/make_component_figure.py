@@ -2,7 +2,8 @@
 
 Run: python artikel/make_component_figure.py
 Component inputs are unsmoothed. Ordered varying-delay X2 retains shared
-detector inputs, electronic link readouts and an assumed board-clock spectrum.
+detector inputs and electronic link readouts. Shared board timing is combined
+coherently; differential timing is assumed negligible in the plotted sum.
 """
 from pathlib import Path
 import hashlib
@@ -16,7 +17,7 @@ from matplotlib.ticker import LogLocator, NullFormatter
 import numpy as np
 from scipy.special import jv
 from scipy.constants import elementary_charge, Boltzmann
-from tdi_component_model import LINKS, readouts, michelson, source, mean_gains, validate
+from tdi_component_model import LINKS, readouts, michelson, source, mean_gains, validate, split_board_timing
 
 HERE = Path(__file__).resolve().parent
 MODEL = HERE.parent / 'miniLISA timining jitters'
@@ -73,9 +74,9 @@ sideband = pd['total_cycles_per_sqrt_Hz']['sideband']
 config['article_budget'] = {
     'electronics':'same measured PSD per carrier/sideband link; independent equivalent link noises',
     'detector':'shared before fanout; independent detector channels; exclude ADC from this term',
-    'modulation':'existing estimator assigned to independent source modulation phases; measurement to be repeated',
+    'modulation':'entire estimator assigned to independent direct source phase noises; timing term set to zero',
     'ADC':'shown in input readout prediction; not added again to measured electronic baseline',
-    'primary_noises':'LISA laser/clock levels; ideal phase-delay realization, constant beat frequencies',
+    'primary_noises':'not included in component sum; ideal phase-delay realization, constant beat frequencies',
 }
 assert np.isclose(sideband/carrier, abs(jv(0,par['m'])/jv(1,par['m'])))
 peak_power = 2*power*(1+np.sqrt(par['het_eff']))
@@ -126,12 +127,6 @@ def export(name, size, fontsize):
         ax.set_axisbelow(True)
         ax.legend(loc='lower left', bbox_to_anchor=(0.025, 0.24),
                   fontsize=fontsize-1, handlelength=2.8, borderpad=0.65, labelspacing=0.5)
-        # Compact operating point; full electronics and frequency plan in caption.
-        ax.text(0.98, 0.97,
-                f'Linear model: {pd["P_SC_W"]*1e3:g} mW/beam, '
-                + r'$\mu_{\mathrm{EOM}}=' + f'{pd["parameters"]["m"]:g}' + r'$' + '\nADC noise included',
-                ha='right', va='top', transform=ax.transAxes, fontsize=fontsize-1,
-                bbox={'facecolor': 'white', 'edgecolor': 'none', 'alpha': 0.85, 'pad': 2})
         fig.subplots_adjust(left=0.19 if size[0]<4 else 0.12, bottom=0.145, right=0.98, top=0.97)
         for suffix in ['pdf', 'svg', 'png']:
             fig.savefig(OUT / f'{name}.{suffix}', dpi=600)
@@ -140,30 +135,26 @@ def export(name, size, fontsize):
 export('component_inputs_single_link', (7.0, 4.8), 10)
 export('component_inputs_single_link_column', (3.4, 3.7), 8)
 
-# Companion figure: separate predicted noise components for the two beat types.
-with plt.rc_context({'font.size': 9, 'axes.labelsize': 10, 'legend.fontsize': 8}):
-    fig, axes = plt.subplots(1, 2, figsize=(7, 3.3), sharex=True, sharey=True)
-    component_colors = ['#821770', '#d71b2f', '#295f24', '#29658a']
-    for ax, ch in zip(axes, ['carrier', 'sideband']):
-        for (label, value), color in zip(pd['components_cycles_per_sqrt_Hz'][ch].items(), component_colors):
-            ax.loglog(freq, np.full_like(freq, value), lw=1.0, color=color,
-                      label={'shot (including dark)': 'Shot + dark current'}.get(label, label))
-        ax.loglog(freq, np.full_like(freq, pd['total_cycles_per_sqrt_Hz'][ch]),
-                  'k--', lw=1.4, label='Total')
-        ax.set(xlim=(fmin, fmax), ylim=(1.5e-10, 2e-8), xlabel='Fourier frequency (Hz)')
-        ax.set_title('Carrier' if ch == 'carrier' else 'First-order sideband', fontsize=10)
-        ax.grid(which='major', color='#dedede', lw=0.5, ls='--')
-        ax.xaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2,10), numticks=100))
-        ax.yaxis.set_minor_locator(LogLocator(base=10, subs=np.arange(2,10), numticks=100))
-        ax.xaxis.set_minor_formatter(NullFormatter())
-        ax.yaxis.set_minor_formatter(NullFormatter())
-    axes[0].set_ylabel(r'Phase ASD (cycles/$\sqrt{\mathrm{Hz}}$)')
-    axes[1].legend(loc='lower left', fontsize=7, frameon=True)
-    fig.subplots_adjust(left=0.105, right=0.98, bottom=0.18, top=0.91, wspace=0.10)
-    for suffix in ['pdf', 'svg', 'png']:
-        fig.savefig(OUT / f'newport_readout_breakdown.{suffix}', dpi=600)
-    plt.close(fig)
-(OUT / 'figure_parameters.json').write_text(json.dumps(config, indent=2))
+# A table is more useful than spectra for these white-noise constants.
+rows = []
+for key, label in [('shot (including dark)', 'Shot + dark current'),
+                   ('Johnson', 'Thermal'), ('RIN', 'Intensity'), ('ADC', 'ADC quantization')]:
+    values = [pd['components_cycles_per_sqrt_Hz'][ch][key]*1e9 for ch in ('carrier','sideband')]
+    rows.append(f'{label} & {values[0]:.3f} & {values[1]:.3f} '+r'\\')
+rows.append(f'Total & {carrier*1e9:.3f} & {sideband*1e9:.3f} '+r'\\')
+table = r'''\begin{table}[t]
+\centering
+\caption{Calculated white readout ASDs in $10^{-9}$ cycles/$\sqrt{\mathrm{Hz}}$. Each beam supplies 4 mW, with modulation depth 0.53 rad, responsivity $0.6\,\mathrm{A/W}$ and power-overlap efficiency 0.9. The model uses a $50\,\Omega$ load at 300 K, 100 nA dark current and white fractional intensity noise $9\times10^{-9}/\sqrt{\mathrm{Hz}}$, summed coherently between beams. Gain after the three-way split is $50/\sqrt{3}\,\mathrm{V/A}$; the ADC has a 1 V full-scale span, 14 bits and $2\,\mathrm{GS/s}$.}
+\label{tab:readout_components}
+\begin{tabular}{lrr}
+\hline
+Contribution & Carrier & Sideband \\
+\hline
+''' + '\n'.join(rows) + '\n'+r'''\hline
+\end{tabular}
+\end{table}
+'''
+(OUT/'readout_components_table.tex').write_text(table, encoding='utf-8')
 
 # Ordered phase-domain X2, evaluated at retarded times for changing arms.
 links = LINKS
@@ -180,7 +171,7 @@ config['spectral_estimate'] = {'method':'mean local squared responses, adiabatic
                              'clock_correction':'R_1j corrected by -alpha_1j*r_1j; alpha_j1=-alpha_1j constant'}
 config['validation'] = validate(nu_R,nu_m)
 eta,r = readouts(nu_R,nu_m)
-corrected = michelson(eta,r,nu_R)
+corrected = split_board_timing(michelson(eta,r,nu_R))
 gains = mean_gains(corrected,freq,epochs,lengths,rates)
 raw_link_signals = {link: source(f'link{link}') for link in links}
 raw_observable = michelson(raw_link_signals,{},nu_R,corrected=False)
@@ -202,28 +193,24 @@ detector_psd = {ch:sum(value**2 for name,value in terms.items() if name!='ADC')
 readout=np.sqrt(sum(g*(detector_psd['carrier'] if name.startswith('pc') else detector_psd['sideband'])
                     for name,g in gains.items() if name.startswith(('pc','ps'))))
 mod=np.sqrt(Sm*sum(g for name,g in gains.items() if name.startswith('m')))
-# Rb model ONLY for independent delay-board timing, not spacecraft q_i.
-# 10 MHz reference, L(10 Hz)=-130 dBc/Hz; PSD slopes -1, -2, -3.
-rb_phase_psd=np.where(freq>=1,2e-13*(freq/10)**-1,
-                     np.where(freq>=.01,2e-12*freq**-2,2e-8*(freq/.01)**-3))
-rb_timing_psd=rb_phase_psd/(2*np.pi*10e6)**2
-board=np.sqrt(rb_timing_psd*sum(g for name,g in gains.items() if name.startswith('eps')))
-config['board_model']={'reference':'Rb phase-noise extrapolation',
-                       'reference_hz':10e6, 'SSB_dBc_per_Hz_at_10Hz':-130,
-                       'assumption':'independent board timing sources; no extra board correction',
-                       'timing_ASD_at_10mHz':float(np.sqrt(2e-8)/(2*np.pi*10e6))}
-total=np.sqrt(electronic**2+readout**2+mod**2+board**2)
+config['board_model'] = {
+    'source_basis': 'eps_i = eps_common + deps_i',
+    'common': 'coherently suppressed to laser-noise cancellation order',
+    'differential': 'assumed negligible in plotted sum; no measured PSD assigned',
+    'independent_Rb_spectra': False,
+}
+total=np.sqrt(electronic**2+readout**2+mod**2)
 budget={'single_link_reference_in_TDI_ASD':raw_gain*reference}
 config['article_budget']['detector_channel_psds']=detector_psd
 # Store inputs and source gains so assumptions can be changed without guessing.
 np.savez(OUT/'tdi2_source_gains.npz',frequency_hz=freq,**gains)
-config['laser_frequency_ASD']='30*sqrt(1+(2e-3/f)^4) Hz/sqrt(Hz)'
-config['spacecraft_clock_fractional_frequency_PSD']='4e-27/f per Hz, f in Hz'
+config.pop('laser_frequency_ASD', None)
+config.pop('spacecraft_clock_fractional_frequency_PSD', None)
 config['levels_at_10mHz']={
     'electronic_cycles_per_sqrtHz':float(np.sqrt(np.exp(np.interp(np.log(.01),np.log(freq),np.log(Sb))))),
     'modulation_estimator_cycles_per_sqrtHz':float(np.sqrt(np.exp(np.interp(np.log(.01),np.log(freq),np.log(Sm)))))}
 (OUT/'figure_parameters.json').write_text(json.dumps(config,indent=2))
-print('Ordered varying-arm checks passed; component sum includes assumed independent board jitter.')
+print('Ordered varying-arm checks passed; component sum assumes negligible differential timing; shared timing is combined coherently.')
 print('Measured input examples at 10 mHz:',config['levels_at_10mHz'])
 
 for show_components, name in [(False, 'total_noise_tdi2_corrected'),
@@ -237,13 +224,11 @@ for show_components, name in [(False, 'total_noise_tdi2_corrected'),
                       label='Modulation estimate')
             ax.loglog(output_f, readout, color=colors['carrier'], lw=0.9,
                       label='Shared detector contribution')
-            ax.loglog(output_f, board, color='#29658a', lw=1.1, ls='-.',
-                      label='Board jitter (assumed Rb model)')
         ax.loglog(output_f, budget['single_link_reference_in_TDI_ASD'],
                   color='#777777', ls='--', lw=1.2,
                   label='Single-link reference propagated through TDI 2')
         ax.loglog(output_f, total, color='black', lw=1.6, zorder=6,
-                  label='Sum of included contributions')
+                  label='Electronics + modulation + detector')
         ax.set(xlim=(fmin, fmax), xlabel='Fourier frequency (Hz)',
                ylabel=r'Phase ASD (cycles/$\sqrt{\mathrm{Hz}}$)')
         ax.grid(which='major', color='#dedede', lw=0.5, ls='--')
@@ -264,9 +249,9 @@ for show_components, name in [(False, 'total_noise_tdi2_corrected'),
             fig.savefig(OUT / f'{name}.{suffix}', dpi=600)
         plt.close(fig)
 np.savetxt(OUT / 'total_noise_tdi2_corrected.csv',
-           np.column_stack([output_f, total, electronic, mod, readout, board,
+           np.column_stack([output_f, total, electronic, mod, readout,
                             budget['single_link_reference_in_TDI_ASD']]),
-           delimiter=',', header='Hz,included_sum_ASD,electronic_ASD,modulation_ASD,readout_ASD,assumed_board_ASD,reference_ASD')
+           delimiter=',', header='Hz,included_sum_ASD,electronic_ASD,modulation_ASD,readout_ASD,reference_ASD')
 # Keep the generated SVG text clean for repository diffs.
 for svg in OUT.glob('*.svg'):
     svg.write_text('\n'.join(line.rstrip() for line in svg.read_text(encoding='utf-8').splitlines())+'\n',encoding='utf-8')

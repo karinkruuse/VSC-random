@@ -1,12 +1,12 @@
 \section{LISA Interferometric Detection System}
 \label{sec:modelling}
-We now describe the LISA \ac{IDS} and present a mathematical model of the noises. We specifically focus on relevant elements for laser frequency noise and \ac{USO} jitter propagation and coupling. %Although in the real case, the clock noise suppression procedure relies on the use of the reference interferometer, here we focus on the interspacecraft interferometer as the test mass and reference interferometers are currently not included in our setup.
-
+We first write the LISA phase measurements and identify how laser and clock noise enter them. These expressions provide the reference for the laboratory readouts in Section~\ref{sec:setup}.
 
 \subsection{Interferometric Phase Measurements}
-Each of the three identical LISA satellites carries two lasers on board. We refer to one as the local laser and the other as the adjacent laser. These two laser fields interfere on the test-mass and reference interferometers on the two optical benches of the spacecraft. In addition, the local laser interferes with the laser received from a distant spacecraft on the science interferometer. It is this science interferometer that encodes the gravitational-wave signal by measuring fluctuations in the spacecraft-to-spacecraft distance, while the test mass interferometer will measure the spacecraft-to-test mass displacement. In the upper panel of Fig.~\ref{fig:armlink}, a simplified LISA two-way armlink involving only the science interferometer is shown.
+Each LISA spacecraft carries two optical benches, with one laser on each bench. On a given bench, the local laser is compared with the laser on the other bench and with light received from a distant spacecraft. The science interferometer measures the inter-spacecraft phase difference; the test-mass and reference interferometers provide the local measurements needed to remove optical-bench motion. The upper panel of Fig.~\ref{fig:armlink} shows the science-interferometer part of a two-way link.
 
-We begin by writing the optical phase of the laser field originating from \ac{MOSA} $ij$ on spacecraft $i$ facing spacecraft $j$ as a function of time $t$:
+For the laser on \ac{MOSA} $ij$, on spacecraft $i$ facing spacecraft $j$, we write
+
 \begin{equation}\label{total_phase}
     \Phi_{ij}(t) = \nu_{ij} t + \delta \phi_{ij}(t),
 \end{equation}
@@ -15,15 +15,17 @@ where $\nu_{ij}$ denotes the nominal carrier frequency and $\delta \phi_{ij}(t)$
 \begin{figure*}
     \centering
     \includegraphics[width=\linewidth]{images/LISAarm-analysis.pdf}
-    \caption{A comparison of the two-way links as implemented in LISA (upper) and the testbed (lower). The upper panel shows the conceptual LISA configuration: the laser on Spacecraft 1 (MOSA 12) is phase-modulated at approximately 2.4 GHz using the local USO and transmitted to Spacecraft 2 (MOSA 21). The received beam interferes with the local laser, producing heterodyne beat notes in the MHz range that contain gravitational-wave phase fluctuations, Doppler shifts due to orbital motion, and laser frequency noise. These beat notes are tracked by the phasemeter, which is clocked by the onboard 80 MHz sampling reference derived from the USO. The lower panel depicts the laboratory implementation of the same signal topology. Instead of physical light propagation over millions of kilometres, the inter-spacecraft delay is emulated electronically using digital delay lines between ADC and DAC stages. A common reference laser is used to downconvert the laser fields from hundreds of terahertz to tens of megahertz, which can then be sampled by the delay line \acp{ADC}. The actual LISA-like heterodyne beat notes are created in the mixers.}
+    \caption{Two-way science links in LISA (upper) and miniLISA (lower). In LISA, the received laser field interferes with the local field after propagation between spacecraft. Optical sidebands carry the transmitting clock fluctuations, and the receiving clock references the phase measurement. In miniLISA, a common reference laser produces MHz input beat notes, and electronic delay lines reproduce the propagation and subtraction of remote and local signals. The lower-panel frequency and clock labels require the updates noted below.}
+
     \label{fig:armlink}
 \reviewnote{Revise the lower-panel labels to independently referenced Mokus, $(35,36,34)\,\mathrm{MHz}$ modulation and the synthesized output tones for all six links. The legacy USO and 10/11 MHz labels do not describe the operating point used here.}
 \end{figure*}
 
 
-Each of the laser fields is phase-modulated using an \ac{EOM} driven by the local USO. This is used to imprint sidebands on the laser field that carry the USO timing noise $q_i(t)$, creating a phase noise term $\nu^m_{ij}q_i(t)$. Since there is only one \ac{USO} per spacecraft, clock noise carries a single spacecraft index.
+An \ac{EOM} driven by the local USO adds phase-modulation sidebands to each laser field. Their modulation phase contains $\nu^m_{ij}q_i(t)$, so the transmitted light carries the local clock fluctuations. The clock error has one spacecraft index because both benches use the same USO.
 
-The modulation frequency $\nu^m_{ij}$ will be about 2.4 GHz, which is upconverted from the \ac{USO} via a \ac{PLL} synthesizer, preserving its noise with high fidelity. For the adjacent and opposing \ac{MOSA}s $ik$ and $ji$ respectively, the corresponding modulation frequency differs by 1 MHz, so 2.401 GHz, such that the sideband–sideband beat notes are offset by 1 MHz from the carrier–carrier beat note.
+The modulation tones are derived from the USO at approximately 2.4 GHz. A 1 MHz difference between the relevant tones separates the sideband--sideband beat notes from the carrier--carrier beat note. Excess noise in the tone-generation chain enters the clock-transfer measurement and is considered below.
+
 The modulation depth $\mu_{\mathrm{EOM}}=0.53\,\mathrm{rad}$ places about $87\%$ of the optical power in the carrier and $6.5\%$ in each first-order sideband. The USO references the modulation, sampling-clock and pilot-tone synthesis chains; their role in clock-noise suppression is discussed in Section~\ref{clock noise}. Additional phase modulation with pseudo-random codes supports ranging and data transfer; it is distinct from the sinusoidal clock-transfer modulation considered here \cite{heinzel_auxiliary_2011}.
 
 Propagation from \ac{MOSA} $ij$ to $ji$ delays the emitted phase and adds the GW response along the arm. Following the separation of background propagation and GW perturbations in \cite{bayle_unified_2023}, we write
@@ -71,7 +73,7 @@ To connect this noise model to the measurements used for TDI, we also include th
     &+\delta\phi^{\mathrm{GW}}_{ji}(t)+N^{\text{c}}_{ji}(t)\nonumber\\[3pt]
     &-\frac{\nu_0}{c}\left(\mathbf{n}_{ij}\cdot \mathbf{D}_{ji}\bm{\Delta}_{ij}(t)+\mathbf{n}_{ji}\cdot\bm{\Delta}_{ji}(t)\right),
 \end{align}
-The term $N^{\mathrm{c}}_{ji}(t)$ represents combined readout noise from optical path-length fluctuations and electronics. The vectors $\bm{\Delta}_{ij}(t)$ are optical-bench displacements in metres. The unit vector $\mathbf n_{ji}$ points along the incoming beam from spacecraft $i$ to spacecraft $j$, and $\mathbf n_{ij}=-\mathbf n_{ji}$ in the geometry used for these displacement terms.
+The term $N^{\mathrm{c}}_{ji}(t)$ contains readout noise from optical path-length fluctuations and electronics. The vectors $\bm{\Delta}_{ij}(t)$ are optical-bench displacements in metres. The unit vector $\mathbf n_{ji}$ points along the incoming beam from spacecraft $i$ to spacecraft $j$, and $\mathbf n_{ij}=-\mathbf n_{ji}$ in the geometry used for these displacement terms.
 The factor $\nu_0/c=1/\lambda_0$ converts path-length fluctuations to phase in cycles, with $\nu_0\simeq281\,\mathrm{THz}$ for the nominal wavelength $\lambda_0=1064\,\mathrm{nm}$. MHz-scale offsets between lasers are small compared with this optical frequency, so a common $\nu_0$ suffices for the displacement terms. Those offsets remain essential in the heterodyne clock coefficients, which depend on frequency differences.
 
 The corresponding upper sideband–sideband beat note readout can be written as
@@ -87,10 +89,10 @@ The sideband clock coupling coefficient is
 \begin{equation}
     \gamma_{ji} =\Delta\nu_{ji}+\nu^m_{ij}-\nu^m_{ji}=\Delta\nu_{ji}+\Delta\nu^m_{ji}= \Delta\nu_{ji}^{\mathrm{sb,+}}.
 \end{equation}
-Again, the term $N^{\mathrm{sb,+}}_{ji}(t)$ represents stochastic readout noise specific to the upper sideband measurement. The lower sideband has the same laser phase noise but the opposite sign for each modulation contribution.
+Here $N^{\mathrm{sb,+}}_{ji}$ contains readout noise in the upper-sideband channel. The lower sideband has the same laser phase noise but the opposite sign for each modulation contribution.
 The sidebands have optical frequencies $\nu_{ij}\pm\nu^m_{ij}$, so the same path-length change produces a slightly different phase shift in each sideband. Using $\nu_0/c$ for their displacement couplings neglects a fractional correction of order $\nu^m/\nu_0\simeq9\times10^{-6}$. Similarly, the upper-sideband GW phase is $-(\nu_{ij}+\nu^m_{ij})H_{ji}$, differing from the carrier by $-\nu^m_{ij}H_{ji}$. We neglect this small difference in the readout equations above and use the same $\delta\phi^{\mathrm{GW}}_{ji}$ for the carrier and both sidebands. The $\delta$ denotes a perturbation to the nominal optical phase, rather than stochastic noise.
 
-For completeness, we also write out the reference and test mass interferometer readings on \ac{MOSA} $ji$
+The test-mass and reference measurements are, on \ac{MOSA} $ji$
 \begin{align}
 \text{tm}_{ji}(t)= &
 \delta\phi_{jk}(t)-\delta\phi_{ji}(t)
@@ -100,7 +102,9 @@ For completeness, we also write out the reference and test mass interferometer r
 \text{ref}_{ji}(t)&=\delta\phi_{jk}(t)-\delta\phi_{ji}(t)+\beta_{ji}q_j(t)\nonumber\\
 &\quad+\mu_{j}(t)+N^{\text{ref}}_{ji}(t).\label{eq:reference_readout}
 \end{align}
-Here we have introduced the fiber noise $\mu_{j}$ coming from the optical fiber that exchanges the local and adjacent laser fields between \ac{MOSA} $ji$ and \ac{MOSA} $jk$ . This term is typically referred to as the backlink noise. We have assumed it to be independent of the direction of propagation of the optical beams within. The vector $\bm{\delta}_{ji}$ is the test-mass displacement in metres, including displacement produced by acceleration noise; it is not itself an acceleration. With the same sampling convention, the reference and test-mass clock coefficient is
+The backlink term $\mu_j$ describes noise in the fibre connecting the two optical benches on spacecraft $j$. We assume reciprocal propagation through this fibre. The vector $\bm\delta_{ji}$ is the test-mass displacement, including motion produced by acceleration noise.
+
+With the same sampling convention, the reference and test-mass clock coefficient is
 \begin{equation}
     \beta_{ji}=\nu_{ji}-\nu_{jk}.
 \end{equation}
@@ -110,7 +114,7 @@ These equations retain the terms needed to explain laser- and clock-noise suppre
 
 
 \subsection{Laser Noise and \ac{TDI}}
-In the LISA measurement system, laser frequency noise is first reduced onboard by locking one laser to an optical resonator and phase-locking the remaining lasers to this pre-stabilized reference with fixed frequency offsets. The last step ensures that all heterodyne beat notes remain within the phasemeter bandwidth while maintaining coherent phase relationships between spacecraft. However, residual laser frequency noise remains many orders of magnitude above the displacement sensitivity requirement and must be suppressed in post-processing. \ac{TDI} achieves this by forming linear combinations of one-way phase measurements and appropriately delayed copies thereof, effectively synthesizing an equal-arm interferometer in post-processing.
+Pre-stabilisation reduces laser frequency noise before the measurements are combined. Offset phase locks keep the inter-spacecraft beat notes within the readout band, but the remaining laser noise still exceeds the required displacement sensitivity. TDI removes it by combining measurements in which the same laser fluctuation has propagated along different paths.
 
 For scale, consider a representative pre-stabilized frequency-noise amplitude of $30\,\mathrm{Hz}/\sqrt{\mathrm{Hz}}$ \cite{bayle_unified_2023}. At Fourier frequency $f=10\,\mathrm{mHz}$, the corresponding single-laser phase-noise amplitude is $30/(2\pi f)\simeq480\,\mathrm{cycles}/\sqrt{\mathrm{Hz}}$, equivalent to about $0.5\,\mathrm{mm}/\sqrt{\mathrm{Hz}}$ displacement noise at 1064 nm. This illustrative conversion is many orders of magnitude above picometre-scale displacement noise required for GW detection.
 
@@ -147,7 +151,7 @@ For cyclic triples $(i,j,k)=(1,2,3),(2,3,1),(3,1,2)$, the intermediate variables
 \end{align*}
 Here $M_{ij}$ is obtained by exchanging $i$ and $j$ in $M_{ji}$. These combinations reduce the number of independent laser phase noises from six to three, retaining $\delta\phi_{12}$, $\delta\phi_{23}$ and $\delta\phi_{31}$, while removing the optical-bench displacement terms. The construction introduces an asymmetry between the two link orientations.
 
-For the two-arm geometry used below, we use the Michelson observable $X_i$. Define the synthesized round-trip measurements
+For a Michelson combination centred on spacecraft $i$, we first form the round-trip measurements
 \begin{equation*}
     R_{ij}=\eta_{ij}+\mathcal D_{ij}\eta_{ji},\qquad
     R_{ik}=\eta_{ik}+\mathcal D_{ik}\eta_{ki}.
@@ -166,8 +170,8 @@ First-generation \ac{TDI} combinations cancel laser noise for constant light-tra
 
 \subsection{Clock-noise Coupling and Correction}
 \label{clock noise}
-Clock timing jitter is another primary noise in the raw measurements \cite{colpi_lisa_2024,hartwig_clock-jitter_2021}. Similarly to laser frequency noise, it exceeds the sensitivity requirement by several orders of magnitude and must be removed in post-processing before gravitational wave signals can be recovered. Unlike laser frequency noise, it couples into the measurement only locally at one spacecraft. Hence, to still allow for a similar differential measurement of the clock noise, the laser fields exchanged between the satellites are modulated with a signal derived from the \acp{USO}. From the upper-sideband and carrier phase measurements at the science interferometer, a correcting term can be constructed. \\
-Using the phase-domain counterpart of the clock-transfer construction in \cite{hartwig_clock-jitter_2021}, and neglecting readout and modulation noises initially, we define
+Clock error enters a carrier phase measurement multiplied by the local beat frequency. The optical sidebands provide an additional measurement of the transmitted clock phase, allowing the remote and local clocks to be compared \cite{hartwig_clock-jitter_2021}. Subtracting the carrier measurement from the upper-sideband measurement removes their common laser phase. Neglecting readout and modulation noise for the moment, we obtain
+
 \begin{equation}\label{correction variables}
     r_{ji} = \frac{\text{sci}^{\mathrm{sb,+}}_{ji}(t)- \text{sci}^{\mathrm{c}}_{ji}(t)}{\nu^m_{ij}}=\mathbf{D}_{ji}q_i(t)-q_j(t).
 \end{equation}
@@ -187,8 +191,3 @@ Modulation and readout noise are kept separate because their transfer functions 
 Dividing the modulation phase by its frequency gives $m_{ij}/\nu^m_{ij}=\tau_{ij}^{\mathrm{mod}}+\psi_{ij}^{\mathrm{mod}}/\nu^m_{ij}$. A higher modulation frequency therefore reduces the effect of a fixed phase noise, but leaves a fixed timing noise unchanged. Improving that timing-noise floor requires a quieter tone-generation chain. When the local and transmitted frequencies differ, the local timing contribution retains the factor $\nu^m_{ji}/\nu^m_{ij}$. A measurement at one modulation frequency cannot distinguish the two contributions.
 
 The two modulation-frequency synthesis chains can add different excess noises. Local reference-interferometer sideband measurements provide additional observables for correcting the accessible differential part \cite{hartwig_clock-jitter_2021}. This contribution is absent from the present one-modulator-per-spacecraft testbed.
-
-
-%For the clock jitter terms, we can generally assume that the delay operators commute.
-
-%Due to the differences in how the modulating signal vs the pilot tone on the left and right side MOSAs are derived, the correcting terms for the right side are noisier and need further corrections using the reference interferometer sideband measurements. However, as our testbed essentially implements one MOSA per spacecraft, this correction to the correcting variables can't be tested without additional hardware.

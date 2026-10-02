@@ -1,0 +1,687 @@
+\documentclass[11pt]{article}
+
+\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+\usepackage{physics}
+\usepackage{acronym}
+\usepackage[pdftex,dvipsnames]{xcolor}
+\usepackage{xargs} 
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{siunitx}
+\usepackage{acronym}
+\usepackage{verbatim} 
+
+\usepackage[toc,page]{appendix}
+
+\newcommand\LPfilt{\stackrel{\mathclap{\scriptsize\normalfont\mbox{LP}}}{\rightarrow}}
+\newcommand\appi{\stackrel{\mathclap{\scriptsize\normalfont\mbox{$\omega_{\text{PLL}\approx\Delta\omega}$}}}{\approx}}
+
+
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\newcommandx{\missinginfo}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+
+\definecolor{darkblue}{RGB}{45,19,180}
+\definecolor{laserred}{RGB}{180,19,19}
+  
+\parindent0in
+
+\begin{document}
+
+\begin{center}
+ {\Large Title}
+\end{center}
+
+\bigskip
+
+\section{1st Generation TDI}
+\subsection{Only Laser Noise}
+Let's look at only laser noise $p_i$. We have the intermediary variables (which in this case are essentially equivalent to the raw data)
+\begin{equation*}
+    \eta_{ij} = \mathbf{D}_{ij}p_j - p_i.
+\end{equation*}
+From these, we can construct the Michelson combination
+\begin{equation}\label{X1}
+    X=\sum_{ij\in \mathcal{I}_2}\mathbf{P}_{ij}\eta_{ij}=\sum_{ij\in \mathcal{I}_2}\mathbf{P}_{ij}(\mathbf{D}_{ij}p_j - p_i).
+\end{equation}
+The summing is done over all the tuples $ij$ where they take values from $\{1, 2, 3\}$. Since the Michelson combinations can be factorized, so we can write down the non-zero delay polynomials and their corresponding Fourier transforms (assuming constant and equal delays $d$, which is an OK assumption when estimating the PSD, says Hartwig)
+\begin{align*}
+    \mathbf{P}_{12}  &= (1-\mathbf{D}_{131}) 
+        & \qquad \tilde{\mathbf{P}}_{12} &= (1-\mathrm{e}^{-i2\omega d}) \\[4pt]
+    \mathbf{P}_{21}  &= (1-\mathbf{D}_{131})\,\mathbf{D}_{12} 
+        & \qquad \tilde{\mathbf{P}}_{21} &= (1-\mathrm{e}^{-i2\omega d})\,\mathrm{e}^{-i\omega d} \\[4pt]
+    \mathbf{P}_{13}  &= -(1-\mathbf{D}_{121}) 
+        & \qquad \tilde{\mathbf{P}}_{13} &= -(1-\mathrm{e}^{-i2\omega d}) \\[4pt]
+    \mathbf{P}_{31}  &= -(1-\mathbf{D}_{121})\,\mathbf{D}_{13} 
+        & \qquad \tilde{\mathbf{P}}_{31} &= -(1-\mathrm{e}^{-i2\omega d})\,\mathrm{e}^{-i\omega d}
+\end{align*}
+Hartwig also gives a general expression for estimating PSDs for a noise source $N$:
+\begin{equation}\label{PSD formula}
+    S_{\text{TDI}_{N_{\eta}}}=\sum_{ij\in \mathcal{I}_2}\left|\tilde{\mathbf{P}}_{ij}\tilde{N}_{\eta_{ij}}\right|^2.
+\end{equation}
+We used here $\tilde{N}$ to denote the PSD of some (uncorrelated) noise. Now, if we want to use this for laser frequency noise, we have to include the delays in the $\eta$ variables, as they are a part of reducing the laser frequency noise. This is to say, the polynomials given above should also include the physical delays. Let's write out the full polynomial for the laser frequency noise $p_2$ (I will make up the new indexing here, to be polished)
+\begin{equation*}
+    \mathcal{P}_{2} = (1-\mathbf{D}_{131})(\mathcal{D}_{12}-\mathbf{D}_{12})=0.
+\end{equation*}
+If you trust me, the other delay polynomials for $p_1$ and $p_3$ also come to 0. This makes sense as generation 1 TDI combinations should cancel out laser noise with constant arm lengths. UNLESS THERE'S RANGING ERRORS OF COURSE...
+
+\subsection{Only Clock Noise}
+
+For LISA, after putting together the intermediary variables, the clock noise $q_i$ enters as such
+\begin{align*}
+    \eta_{ij}&=\mathbf{D}_{ij}b_{jk}\dot{q}_j-a_{ij}\dot{q}_i,\\
+    \eta_{ik}&=-\left(b_{ij}+a_{ik}\right)\dot{q}_i,
+\end{align*}
+where $ a _ {ij} $ and $ b _ {ij} $ correspond to the beat note frequencies of the science and reference interferometers with the appropriate MOSA indices. Here we assume then to be constant. Let's plug these intermediate variables into the formula (\ref{X1}) to see how the clock noise terms will propagate
+\begin{align}
+    \nonumber X=&\mathbf{P}_{ij}\left(\color{Lavender}\mathbf{D}_{ij}b_{jk}\color{black}\dot{q}_j-\color{cyan}a_{ij}\color{black}\dot{q}_i\right)+
+    \mathbf{P}_{jk}\left(\color{Lavender}\mathbf{D}_{jk}b_{ki}\color{black}\dot{q}_k-\color{cyan}a_{jk}\color{black}\dot{q}_j\right)+
+    \mathbf{P}_{ki}\left(\color{Lavender}\mathbf{D}_{ki}b_{ij}\color{black}\dot{q}_i-\color{cyan}a_{ki}\color{black}\dot{q}_k\right)\\[3pt]\nonumber
+    -&\mathbf{P}_{ik}\left(\color{Lavender}b_{ij}\color{black}-\color{cyan}a_{ik}\color{black}\right)\dot{q}_i-
+    \mathbf{P}_{kj}\left(\color{Lavender}b_{ki}\color{black}-\color{cyan}a_{kj}\color{black}\right)\dot{q}_k-
+    \mathbf{P}_{ji}\left(\color{Lavender}b_{jk}\color{black}-\color{cyan}a_{ji}\color{black}\right)\dot{q}_j=\\[5pt]\nonumber
+    &\mathbf{P}_{ij}\color{Lavender}\mathbf{D}_{ij}b_{jk}\color{black}\dot{q}_j+\mathbf{P}_{jk}\color{Lavender}\mathbf{D}_{jk}b_{ki}\color{black}\dot{q}_k+\mathbf{P}_{ki}\color{Lavender}\mathbf{D}_{ki}b_{ij}\color{black}\dot{q}_i-\mathbf{P}_{ik}\color{Lavender}b_{ij}\color{black}\dot{q}_i-\mathbf{P}_{kj}\color{Lavender}b_{ki}\color{black}\dot{q}_k-\mathbf{P}_{ji}\color{Lavender}b_{jk}\color{black}\dot{q}_j-\\[3pt]\nonumber
+    &-\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}\dot{q}_i-\mathbf{P}_{jk}\color{cyan}a_{jk}\color{black}\dot{q}_j-\mathbf{P}_{ki}\color{cyan}a_{ki}\color{black}\dot{q}_k-\mathbf{P}_{ik}\color{cyan}a_{ik}\color{black}\dot{q}_i-\mathbf{P}_{kj}\color{cyan}a_{kj}\color{black}\dot{q}_k-\mathbf{P}_{ji}\color{cyan}a_{ji}\color{black}\dot{q}_j=\\[5pt]
+    &\sum_{i,j,k\in\mathcal{I}^+_3}\left[\mathbf{P}_{ki}\mathbf{D}_{ki}-\mathbf{P}_{ik}\right]\color{Lavender}b_{ij}\color{black}\dot{q}_i-\sum_{i,j\in\mathcal{I}_2}\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}\dot{q}_i\label{TDI formula}
+\end{align}
+That was some algebra with  colored highlights to make it slightly easier to follow. The set $\mathcal{I}^+_3$ includes only the clockwise triplets of the indices. Now let's use this result (from Harwig) to estimate the PSD using formula (\ref{PSD formula}). To do that, we still have to rearrange the second sum here to match the structure of (\ref{PSD formula}).
+\begin{equation*}
+S_{X^q}=\sum_{i,j,k\in\mathcal{I}^+_3}\left(\left[\mathbf{\tilde{P}}_{ki}\mathbf{\tilde{D}}_{ki}-\mathbf{\tilde{P}}_{ik}\right]\color{Lavender}b_{ij}\color{black}-\mathbf{\tilde{P}}_{ij}\color{cyan}a_{ij}\color{black}-\mathbf{\tilde{P}}_{ik}\color{cyan}a_{ik}\color{black}\right)^2S_{\dot{q}}.
+\end{equation*}
+Now, I will say, this looks different from what Olaf had in the article, and I'm not sure if I'm potentially misunderstanding the formula (\ref{PSD formula}), but logically, my version makes more sense to me. I will try TDI generation 2 so that I can check if I get my math to match Harwig's. We write out the new polynomials 
+\begin{align*}
+\mathbf{P}_{12} &= -\mathbf{P}_{13} = \left(1-\mathbf{D}^4\right)\left(1-\mathbf{D}^2\right),\\[3pt]
+\mathbf{P}_{21} &= -\mathbf{P}_{31} = \left(1-\mathbf{D}^4\right)\left(1-\mathbf{D}^2\right)\mathbf{D}.
+\end{align*}
+where we, of course, assumed equal and unchanging arm lengths. And let's also write out the Fourier transforms
+\begin{align*}
+    \tilde{\mathbf{P}}_{12} &= -\tilde{\mathbf{P}}_{13} = \left(1-\mathrm{e}^{-i4\omega d}\right)\left(1-\mathrm{e}^{-i2\omega d}\right),\\[3pt]
+    \tilde{\mathbf{P}}_{21} &= -\tilde{\mathbf{P}}_{31} = \left(1-\mathrm{e}^{-i4\omega d}\right)\left(1-\mathrm{e}^{-i2\omega d}\right)\mathrm{e}^{-i\omega d}.
+\end{align*}
+Plugging this all into a Mathematica script, we get
+\begin{align*}
+S_{X_2^{\dot q}}
+&= 64 \cos^{2}(d\omega)\,\sin^{4}(d\omega)\,
+\Big[
+   (a_{12}-a_{13})^2
+ + a_{21}^{2}
+ + a_{31}^{2}
+ - 2 a_{12} b_{12}
+ + 2 a_{13} b_{12}
+ + 2 b_{12}^{2} \\
+&\qquad
+ + 2 a_{12} b_{12}\cos(2 d\omega)
+ - 2 a_{13} b_{12}\cos(2 d\omega)
+ - 2 b_{12}^{2}\cos(2 d\omega)
+\Big] \\[6pt]
+&= 16 \sin^{2}(2d\omega)\,\sin^{2}(d\omega)\,
+\Big[
+   (a_{12}-a_{13})^2
+ + a_{21}^{2}
+ + a_{31}^{2}
+ - 4 b_{12}\left(a_{12}-a_{13}-b_{12}\right)\sin^{2}(d\omega)
+\Big].
+\end{align*}
+This matches the modelled PSD in the article (result (29)). Let's do the same now for TDI generation 1 (ie, let's use the polynomials from the first page). In this case, we get
+\begin{align*}
+    S_{X_1^{\dot q}}
+&=4 \sin^2(d \omega) \big(
+    a_{12}^2 
+    - 2 a_{12} a_{13}
+    + a_{13}^2
+    + a_{21}^2
+    + a_{31}^2\\
+&\qquad
+  - 2 a_{12} b_{12}
+    + 2 a_{13} b_{12}
+    + 2 b_{12}^2
+    + 2 a_{12} b_{12} \cos(2 d \omega)
+    - 2 a_{13} b_{12} \cos(2 d \omega)
+    - 2 b_{12}^2 \cos(2 d \omega)
+\big)\\[6pt]
+&=4 \sin^2(d \omega) \big(
+    (a_{12}-a_{13})^2
+    + a_{21}^2
+    + a_{31}^2
+  - 4 b_{12}\left(a_{12}-a_{13}-b_{12}\right)\sin^{2}(d\omega)\big).
+\end{align*}
+Nice.
+\subsubsection{miniLISA}
+Since we do not have the reference interferometer, we will use the science interferometer readout in place of the intermediate variables, and hence the clock noise coupling is a bit different. We write the $\eta$-variables for miniLISA here
+\begin{align*}
+    \eta_{ij}&=a_{ij}\dot{q}_i,\\
+    \eta_{ik}&=a_{ik}\dot{q}_i.
+\end{align*}
+So they are still symmetric and obviously a bit simpler. We drop the minus sign here, as eventually it won't matter here when calculating the PSD. Let's see how the clock noise terms behave after TDI
+\begin{align*}
+    X=&\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}\dot{q}_i
+    +\mathbf{P}_{jk}\color{cyan}a_{jk}\color{black}\dot{q}_j
+    +\mathbf{P}_{ki}\color{cyan}a_{ki}\color{black}\dot{q}_k+
+    \mathbf{P}_{ik}\color{cyan}a_{ik}\color{black}\dot{q}_i+
+    \mathbf{P}_{kj}\color{cyan}a_{kj}\color{black}\dot{q}_k+
+    \mathbf{P}_{ji}\color{cyan}a_{ji}\color{black}\dot{q}_j=\\[5pt]
+    &=\sum_{i,j\in\mathcal{I}_2}\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}\dot{q}_i.
+\end{align*}
+For generation 2 TDI, we now get
+\begin{align*}
+    S_{X_2^{\dot q}}
+&=64 
+\cos^2(d \omega)\,
+\sin^4(d \omega)\left(
+    a_{12}^2
+    - 2 a_{12} a_{13}
+    + a_{13}^2
+    + a_{21}^2
+    + a_{31}^2
+\right)\\
+&=16 \sin^{2}(2d\omega)\,\sin^{2}(d\omega)\left(
+    (a_{12}
+    -  a_{13})^2
+    + a_{21}^2
+    + a_{31}^2
+\right)
+\end{align*}
+We can note that this result makes sense considering that all we really needed to do was set $b_{ij}=0$. Similarly, for generation 1 TDI, we get
+\begin{align*}
+    S_{X_1^{\dot q}}
+&=4\sin^2(d \omega) \left(
+    (a_{12}- a_{13})^2 + a_{21}^2 + a_{31}^2\right).
+\end{align*}
+Coolio.
+
+\section{Clock Noise Removal}
+Let's first walk through the logic of building the clock noise-cancelling expressions. We can take the sum (\ref{TDI formula}) and rewrite it as
+\begin{align}
+    \nonumber\text{TDI}^q =& 
+    \sum_{i,j,k\in\mathcal{I}^+_3}
+    \left(
+        \left[\mathbf{P}_{ki}\mathbf{D}_{ki}-\mathbf{P}_{ik}\right]\color{Lavender}b_{ij}\color{black}
+        -\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}
+        -\mathbf{P}_{ik}\color{cyan}a_{ik}\color{black}
+    \right)\dot{q}_i\\
+    \nonumber=&\sum_{i,j,k\in\mathcal{I}^+_3}
+    \left(
+        \mathbf{P}_{ij}\mathbf{D}_{ij}\color{Lavender}b_{jk}\color{black}\dot{q}_j-\mathbf{P}_{ik}\color{Lavender}b_{ij}\color{black}\dot{q}_i
+        -\mathbf{P}_{ij}\color{cyan}a_{ij}\color{black}\dot{q}_i
+        -\mathbf{P}_{ik}\color{cyan}a_{ik}\color{black}\dot{q}_i + \color{DarkOrchid}\mathbf{P}_{ij}b_{jk}\dot{q}_i\color{black}-\color{DarkOrchid}\mathbf{P}_{ij}b_{jk}\dot{q}_i\color{black}
+    \right) \\
+    \nonumber=&\sum_{i,j,k\in\mathcal{I}^+_3}
+    \left(
+        \mathbf{P}_{ij}(\color{DarkOrchid}b_{jk}\color{black}-\color{cyan}a_{ij}\color{black})\dot{q}_i -\mathbf{P}_{ik}(\color{Lavender}b_{ij}\color{black}+\color{cyan}a_{ik}\color{black})\dot{q}_i  +\mathbf{P}_{ij}(\mathbf{D}_{ij}\color{Lavender}b_{jk}\color{black}\dot{q}_j-\color{DarkOrchid}b_{jk}\color{black}\dot{q}_i)
+    \right) \\
+    =&\sum_{i,j,k\in\mathcal{I}^+_3}
+    \left(
+        (\color{DarkOrchid}b_{jk}\color{black}-\color{cyan}a_{ij}\color{black})\mathbf{P}_{ij}\dot{q}_i -(\color{Lavender}b_{ij}\color{black}+\color{cyan}a_{ik}\color{black})\mathbf{P}_{ik}\dot{q}_i  +\color{DarkOrchid}b_{jk}\color{black}\mathbf{P}_{ij}(\mathbf{D}_{ij}\dot{q}_j-\dot{q}_i)
+    \right)\label{new}
+\end{align}
+In addition to the $\pm \color{DarkOrchid}\mathbf{P}_{ij}b_{jk}\dot{q}_i\color{black}$ terms, we changed the indices of the very first term in the original sum, which we can do as we essentially just moved these terms around between the three summands. For the last step, we assumed that the bearing note frequencies stay constant. The next step is to utilize the sideband-sideband measurements, which, for the science interferometer, look like
+\begin{equation*}
+\eta^{\text{SB}}_{ij} =
+\underbrace{%
+    \nu_{j i}^{m} \mathbf{D}_{ij} (\dot{q}_j + N_{j i}^{m})
+}_{\text{from SC $j$}}
+-
+\underbrace{%
+    \nu_{i j}^{m} (\dot{q}_i + N_{i j}^{m})
+}_{\text{from SC $i$}}
+-
+\underbrace{%
+    \dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right)
+}_{\text{from the measurement on SC $i$}}.
+\end{equation*}
+where we have included modulation noise $N_{ij}^m$. But let's actually neglect it for now and continue with
+\begin{equation*}
+    \eta^{\text{SB}}_{ij}=\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j
+-\nu_{i j}^{m} \dot{q}_i -\dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right)=\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j -\dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} \right)
+\end{equation*}
+instead. We move on to the correcting variable
+\begin{equation}
+    r_{ij}=\frac{\eta^{\text{SB}}_{ij}-\eta_{ij}}{\nu_{ji}^m} = \mathbf{D}_{ij} \dot{q}_j-\dot{q}_i. \label{rij}
+\end{equation}
+The second equivalence holds assuming the frequency $\nu_{ji}^m$ stays constant, ie, the delay operator doesn't change its value. It is easy to see that subtracting $\sum_{i,j,k\in\mathcal{I}^+_3}\color{DarkOrchid}b_{jk}\color{black}\mathbf{P}_{ij}r_{ij}$ from (\ref{new}) gets rid of the differential clock jitter terms. And presumably we know the value of the beatnote $b_{jk}$ and the delays for the delay polynomials. For the rest of the terms, Hartwig looks to Vallisneri. \textit{Apparently} Vallisneri shows how to construct expressions in a generic form $\mathbf{D}_{i_1, i_2,...,i_n}p_{i_n}-p_{i_1}$ using the six LISA-like one-way measurements (of laser frequency noise $p_i$ originally). And since the variables $r_{ij}$ have the exact same form for clock noise as the $\eta_{ij}$ variables have for laser frequency noise, we can just use the same algorithm.\\
+Another realisation we have to have is that in the leftover terms in the sum (\ref{new}), the delay polynomials can just be written as 
+\begin{equation*}
+\mathbf{P}_{ij}=\sum_{k=1}^{n_{ij}}\sigma^{k}_{ij}\,\dot{\mathbf{D}}_{A^{k}_{ij},\ldots,B^{k}_{ij}}.
+\end{equation*}
+So each polynomial consists of $n_{ij}$ delay terms each having a sign $\sigma^{k}_{ij}$ and indexed by $A^{k}_{ij},\ldots,B^{k}_{ij}$. And apparently, by the design of TDI combinations, we always have $B^{k}_{ij}=i$. Now we use Valliseris' algorithm and the variables $r_{ij}$ to construct appropriate combinations
+\begin{equation*}
+    R_{ij}=\sum_{k=1}^{n_{ij}}\sigma^{k}_{ij}\left(\dot{\mathbf{D}}_{A^{k}_{ij},\ldots,i}\dot{q}_i-\dot{q}_{A^{k}_{ij}}\right)
+\end{equation*}
+so that
+\begin{equation*}
+    \mathbf{P}_{ij}\dot{q}_{i}-R_{ij}=\sum_{k=1}^{n_{ij}}\sigma^{k}_{ij}\dot{q}_{A^{k}_{ij}}.
+\end{equation*}
+Okay, now, Hartwig assures us that this leftover term is vanishing for most second-generation TDI combinations. Good. Now you can just do the correction
+\begin{equation}
+\mathrm{TDI}^{\mathrm{c}}
+=\mathrm{TDI}-\sum_{i,j,k \in I_3^{+}}
+\left[\left(b_{jk}-a_{ij}\right) R_{ij}-\left(b_{ij}+a_{ik}\right) R_{ik}+b_{jk}\,\mathbf{P_{ij}}\,r_{ij}
+\right].
+\end{equation}
+
+\subsection{Vallisneri's Algorithm}
+Let's play through the algorithm for building the $R_{ij}$ variables. First, we write out the second-generation Michelson combination delay polynomials:
+\begin{subequations}\label{eq:Pij_X2}
+\begin{align*}
+P_{12} &= -\left(1-\mathbf{D}_{131}-\mathbf{D}_{13121}+\mathbf{D}_{1213131}\right),\\
+P_{23} &= 0,\\
+P_{31} &= \left(1-\mathbf{D}_{121}-\mathbf{D}_{12131}+\mathbf{D}_{1312121}\right)\mathbf{D}_{13}, \\
+P_{21} &= -\left(1-\mathbf{D}_{131}-\mathbf{D}_{13121}+\mathbf{D}_{1213131}\right)\mathbf{D}_{12}, \\
+P_{32} &= 0, \\
+P_{13} &= \left(1-\mathbf{D}_{121}-\mathbf{D}_{12131}+\mathbf{D}_{1312121}\right).
+\end{align*}
+\end{subequations}
+Now we start constructing the variables. Let's look at $R_{12}$. First, the unity term, we skip it, but remember it corresponds to a $\dot q_1$ term. For the other delay terms, we write for each
+\begin{alignat*}{3}
+    \mathbf{D}_{131}: \qquad
+    & \mathbf{D}_{131}\dot q_1 - \dot q_1
+    & {}={}& r_{13} + \mathbf{D}_{13} r_{31}, \\[3pt]
+    \mathbf{D}_{13121}: \qquad
+    & \mathbf{D}_{13121}\dot q_1 - \dot q_1
+    & {}={}& r_{13} + \mathbf{D}_{13} r_{31}
+            + \mathbf{D}_{131} r_{12}
+            + \mathbf{D}_{1312} r_{21}, \\[3pt]
+    \mathbf{D}_{1213131}: \qquad
+    & \mathbf{D}_{1213131}\dot q_1 - \dot q_1
+    & {}={}& r_{12} + \mathbf{D}_{12} r_{21}
+            + \mathbf{D}_{121} r_{13}
+            + \mathbf{D}_{1213} r_{31}
+            + \mathbf{D}_{12131} r_{12}
+            + \mathbf{D}_{121313} r_{31}.
+\end{alignat*}
+Now we plug all of these into $R_{12}$, remembering to include the $\dot q_1$ from the identity term
+\begin{align*}
+    R_{12}= &\dot q_1+\mathbf{D}_{131}\dot q_1 - \dot q_1+\mathbf{D}_{13121}\dot q_1 - \dot q_1-\mathbf{D}_{1213131}\dot q_1 + \dot q_1=\\
+     &r_{13} + \mathbf{D}_{13} r_{31} \\
+     +&r_{13} + \mathbf{D}_{13} r_{31} + \mathbf{D}_{131} r_{12} + \mathbf{D}_{1312} r_{21}
+     \\-&r_{12} - \mathbf{D}_{12} r_{21} - \mathbf{D}_{121} r_{13} - \mathbf{D}_{1213} r_{31} - \mathbf{D}_{12131} r_{12} - \mathbf{D}_{121313} r_{31}=\\
+     &\left(2-\mathbf{D}_{121}-\mathbf{D}_{12131}\right)\left(r_{13}+\mathbf{D}_{13} r_{31}\right)+\left(\mathbf{D}_{131}-1\right)\left( r_{12}+\mathbf{D}_{12} r_{21}\right).
+\end{align*}
+From the first line, we see how the non-delayed jitter terms do cancel out. This matched what Hartwig wrote. Let's do $X1$ as well
+\begin{align*}
+R_{12}
+&= \left(\mathbf{D}_{131}\dot q_1-\dot q_1\right)
+= r_{13} + \mathbf{D}_{13}r_{31},\\[3pt]
+R_{13}
+&= -\left(\mathbf{D}_{121}\dot q_1-\dot q_1\right)
+= -\left(r_{12}+\mathbf{D}_{12}r_{21}\right),\\[3pt]
+R_{21}
+&= \left(\mathbf{D}_{12}\dot q_2-\dot q_1\right)
+-\left(\mathbf{D}_{1312}\dot q_2-\dot q_1\right)
+= r_{12}-\left(r_{13}+\mathbf{D}_{13}r_{31}+\mathbf{D}_{131}r_{12}\right),\\[3pt]
+R_{31}
+&= -\Bigl[\left(\mathbf{D}_{13}\dot q_3-\dot q_1\right)
+-\left(\mathbf{D}_{1213}\dot q_3-\dot q_1\right)\Bigr]
+= -r_{13}+\left(r_{12}+\mathbf{D}_{12}r_{21}+\mathbf{D}_{121}r_{13}\right).
+\end{align*}
+Whatever, I'm not going to actually check how well this works.
+
+\subsection{miniLISA}
+Firstly, it is important to check the construction of the correcting variables $r_{ij}$ still take the same form. Let's writ our the $\eta$ variables involved
+\begin{equation*}
+\eta^{\text{SB}}_{ij} =
+\underbrace{%
+    \nu_{j i}^{m} \mathbf{D}_{ij} (\dot{q}_j + N_{j i}^{m})
+}_{\text{from SC $j$}}
+-
+\underbrace{%
+    \nu_{i j}^{m} (\dot{q}_i + N_{i j}^{m})
+}_{\text{from SC $i$}}
+-
+\underbrace{%
+    \dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right)
+}_{\text{from the measurement on SC $i$}}.
+\end{equation*}
+which we simplify to
+\begin{equation*}
+    \eta^{\text{SB}}_{ij}=\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j
+-\nu_{i j}^{m} \dot{q}_i -\dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right)=\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j -\dot{q}_i \left( a_{ij} + \mathbf{D}_{ij} \nu_{j i}^{m} \right)
+\end{equation*}
+These seem to be identical to the LISA ones, so I guess there's no issue here, for now. 
+
+\subsection{Appendix for Section 2: Check for Lower Sideband}
+The lower sideband consists of the two original lower sidebands, so basically, both modulating frequencies switch signs.
+\begin{equation*}
+\eta^{\text{SB}-}_{ij} =
+\underbrace{%
+    -\nu_{j i}^{m} \mathbf{D}_{ij} (\dot{q}_j + N_{j i}^{m})
+}_{\text{from SC $j$}}
++
+\underbrace{%
+    \nu_{i j}^{m} (\dot{q}_i + N_{i j}^{m})
+}_{\text{from SC $i$}}
+-
+\underbrace{%
+    \dot{q}_i \left( a_{ij} - \mathbf{D}_{ij} \nu_{j i}^{m} + \nu_{i j}^{m} \right)
+}_{\text{from the measurement on SC $i$}}.
+\end{equation*}
+And therefore, we should be left with the same info as for the upper-upper sideband beatnote.
+\begin{equation*}
+    \eta^{\text{SB}-}_{ij}=-\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j
++\nu_{i j}^{m} \dot{q}_i -\dot{q}_i \left( a_{ij}- \mathbf{D}_{ij} \nu_{j i}^{m} + \nu_{i j}^{m} \right)=-\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j -\dot{q}_i \left( a_{ij} - \mathbf{D}_{ij} \nu_{j i}^{m} \right)
+\end{equation*}
+
+
+\section{My Interpretation}
+In this office, we usually say that clock noise is always w.r.t some other clock since that's all you can measure. This is still true in LISA, because all the measurements are synchronized to one PM. The synchronization is also done via the sidebands, but in a different way. I still need to understand how it works. Kohei Yamamoto's work on this seems very good. \\
+Now, as an example first, we see that TDI cancels out all laser noise terms (to first order). The clock phase noise removal algorithm is based on the same algorithm; they both form a synthetic closed loop in the post-processing ( I actually don't exactly understand the significance here, nor do I see it exactly for the clock noise). This would indicate that one can exactly subtract out the phase noise terms from the PM ADCs. And this makes a lot of sense, because really, those terms have nothing to do with the differentials between the USOs, but the USO w.r.t the incoming signal timing. Imagine the incoming signal has the exact same "timebase" or timing jitter as the sampling clock; then the noise cancels out, and you get a perfect signal (w.r.t the local proper time or whatever). So the $\omega q(t)$ is effectively a measure of the phase noise of the USO w.r.t. the beatnote frequency. This is illustrated by the fact that some modulation terms cancel out in the LISA local loop. And in that one measurement that I did. So in the ISI readout, you have the frequency noise terms, then the clock noise w.r.t the "mean frequency," and the second-order terms of frequency noise vs clock noise are left out.\\
+But you are still limited by one of the USOs, because before TDI, the synchronization uses the "noisy" timestamps of one of the USOs, and that's the limiting part.\\
+On the topic of setting one of the $q(t)$ terms to 0, I kind of want to agree with it in the sense that, ultimately, you are limited by it anyway. However, I think its imporatant to still include it in LISA since I suspect $q(t) - q(t-\tau)$ might still be a significant noise source. I'm still not sure how to think about this
+
+You remove the differential clock jitters at MHz, or do you remove all clock noise at MHz? What will remain is the timing jitter at mHz, though. But let's say a USO has an ASD of 10e-4 rad/sqrt(Hz) at 0.01 mHz. Convert that to timing jitter and multiply by the 0.01 Hz frequency, and it should be a very small value.
+
+\subsection{Preliminary Test Analysis}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/finish.png}
+    \caption{Measurement setup. The real setup included two delay boards.}\label{pic}
+\end{figure}
+
+We recently did a measurement with an aim to demonstrate the PM noise removal via sidebands. The carrier noise is common in each readout, but the sideband modulation is different. All electronics except for the Moku:Pro -- phasemeter 2 were following the Rubidium standard reference clock. There are two ways to approach the post-processing. And it just doesn't make sense to me that these can both work (on the same data).
+
+\subsubsection{LISA inspired post-processing}
+We can write down the readouts here as 
+\begin{align*}
+    \eta_{12}(t)&=\delta \phi(t-\tau)-\delta\phi(t)-\omega q_1(t) {\,-\,\color{gray}\omega\epsilon_1(t-\tau)+2\omega\epsilon_1(t)}\\
+    \eta_{12}^{\text{SB}}&=\delta \phi(t-\tau)-\delta\phi(t)-\omega q_1(t) +\omega^m_2\cdot(q_2(t-\tau)-q_1(t)) {\,-\,\color{gray}\omega^m_2(\epsilon_1(t-\tau)-\epsilon_1(t))-\omega\epsilon_1(t-\tau)+2\omega\epsilon_1(t)}
+\end{align*}
+So we get the clock noise correcting variables
+\begin{equation*}
+    r_{12}(t)=\frac{\eta_{12}^{\text{SB}}-\eta_{12}(t)}{\omega^m_2}=q_2(t-\tau)-q_1(t){\,-\,\color{gray}\epsilon_1(t-\tau)+\epsilon_1(t)}.
+\end{equation*}
+The readouts from the other phasemeter are the same, just with the indices switched. For now, we omit the board timing noise $\epsilon_i$. Once we do, their signs should be checked. I also suspect that the $2\omega\epsilon(t)$ terms might also cancel; it would depend on polarity. I suspect cancellation bc it looks like it's canceling when working with data. But that could also be because the 2 boards used were very highly correlated, so that to the noise floor level we have, it isn't touching their differential noise yet.
+
+So now we can form a "noise-free" combination from this. Firstly, to get rid of clock noise, we write
+\begin{equation*}
+     \eta_{12}(t)-\mathbf{D} \eta_{21}(t)-\omega r_{12} = -\delta \phi(t-2\tau)+2\delta\phi(t-\tau)-\delta\phi(t)
+\end{equation*}
+So we do the same for the round trip in the other direction and subtract these from each other, getting
+\begin{equation}
+    \eta_{12}(t)-\mathbf{D} \eta_{21}(t)-\omega r_{12} -\left(\eta_{21}(t)-\mathbf{D} \eta_{12}(t)-\omega r_{21} \right)=0
+\end{equation}
+Again, we omitted the board clock noises. However, from doing the math paper, it currently looks like the differential noise $\epsilon_1(t)-\epsilon_2(t)$ can be subtracted out exactly. Now, from the measurement, it currently looks like this doesn't work. The main issue seems to be that the variable $r_{12}$, or really $\eta_{12}^{\text{SB}}$, doesn't contain the modulated term $q_2(t-\tau)$ with high enough fidelity -- i.e., the modulation tone and the sampling clock differ by too much. Though the $\eta_{12}^{\text{SB}}$ ASD looks identical to the $\eta_{21}$ ASD, which would indicate that both are dominated by the phasemeter 2 noise. But we only get 3 orders of magnitude subtraction, so from then on, the modulation noise potentially takes over.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/asd_carrier_minus_sb_raw.png}
+    \caption{According to this model, the red and green lines should both only contain the carrier noise $\delta \phi(t-2\tau)-\delta\phi(t)$. Since the red line also doesn't have the structure of $\delta \phi(t-2\tau)-\delta\phi(t)$ (delay lobe location is at 8 s delay), I suspect that even that floor is limited by modulation noise. But why is this one lower? It must be that the Moku: pro gives out a worse signal than the Moku: Delta, which is what we used for the Phasemeter 1. Another thing worth noting, the pink line looks very similar to the purple line, meaning that the sideband carrying the PM2 clock done is dominated by said noise, but the issue is that there is also some other noise that is about 3 orders of magnitude lower. The green line here is too high because a wrong delay was used; the correct level is seen in the next graph.}\label{pic}
+\end{figure}
+
+\subsubsection{Other Formalism}
+The other way to think about the clock noises is to say that we always measure with respect to some clock. We say that in our measurement, the clock is the PM 1 clock, which is obviously a more accurate clock than the PS 2 clock. Now, we take the previous expressions, and just set $q_1(t)=\text{const} = 0$. We now write out all readouts following this rule
+
+\begin{align*}
+    \eta_{12}(t)&=\delta \phi(t-\tau)-\delta\phi(t) {\,-\,\color{gray}\omega\epsilon_1(t-\tau)+2\omega\epsilon_1(t)}\\
+    \eta_{12}^{\text{SB}}&=\delta \phi(t-\tau)-\delta\phi(t) +\omega^m_2q_2(t-\tau) {\,-\,\color{gray}\omega^m_2(\epsilon_1(t-\tau)-\epsilon_1(t))-\omega\epsilon_1(t-\tau)+2\omega\epsilon_1(t)}\\
+    \eta_{21}(t)&=\delta \phi(t-\tau)-\delta\phi(t)-\omega q_2(t) {\,-\,\color{gray}\omega\epsilon_2(t-\tau)+2\omega\epsilon_2(t)}\\
+    \eta_{21}^{\text{SB}}&=\delta \phi(t-\tau)-\delta\phi(t)-\omega^m_2q_2(t) {\,-\,\color{gray}\omega^m_2(\epsilon_1(t-\tau)-\epsilon_2(t))-\omega\epsilon_2(t-\tau)+2\omega\epsilon_1(t)}
+\end{align*}
+Now, it should be stated that the data from the two phasemeters were synchronized to the PM 1 in the sense that their start times were unified based on a separate "clapboard" measurement. Other than that, the measurement should be symmetric. And even this synchronization step is really a constant time shift for the PM 2 data, about 1 second.\\
+
+Anyways, in this formalism, we can calculate a "noise-free" combination as
+\begin{equation*}
+    \eta_{21}(t) - \eta_{12}(t) -\omega r_{21}(t)=0,
+\end{equation*}
+eventhoug in the other formalism, this would give us the noise $q_1(t-\tau)-q_1(t)$. Forming this "noise-free" combination gives us the black line on figure 3. As is argued in the caption, the lobing of the black line looks suspiciously like it could be explained by the leftover/omitted $q_1(t-\tau)-q_1(t)$. But it could as well be the board noise. Correcting for the board noise does get rid of this noise, so ultimately, this lobing is from the differential between the board and the PM 1. But the caveat, in my opinion, is that the differential between the two boards is way lower than the board vs PM 1, telling me that the PM 1 is the noisier source (assuming both boards are more or less identical). This is illustrated by the pink and gray lines on Figure 4. The epsilon variable was measured directly from each of the boards' SYS REF, so essentially, the measurement was
+\begin{equation*}
+    \text{REF}_1(t)=\omega_{\text{REF}}(\epsilon_1(t)-q_1(t)), \qquad \text{REF}_2(t)=\omega_{\text{REF}}(\epsilon_2(t)-q_1(t)).
+\end{equation*}
+Notice how the reference measurements were taken with the same PM, so their difference gives us the pink line (scaled to the $\omega = 15\, \text{MHz}$ carrier frequency). So I would use this as evidence to say that the black line on Figure 3 is dominated by the omitted $q_1$ noise, and it is not correct to just set one phasemeter clock jitter to 0, especially if delays are involved.\\
+Another important thing to notice on Figure 3, is that the gray line is nowhere near the black line. It has the PM 2 clock interfering with a delayed version of itself, quite evidently as the noise level is that of the PM 2 clock noise. Now, why would we expect something different when the analysis is done centered on PM 1? I wouldn't, I would say that both are limited by the respective clock noise of the PM, meaning that you can't actually just set one of the PM noises to 0.\\
+And another thing that isn't illustrated here very well is that with the black line, the PM2 noise cancellation comes from the carrier and sideband that were both measured by the same PM, not from the clock tone transfer. The tone transfer itself is better illustrated by the lobing of the black line, in my opinion.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/asd_carrier_minus_sb.png}
+    \caption{The black line contains lobing, and the question is, is this from the phasemeter 1 (I'd say yes), or is it from the board clock noises? The board noises can't cancel out completely at this stage since there are three signals used, two carriers -- which would be symmetric and could cancel each other's terms, and then one $r$ variable, which wouldn't cancel out. And the $r$ variables would have the same coupling structure. So really it should be both. The gray line is dominated by the PM2 noise, which is interfering with a delayed version of itself. }\label{pic}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/asd_carrier_minus_sb_clocks.png}
+    \caption{The pink line is an order of magnitude higher than the gray line.}\label{pic}
+\end{figure}
+
+Two conclusions. Firstly, I think there is enough evidence here to say that for the clock noise correction, setting one of the phasemeter terms to 0, as $q_1(t)=0$, results in a worse model. I think there is a mix-up here with the synchronization, where, in fact, you will need to do this for one of the clocks. But you don't need to do this for the clock noise correction of the beat frequencies. Secondly, I currently assume that the limitation we see in the red and green lines in Figure 3 is the modulation noise. But it should be stated that clock timestamp synchronization was completely skipped here. I do not know how it would interfere with our results exactly, so I actually wouldn't rule this out either.
+
+\subsection{Modulation Noise}
+
+
+
+
+
+\section{Timer Math}
+
+We have a primary clock $m$ and a secondary clock $i$. We write
+\begin{equation}\label{tau_i def}
+    \tau_i^{\tau_m}(\tau) = \tau + \delta\tau_i(\tau) = \tau + q_i(\tau) + \delta\tau_{i,0}
+\end{equation}
+where we use 
+\begin{equation*}
+    \delta\tau_i(\tau) \coloneqq q_i(\tau) + \delta\tau_{i,0}.
+\end{equation*}
+Now, this is how we write the time of the secondary clock w.r.t the reference or primary clock. Usually, we would want to convert data that has been sampled according to the secondary clock to be in reference to the reference clock. For that, we need to express the primary timer time w.r.t the secondary clock (for some reason). Yamamoto gives us
+\begin{equation*}
+    \tau_m^{\tau_i}(\tau) = \tau - \delta\tau_i\!\left(\tau_m^{\tau_i}(\tau)\right).
+\end{equation*}
+Firstly, let's also derive this. We know by definition (?)
+\begin{equation*}
+    \tau_m^{\tau_i}\!\left(\tau_i^{\tau_m}(\tau)\right) = \tau.
+\end{equation*}
+For less ambiguity, we can instead use $\tau \rightarrow u$ and 
+\begin{equation*}
+    \tau_m^{\tau_i}(u) = f(u), \qquad \tau_i^{\tau_m}(u)=g(u).
+\end{equation*}
+We rewrite (\ref{tau_i def}) as
+\begin{equation*}
+    f(u)=u+\delta\tau_i(u).
+\end{equation*}
+Let us now further substitute $u=g(u)$
+\begin{equation*}
+    f(g(u))=g(u)+\delta\tau_i(g(u)).
+\end{equation*}
+This substitution might seem illegal at first, but we need to remember that we are allowed to do it if we do it consistently. I think this can be thought of as a change of reference clock? Going back to the original variables, we see that we have arrived at
+\begin{equation*}
+    f(g(u))\rightarrow \tau = \tau_i^{\tau_m}(\tau)+\delta\tau_i(\tau_i^{\tau_m}(\tau))\Rightarrow \tau_m^{\tau_i}(\tau) = \tau - \delta\tau_i\!\left(\tau_m^{\tau_i}(\tau)\right).
+\end{equation*}
+OK. This is just about converting time references. We now turn our attention towards actual measured data. For the PM it will be phases and potentially relative frequencies. For phasemeasurements, we can write
+\begin{equation*}
+    \phi^{\tau_i}(\tau)=\phi^{\tau_m}(\tau_m^{\tau_i}(\tau)) = \phi^{\tau_m}(\tau-\delta\tau_i(\tau_m^{\tau_i}(\tau)))
+\end{equation*}
+and for frequencies
+\begin{equation*}
+    \nu^{\tau_i}(\tau)=\frac{\dd \phi^{\tau_i}(\tau)}{\dd \tau}=\frac{\dd \phi^{\tau_m}(\tau_m^{\tau_i}(\tau))}{\dd \tau_m^{\tau_i}(\tau)}\cdot \frac{\dd \tau_m^{\tau_i}(\tau)}{\dd \tau} = \nu^{\tau_m}(\tau_m^{\tau_i}(\tau)) \cdot \frac{\dd \tau_m^{\tau_i}(\tau)}{\dd \tau}.
+\end{equation*}
+Also,
+\begin{align*}
+\frac{d\tau_m^{\tau_i}(\tau)}{d\tau}
+&= 1 - \frac{d\,\delta\tau_i\!\left(\tau_m^{\tau_i}(\tau)\right)}{d\tau_m^{\tau_i}(\tau)}
+    \cdot \frac{d\tau_m^{\tau_i}(\tau)}{d\tau}\\[6pt]
+&= 1 - \dot q_i\!\left(\tau_m^{\tau_i}(\tau)\right)
+    \cdot \frac{d\tau_m^{\tau_i}(\tau)}{d\tau}\\[6pt]
+\Rightarrow\quad
+\frac{\dd\tau_m^{\tau_i}(\tau)}{\dd\tau}
+&= \frac{1}{1 + \dot q_i\!\left(\tau_m^{\tau_i}(\tau)\right)} \, .
+\end{align*}
+Crazy. Alternatively, maybe it's easier to see
+\begin{equation*}
+    \frac{\dd\tau_i^{\tau_m}(\tau)}{\dd\tau_m^{\tau_i}(\tau)}=1 + \dot q_i\!\left(\tau_m^{\tau_i}(\tau)\right)
+\end{equation*}
+Might be useful to remember the definition:
+\begin{equation*}
+    \dot q_i(\tau)
+=
+\frac{\nu_i(\tau) - \nu_{\mathrm{ideal}}}{\nu_{\mathrm{ideal}}}.
+\end{equation*}
+
+\subsection{On the Use of the Superscripts}
+
+Time coordinates in the model: barycentric coordinate time (TCB) $t$,
+spacecraft proper time (TPS) $\tau_i$, on-board clock time (THE) $\hat\tau_i$.
+For any two time scales $A,B$, the paper defines a \emph{generic template}
+(unified, App.\ A.3 / Eq.~(A.3)):
+\begin{equation*}
+  A^B(x) \;=\; x + \delta A^B(x), \tag{def}
+\end{equation*}
+where the superscript names \emph{which} conversion is being applied,
+and the bare argument $x$ (often written $\tau$, with no subscript)
+is an anonymous placeholder that may range over any real number.
+
+\textbf{Proposed simplification:} drop the superscript and instead name the argument after the target frame, e.g. write $\hat\tau_1(\tau_1)$ instead of $\hat\tau_1^{\tau_1}(\tau)$. And I initially felt this is a solid simplification since most of the time you end up plugging in $ A^B(B) \;=\; B + \delta A^B(B)$; like the timer value $B$ is what you'll end up plugging in. So the superscript seemed redundant -- it usually just hints at which timer value you are supposed to plug in in practice.
+
+Answer to why its not so, in my words: So I think the satisfying answer to me is that the subscript carries info about the "history" of the given time frame, and then tau as a generic argument allows us to "traverse though that history"
+
+\subsubsection{Quick question}
+How would this be written down in the proposed notation?
+\begin{equation*}
+    \tau_i^{\hat\tau_i}(\hat\tau_i^{\tau_i}(x))=x
+\end{equation*}
+Currently, this states that we have two transforms that are inverse of each other at all times. The proposed notation forgets all about the transforms, and just states that the timer $t$ value is taken with respect to the timer $\tau_1$ or something. But the article is really all about the transforms between the timers. and the timer values themselves get plugged in in place of the $\tau$ argument.
+
+\subsubsection{The role of $\tau$ as a placeholder}
+
+Trivial identity from the convention:
+\begin{equation*}
+  t^t(x) \;=\; \tau_i^{\tau_i}(x) \;=\; \hat\tau_i^{\hat\tau_i}(x) \;=\; x .
+\end{equation*}
+Phase-invariance identity:
+\begin{equation*}
+  \phi^{\tau_1}(\tau) \;=\; \phi^{t}\!\big(t^{\tau_1}(\tau)\big)
+  \;=\; \phi^{\hat\tau_1}\!\big(\hat\tau_1^{\tau_1}(\tau)\big).
+\end{equation*}
+Three different superscripts, same bare $\tau$: the paper is explicit that ``the symbol used for the function argument is arbitrary, and does not specify the reference frame.''
+
+\paragraph{Numeric illustration.} Toy linear timer-deviation model, $\delta\hat\tau_1(x) = y_0 x$, $y_0 = 10^{-6}$. Forward map (cf.\ Eq.~(53)):
+\begin{equation*}
+  \hat\tau_1^{\tau_1}(100) = 100 + 10^{-6}(100) = 100.0001 .
+\end{equation*}
+The number $100.0001$ carries \emph{no internal record} of being a clock-time value. Feeding it back into the same forward map (a type error) still computes:
+\begin{equation*}
+  \hat\tau_1^{\tau_1}(100.0001) \approx 100.0002000001,
+\end{equation*}
+a real but physically meaningless result, while feeding it into the \emph{inverse} map correctly recovers $\approx 100.0000$. Nothing in the arithmetic itself prevents the type error; only the superscript convention (external bookkeeping) does.
+
+\subsection{Why the labeled functions are not interchangeable}
+
+\subsubsection{The timer deviation is an accumulated history}
+
+Full clock-timer model (Hartwig thesis, Eq.~(6.7)):
+\begin{equation*}
+  \delta\hat\tau_1(\tau) \;=\; \delta\hat\tau_{1,0}
+  \;+\; \int_{\tau_{1,0}}^{\tau} N_1^{q}(\tau')\,d\tau'
+  \;+\; y_{0,1}\,\tau \;+\; \tfrac{1}{2} y_{1,1}\,\tau^2
+  \;+\; \tfrac{1}{3} y_{2,1}\,\tau^3 . \tag{6.7}
+\end{equation*}
+This is not evaluable at a single instant without the entire USO noise
+realization $N_1^q(\tau')$ from turn-on $\tau_{1,0}$ to $\tau$: the
+function $\delta\hat\tau_1$ is the \emph{closure of spacecraft 1's
+clock history}. $\delta\hat\tau_2$ is built from an independent noise
+realization $N_2^q$ and independent drift coefficients
+$y_{0,2},y_{1,2},y_{2,2}$ — a different object, not a relabeling of
+the same one.
+
+\subsubsection{The TCB conversion is an accumulated trajectory}
+
+Schematically (weak-field, standard form; not an equation number from
+the paper, included for physical grounding):
+\begin{equation*}
+  \frac{d\tau_i}{dt} \;\approx\; 1 - \frac{\Phi(\mathbf{r}_i(t))}{c^2}
+  - \frac{v_i(t)^2}{2c^2}, \qquad
+  t^{\tau_i}(\tau) = \tau + \int^{\tau}
+  \Big[\text{potential, velocity of SC } i \text{ at each past instant}\Big] d\tau'.
+\end{equation*}
+$t^{\tau_1}$ integrates SC1's orbital history; $t^{\tau_2}$ integrates
+SC2's. Different trajectories $\Rightarrow$ different functions, by
+construction, not by choice of notation.
+
+So in other words, the function $t^{\tau_1}(\tau)$ definition depends on the superscript. They are tied together. Because it's an actual function, not just the barycentric time. It is the conversion function. And these two things are distinct from each other.
+\subsubsection{Formal collision if the label is dropped}
+
+Let $t^{\tau_1}(x) = x(1+5\times10^{-9})$, $t^{\tau_2}(x) = x(1+7\times10^{-9})$ (toy values consistent with distinct orbital histories). Suppose at some instant $\tau_1 = \tau_2 = 500$ numerically. Evaluate both:
+\begin{equation*}
+  t^{\tau_1}(500) = 500.0000025 \;\neq\; 500.0000035 = t^{\tau_2}(500).
+\end{equation*}
+A function assigns \emph{one} output per input value; $t(500)$ cannot equal both. If the label is carried by the \emph{name of the argument} rather than by the function itself, then since $\tau_2 = 500$ numerically, $t(\tau_2)$ and $t(500)$ are the same expression by substitution — contradiction. The scheme only works if $t$ secretly dispatches on the \emph{spelling} of its argument, which is not a property definable on real numbers, and fails outright for a freshly computed intermediate, such as $g(\tau) \equiv \tau_1^{\hat\tau_1}(\tau)$ (Eq.~(56)), which has no frame-name to dispatch on at all.
+
+
+
+\subsubsection{The same structure recurs for spacecraft-pair quantities}
+
+Even where the paper avoids $t$ entirely (the simulation ``does not
+make direct use of the barycentric coordinate time''; PPRs are
+supplied directly), the labelling problem reappears one level down.
+Proper pseudorange (unified Eq.~(25)--(26)):
+\begin{equation*}
+  \Phi_{12\leftarrow21}(\tau) = \Phi_{21}\big(\tau - d_{12}(\tau)\big),
+  \qquad
+  d_{12}(\tau) = d_{12}^{o}(\tau) + H_{12}(\tau),
+\end{equation*}
+with $d_{12}$ explicitly stated to include ``conversions between
+reference frames associated to $\tau_1$ and $\tau_2$.'' There are six
+such objects, $d_{12}, d_{13}, d_{21}, d_{23}, d_{31}, d_{32}$, one per
+ordered spacecraft pair, each numerically distinct. Bypassing $t^{\tau_i}$
+does not remove the need to track ``which mapping'' — it relocates that
+information from a superscript on $t$ to a subscript pair on $d$.
+
+\subsection{Resolution}
+
+The label \emph{freezes} which physical system's past (which clock's noise realization via Eq.~(6.7), which spacecraft's trajectory via $t^{\tau_i}$, which spacecraft pair via $d_{ij}$) built the function; $\tau$ is then free to range over that one fixed history. Two distinct histories cannot be merged into a single unlabelled function without violating the basic definition of a function (Sec.~2.3) — this is not a stylistic preference of the notation, but a direct consequence of what a function is.
+
+\subsection{An informationally equivalent alternative: semicolon notation}
+\label{subsec:semicolon}
+
+A natural objection to the superscript convention is that the frame
+label could instead be passed as an explicit second argument, in the
+style of conditional densities $f(x;\theta)$ or Green's functions
+$G(x,t;x_0,t_0)$:
+\begin{equation*}
+  t^{\tau_1}(\tau) \;\stackrel{\text{def}}{=}\; t(\tau;\tau_1).
+\end{equation*}
+This candidate is worth checking against the same two tests used
+above: does it survive composition, and does it survive the collision
+argument of Sec.~2.3.3.
+
+\paragraph{Composition.} Rewriting Eq.~(3):
+\begin{equation*}
+  \phi^{\tau_1}(\tau) = \phi^{\hat\tau_1}\!\big(\hat\tau_1^{\tau_1}(\tau)\big)
+  \quad\longrightarrow\quad
+  \phi(\tau;\tau_1) = \phi\big(t(\tau;\tau_1)\,;\hat\tau_1\big),
+\end{equation*}
+and Eq.~(56):
+\begin{equation*}
+  \hat\tau_1^{\tau_1}\!\big(\tau_1^{\hat\tau_1}(\tau)\big)
+  \quad\longrightarrow\quad
+  \hat\tau_1\big(\tau_1(\tau;\hat\tau_1)\,;\tau_1\big).
+\end{equation*}
+The type-check used throughout this note — the outer function's
+required-input label must match the inner function's declared output
+frame — is preserved verbatim: one checks that the bare name in the
+inner function's first slot ($\tau_1$) matches the label in the
+outer function's semicolon slot ($;\tau_1$). No structural
+information is lost in the rewrite.
+
+\paragraph{Collision test.} With
+$t(x;\tau_1) = x(1+5\times10^{-9})$ and
+$t(x;\tau_2) = x(1+7\times10^{-9})$, and $\tau_1=\tau_2=500$
+numerically,
+\begin{equation*}
+  t(500;\tau_1) = 500.0000025 \;\neq\; 500.0000035 = t(500;\tau_2).
+\end{equation*}
+The semicolon form is still forced to be a genuine two-argument
+function of $(x,\text{label})$ rather than collapsing to a
+single-argument $t(x)$ — the same obstruction identified in
+Sec.~2.3.3 survives unchanged. Superscript and semicolon therefore
+carry \emph{identical} information content: this is a typographic
+choice, not a logical one.
+
+\paragraph{Why the paper nonetheless prefers the superscript.} 
+The frame tokens $\tau_1,\tau_2,\tau_3,\hat\tau_1,\hat\tau_2,\hat\tau_3,t$ in this paper lead a double life: the identical symbol is used both as a \emph{label} naming a frame (a discrete token) and as a \emph{numeric reading} of that frame at some instant (a real number, as in ``$\tau_1 = 500$'' in Sec.~2.3.3). Ordinary argument position — whether comma- or semicolon-separated — is, throughout mathematics, the position reserved for quantities one computes with: shifted, differentiated, summed. Superscript position carries no such expectation; nothing primes a reader to try $t^{\tau_1+\epsilon}(\tau)$. Semicolon position offers no equivalent guard: the syntax
+\begin{equation*}
+  t(\tau;\,\tau_1+\epsilon)
+\end{equation*}
+looks normal, despite being meaningless — ``the frame token $\tau_1$, incremented by a small time'' is not an operation with content. 
+
+\end{document}  

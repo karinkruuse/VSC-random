@@ -1,0 +1,484 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage[table,pdftex,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xargs} 
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{physics}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% Colours
+\definecolor{groupbg}{gray}{0.82}
+\definecolor{rowA}{gray}{1.00}
+\definecolor{rowB}{gray}{0.94}
+
+\newcommand{\grouprowA}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{5}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+\newcommand{\grouprowB}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{5}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+\newcommand{\rA}{\rowcolor{rowA}}
+\newcommand{\rB}{\rowcolor{rowB}}
+
+%\newcommand\Dapprox{\stackrel{\mathbf{D}\nu(t) = \nu(t)}{=}}
+
+\begin{document}
+
+\section{LISA}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/LISAarm.pdf}
+    \caption{LISA inter-spacecraft interferometer phase measurement, 
+    simplified. }\label{pic}
+\end{figure}
+
+\noindent
+The electric fields incident on the photodetector from the local spacecraft (point \textbf{A}) and the distant spacecraft (point \textbf{A'}) can be written,
+
+\begin{align}
+\mathbf{A}:&\quad\,E_{ij}\exp[i(\omega_{ij} t + {\color{blue}\delta\phi_{ij}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{ij}^m (t + {\color{orange}q_{i}(t)} + {\color{cyan}N_{ij}(t)})]\right),
+  \label{eq:fieldA}\\[4pt]
+\mathbf{A'}:&\quad
+ \mathbf{D}_{ij} \,E_{ji}\exp[i(\omega_{ji}t + {\color{blue}\delta\phi_{ji}(t)})]
+  \left(1 + \tfrac{im}{2}
+    \exp[i\omega_{ji}^m(t + {\color{orange}q_j(t)} + {\color{cyan}N_{ji}(t)})]\right),
+  \label{eq:fieldAprime}
+\end{align}
+\noindent
+where $\omega_{ij} = 2\pi\nu_{ij}$ is the carrier frequency of the laser belonging to MOSA $ij$, $\delta\phi_{ij}(t)$ its phase noise, $\nu_{ij}^m$ the EOM modulation frequency derived from the local USO, $q_i(t)$ the USO phase noise, and $\tau_{ij}$ the inter-spacecraft light-travel time (measurement at spacecraft $i$). The small modulation depth $m \ll 1$ ensures that only first-order sidebands need to be retained --- hence we will be ditching the higher-order sidebands. To give some numbers, with $m=0.53$, the Bessel functions give us multipliers for the power of these peaks: 0.87 and 0.065 for the carrier and a 1st-order sideband, respectively.
+\newline
+\noindent
+We now ditch the higher-order sideband (2nd-order peaks have 0.1\% of the full power). Interference on the photodetector yields two "types" of beatnotes within the phasemeter band. We see that in the range 5..25 MHz, we have the beatnotes with frequencies: $\Delta \omega$, $\Delta \omega + \Delta \omega^m$, and $\Delta \omega - \Delta \omega^m$. The first one is between the two carriers, the second one is between the two upper sidebands, and the third is between the two lower sidebands. Since the lower and upper sidebands behave identically, we only look at the upper sideband beatnote. Question: What might make them behave differently? Anyways, we now bring in $\text{RIN}$ and shot noise.
+
+\begin{align*}
+I^{\text{c}}(t) &= \left(E_{ij}\sqrt{1+{\color{red}\text{RIN}_{ij}(t)}}\,e^{i(\omega_{ij} t + {\color{blue}\delta\phi_{ij}(t)})} + E_{ji}\sqrt{1+{\color{red}\text{RIN}_{ji}(t)}}\,e^{i(\omega_{ji} t + {\color{blue}\delta\phi_{ji}(t)})}\right)\\
+&\quad\times\left(E_{ij}\sqrt{1+{\color{red}\text{RIN}_{ij}(t)}}\,e^{-i(\omega_{ij} t + {\color{blue}\delta\phi_{ij}(t)})} + E_{ji}\sqrt{1+{\color{red}\text{RIN}_{ji}(t)}}\,e^{-i(\omega_{ji} t + {\color{blue}\delta\phi_{ji}(t)})}\right) + {\color{teal}n_\text{shot}(t)}\\[6pt]
+&= E_{ij}^2(1+{\color{red}\text{RIN}_{ij}(t)}) + E_{ji}^2(1+{\color{red}\text{RIN}_{ji}(t)})\\
+&\quad + 2E_{ij}E_{ji}\sqrt{(1+{\color{red}\text{RIN}_{ij}(t)})(1+{\color{red}\text{RIN}_{ji}(t)})}\cos(\Delta\omega\, t + {\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{ji}(t)}) + {\color{teal}n_\text{shot}(t)}
+\end{align*}
+\noindent
+It's worth noting that the shot noise amplitude depends on the laser power. We simplify and just use the DC:
+\begin{equation*}
+    S_{\text{shot}} = 2eZ^2\bar{I} = 2e\mathcal{R}Z^2\,(E_{ij}^2 + E_{ji}^2) \qquad [\text{V}^2/\text{Hz}]
+\end{equation*}
+The E-field intensity is converted to a voltage as the PD output. More noise is added in this process:
+\begin{align*}
+    V(t) &= \mathcal{R} Z \Big[ E_{ij}^2(1+{\color{red}\text{RIN}_{ij}(t)}) + E_{ji}^2(1+{\color{red}\text{RIN}_{ji}(t)}) \\
+    &\quad + 2E_{ij}E_{ji}\sqrt{(1+{\color{red}\text{RIN}_{ij}(t)})(1+{\color{red}\text{RIN}_{ji}(t)})}
+    \cos(\Delta\omega\, t + {\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{ji}(t)}) + {\color{teal}n_\text{shot}(t)} + {\color{ForestGreen}n_\text{dark}(t)}\Big]+ {\color{violet}n_\text{amp}(t)}
+\end{align*}
+Now, the phasemeter doesn't care about the DC, so that is disregarded. Let's write the PD voltage again without any DC terms.
+So basically, we have additive noise terms, direct phase noise and also noises that enter as amplitude modulation:
+\begin{align*}
+    V_\text{AC}(t) &= \underbrace{2\mathcal{R} Z \, E_{ij} E_{ji}
+    \cos(\Delta\omega\, t + {\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{ji}(t)})}_{\text{signal}}\\[6pt]
+    &+ \underbrace{\mathcal{R}  \,\left(Z{\color{teal}n_\text{shot}(t)}+{\color{ForestGreen}n_\text{dark}(t)}\right) + {\color{violet}n_\text{amp}(t)}}_{\text{(i) additive noise}}\\[6pt]
+    &+ \underbrace{\mathcal{R}Z\Big[E_{ij}^2{\color{red}\text{RIN}_{ij}(t)} + E_{ji}^2{\color{red}\text{RIN}_{ji}(t)}\Big]}_{\text{(ii) 1f-RIN: additive noise}}\\[6pt]
+    &+ \underbrace{2\mathcal{R} Z \, E_{ij} E_{ji}
+    \left(\tfrac{1}{2}{\color{red}\text{RIN}_{ij}(t)} + \tfrac{1}{2}{\color{red}\text{RIN}_{ji}(t)}\right)
+    \cos(\Delta\omega\, t + {\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{ji}(t)})}_{\text{(iii) 2f-RIN: amplitude modulation of beatnote}}
+\end{align*}
+\noindent
+Let's discuss the RIN a bit more. For LISA, the $1f$ RIN noise terms in the PD readout can be canceled via balanced detection. Secondly, for the $2f$ coupling, we assumed $\text{RIN} \ll 1$ so that the square root can be replaced by the linear terms instead. Now, in practice, since the phasemeters have a small bandwidth, not every part of the RIN ends up in the final PM readout. The $1f$ terms just couple around the heterodyne frequency. The $2f$ terms are multiplied with the heterodyne signal, which to first order is just a cosine, and this multiplication in Fourier space is a convolution which gives us delta terms at DC and $2f$ of $\text{RIN}$. So the $2f$ terms couple in the DC and $2f$ parts of the $\text{RIN}$ spectrum. 
+
+\subsection{Conversion to Phase Noise}
+For now, we skip the sidebands and complete the pipeline for the carrier first. Mainly, let's now convert all of this into a phase readout, though, and an IQ demodulator. Let's first just see how these noises behave, and then later, let's also add in the clock noise. So basically, we just have the signal term, and the other three are just additive noise. From the signals, for the perfect/noise-free phase measurement, we would get out ${\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{ji}(t)}$. For any additive noise, we can estimate the resulting phase noise using the general formula
+\begin{equation*}
+    \delta \phi  = \frac{n_Q(t)\cos\phi - n_I(t)\sin\phi}{A},
+\end{equation*}
+where $A$ is the strength of the original signal (in our case the heterodyne beatnote), $\phi$ is any offset phase or phase signal on top of the heterodyne frequency (so either the LFN or the GW signal), and $n(t)$ are the noise projections on to $\sin\omega t$ and $\cos\omega t$ (due to the IQ demodulation process). Both $A$ and $n$ should be in the same units; for a phasemeter, I think voltage units should make sense. So this gives us the instantaneous phase error. It's probably not very useful to analyze it any further. If we are looking at a noise that does not have a flat spectrum (in the range from DC to $2f_{\text{het}}$), then we have to look at the quadrature sum of the PSDs like so:
+\begin{equation*}
+    \tilde{\phi}(f) = \frac{1}{A}\sqrt{S_n(f+f_{\text{het}})+S_n(f-f_{\text{het}})}.
+\end{equation*}
+This is the exact same logic as the $2f$ RIN previously discussed. However, here the $2f$ (and DC) coupling comes from the demodulation process, whereas for the RIN, previously, it was the multiplication with the heterodyne signal. Also, since in our case $f_{\text{het}} > f$, the term with the minus sign is folded onto the other. Basically,
+\begin{equation} \label{toPhase}
+    \tilde{\phi}(f) = \frac{1}{A}\sqrt{S_n(f_{\text{het}}+f)+S_n(f_{\text{het}}-f)}.
+\end{equation}
+In our case
+\begin{equation*}
+    A = 2\mathcal{R} Z \, E_{ij} E_{ji},
+\end{equation*}
+where we have left out the heterodyne efficiency, which is just the geometric overlap of the interfering beams (and I guess their polarization as well). For shot noise and the transimpedance amplifier noises, we should just have
+\begin{align*}
+    {\color{teal}\sqrt{S_{\phi_\text{shot}}}}=&\frac{\sqrt 2 Z\sqrt{2e\mathcal{R}\,(E_{ij}^2 + E_{ji}^2)}}{2\mathcal{R} Z \, E_{ij} E_{ji}}=\frac{\sqrt{e\,(E_{ij}^2 + E_{ji}^2)}}{\sqrt \mathcal{R}\,E_{ij} E_{ji}}\\[5pt]
+    {\color{ForestGreen}\sqrt{S_{\phi_\text{dark}}}}=&\frac{\sqrt{2}{\color{ForestGreen}S_{\text{dark}}}}{A}\\[5pt]
+    {\color{violet}\sqrt{S_{\phi_\text{amp}}}}=&\frac{\sqrt 2{\color{violet}S_\text{amp}}}{A}
+\end{align*}
+For the dark current, since we never directly measure it, but we measure the corresponding voltage, we use the ASD in units of V/$\sqrt{\text{Hz}}$. We also assumed that all of these have a white noise spectrum. The latter two probably don't do the same degree as shot noise, but they also don't have a well-established frequency dependence either, and since we expect them to be rather low, there's no need to further analyze them. Okay, now we should also look at RIN. For RIN, we will not assume a white spectrum. For the 1f terms, we can write a post-PM ASD
+\begin{align*}
+    &{\color{red}\sqrt{S_{\phi_{\text{RIN},1f}}(f)}}=\\[4pt]
+    =&\frac{\mathcal{R}Z\sqrt{\left(E_{ij}^2{\color{red}\text{RIN}_{ij}(f+f_{\text{het}})}\right)^2 +\left(E_{ij}^2{\color{red}\text{RIN}_{ij}(f-f_{\text{het}})}\right)^2+\left(E_{ji}^2{\color{red}\text{RIN}_{ji}(f+f_{\text{het}})}\right)^2 +\left(E_{ji}^2{\color{red}\text{RIN}_{ji}(f-f_{\text{het}})}\right)^2}}{2\mathcal{R}Z\, E_{ij} E_{ji}}\\[7pt]
+    \approx&\frac{\sqrt{\left(E_{ij}^4+E_{ij}^4+E_{ji}^4+E_{ji}^4\right)}{\color{red}\text{RIN}(f_{\text{het}})}}{2\, E_{ij} E_{ji}}=\frac{\sqrt{E_{ij}^4+E_{ji}^4}}{\sqrt 2\, E_{ij} E_{ji}}\, {\color{red}\text{RIN}(f_{\text{het}})}.
+\end{align*}
+The approximation is justified if $f\ll f_{\text{het}}$ and RIN is flat over that section. To emphasize, the coupling from the heterodyne frequency happens due to the IQ-demodulation and is hence dependent on the frequency used for that (this is relevant for the sidebands). For LISA, 1f RIN should be canceled via balanced detection even before reaching the phasemeter to a certain degree.\\
+To finalize the phase noise conversion of the photodetector reading, we still have to look at the 2f RIN terms. For the pre-PM, we would write the PSD for the term as
+\begin{align*}
+    S_{\text{RIN},2f, \text{pre-PM}}(f) &= \mathcal{R} Z \, E_{ij} E_{ji}\left(S_{\text{RIN}}(f-f_{\text{het}})+S_{\text{RIN}}(f+f_{\text{het}})\right)\\[5pt]
+    &\rightarrow \mathcal{R} Z \, E_{ij} E_{ji}S_{\text{RIN}}(f+f_{\text{het}}), \quad f\in[f_{\text{het}}-\epsilon, f_{\text{het}}+\epsilon].
+\end{align*}
+Two things are important to note here (to see why we use only the term on the right side of the arrow). Firstly, for any noise to be picked up by the PM, it needs to be in a narrow band around the designated heterodyne frequency, i.e., something that will land in the range $[S_{\text{RIN},2f, \text{pre-PM}}(f_{\text{het}}-\epsilon); S_{\text{RIN},2f, \text{pre-PM}}(f_{\text{het}}+\epsilon)]$. Meaning if we now take into account the shift applied, we will either get the $S_{\text{RIN}}(0)$ or $S_{\text{RIN}}(2f_{\text{het}})$ term. Now, secondly, the DC term would introduce noise in the bandwidth $[S_{\text{RIN}}(-\epsilon), S_{\text{RIN}}(\epsilon)]$. Since we are dealing with real signals/noises and their spectra's negative side is the complex conjugate of the positive side, the DC terms cancel each other in phase. Here, the phasor illustration might make it clearer. Nevertheless, we proceed to the post-PM PSD.\\
+\newline
+We still have to apply the shift due to the multiplication by the signal at the PM. As a result, we get out the phase noise given by (\ref{toPhase}).
+\begin{align*}
+    S_{\text{RIN},2f}(f) =& \frac{\mathcal{R} Z \, E_{ij} E_{ji}}{A^2}\left[S_{\text{RIN},2f, \text{pre-PM}}(f-f_{\text{het}})+ S_{\text{RIN},2f, \text{pre-PM}}(f+f_{\text{het}})\right]=\\[6pt]
+    =& \frac{1}{4}\left[S_{\text{RIN}}(f)+S_{\text{RIN}}(f+2f_{\text{het}})\right]\\[6pt]
+    \rightarrow& \frac{1}{4}S_{\text{RIN}}(f+2f_{\text{het}}).
+\end{align*}
+Here we applied the same logic for the DC RIN as previously. So if we were to now include both lasers, the so-called 2f RIN PSD for the final PM readout is 
+\begin{equation*}
+    S_{\text{RIN},2f}(f)=\frac{S_{\text{RIN}, ij}(f+2f_{\text{het}})+S_{\text{RIN}, ji}(f+2f_{\text{het}})}{4}.
+\end{equation*}
+\newline
+Without any calculation, from Wissel we write
+\begin{equation*}
+    {\color{red}\sqrt{S_{\phi_{\text{RIN},2f}}(f)}} = \frac{\sqrt{\text{RIN}_{ij}^2(2f_{\text{het}})+\text{RIN}_{ji}^2(2f_{\text{het}})}}{\sqrt{8}}.
+\end{equation*}
+
+\noindent
+Note to self: if the amplitude noise has any frequency component different from the carrier frequency, it's on, that's when you get it coupling into phase noise, i.e., that's when the additive phasor has a different frequency than the phasor of interest. If we just have $(A + \delta A)$, and $\delta A = \text{const}$, then you don't get phase noise, but if there is any time dependence (and therefore spectral components), then you get resulting phase noise.\\
+\newline
+In addition, we also get the clock jitter $q_i$ that originates from the local USO and couples into the measurement in the PM ADC. There is also ADC noise, which we omit here as that can typically be corrected for via pilot tone correction with relative ease (lie). If we now come back to Fig.\ref{pic}, for the location \textbf{C}, disregarding all other noises for now, we include the clock noise as
+\begin{equation*}
+    \text{sci}_{ij}(t)=\mathbf{D}\phi_{ji}(t)-\phi_{ij}(t)-f_{\text{het}}\,{\color{orange}q_{i}(t)}.
+\end{equation*}
+Basically, it's already in the form of phase noise. I forgot to include the delay for every variable that has the subscript $ij$. However, it doesn't matter here, since we haven't gotten into the noise subtraction yet; right now we have just been looking at spectra of stationary noises so the time at which we look at them doesn't yet matter. I will start keeping track of the delays in the next subsubsection, where the clock jitter reference measurement (i.e., the sidebands) is discussed. This only applies to laser frequency and clock noises.
+
+\subsection{Sidebands}
+Before writing down the expressions, I'd like to go over some details. Firstly, for the sidebands, the overall power is multiplied by $J_1^2(m)$, where $J_1(m)$ is the value of the first-order Bessel function at the modulation depth ($m=0.53$). Technically, the same applies for the carrier, but the 0-th order Bessel function is to be used. The additive noises themselves (so the numerator part in equation (\ref{toPhase})) that we previously looked at scale with the total power, so their expressions don't change.\\
+\newline
+Secondly, we also have the modulation noise ${\color{cyan}N_{ij}(t)}$, which is a direct phase noise. We might also have some RAM, which should behave similarly to RIN, but we only get 1f-type coupling, as RAM \textit{is not broadband} (source: Claude). But since we will only see RAM as general modulation noise in our measurements anyway (as in we won't measure it separately unless necessary), we assume it is part of ${\color{cyan}N_{ij}(t)}$ for now (which it is, I guess I'm just saying we don't differentiate between the different causes of the modulation noise). For RIN, we only have to consider $f_{\text{het}}\rightarrow f_{\text{het}} \pm \Delta f^m$.\\
+\newline
+And thirdly, we have to consider the fact that the signal for the sidebands is the phase noise $\nu_{ij}^mq_i(t)$. So when extracting the differential timing jitters, we divide by the modulation frequency, which also means we divide the noise by this frequency. To remind me of this, I copied some of my own writing (really from the clock jitter paper) regarding the sidebands:
+\begin{equation*}
+\color{gray}
+\eta^{\text{SB}}_{ij} =
+\underbrace{%
+    \nu_{j i}^{m} \mathbf{D}_{ij} (\dot{q}_j + N_{j i}^{m})
+}_{\text{from SC $j$}}
+-
+\underbrace{%
+    \nu_{i j}^{m} (\dot{q}_i + N_{i j}^{m})
+}_{\text{from SC $i$}}
+-
+\underbrace{%
+    \dot{q}_i \left( f_{\text{het,}ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right)
+}_{\text{from the measurement on SC $i$}}.
+\end{equation*}
+where we have included modulation noise $N_{ij}^m$. But let's actually neglect it for now and continue with
+\begin{equation*}
+\color{gray}
+    \eta^{\text{SB}}_{ij}=\nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j
+-\nu_{i j}^{m} \dot{q}_i -\dot{q}_i \left( f_{\text{het,}ij} + \mathbf{D}_{ij} \nu_{j i}^{m} - \nu_{i j}^{m} \right) = \nu_{j i}^{m} \mathbf{D}_{ij} \dot{q}_j -\dot{q}_i \left( f_{\text{het,}ij} + \mathbf{D}_{ij} \nu_{j i}^{m} \right)
+\end{equation*}
+instead. We move on to the correcting variable
+\begin{equation}
+\color{gray}
+    r_{ij}=\frac{\eta^{\text{SB}}_{ij}-\eta_{ij}}{\color{black}\nu_{ji}^m} = \mathbf{D}_{ij} \dot{q}_j-\dot{q}_i. \label{rij}
+\end{equation}
+We assumed here that the modulating frequency $\nu_{j i}^{m}$ itself is constant in time. [End of copied text]\\
+\newline
+So, from the expression for the correcting variable, we see that any noise in the phase measurements will be divided by the modulating frequency (not the heterodyne frequency as I would have previously assumed). To reiterate, the noises don't care about the frequency used; they stay the same in the phase units, but the clock noise scaling determines the factor we divide EVERYTHING by later. ez.\\
+\newline
+For the sideband, we write
+\begin{equation*}
+    \text{sci}_{ij}^{\text{SB}+}(t) = \mathbf{D}_{ij}{\color{blue}\phi_{ji}(t)}-{\color{blue}\phi_{ij}(t)}+\nu_{j i}^{m} \mathbf{D}_{ij} {\color{orange}\dot{q}_j(t)} -{\color{orange}\dot{q}_i (t)}\left( f_{\text{het,}ij} + \nu_{j i}^{m} \right) + \mathbf{D}_{ij}\nu_{ij}^{m}{\color{cyan}N_{ij}}+ {\color{cyan}\nu_{j i}^{m}N_{ji}} + {\color{red}N_{\text{RIN}}}+ {\color{teal}N_{\text{shot}}}+ {\color{ForestGreen}N_{\text{dark}}}+ {\color{violet}N_{\text{amp}}}.
+\end{equation*}
+The laser phase noise is common with the carrier or the other sideband, whichever is used to form the correcting variables. Other noises, however, double. This is obvious for shot noise, dark noise, and the amplifier noise (and really any noise arising on or after the photodetector). For RIN, however, since it is obviously correlated, there might be some cancellation between the sideband and the carrier (or the other sideband). I give thoughts on this in the next subsubsection.\\
+\newline
+From the expression above, we can notice that all the noise PSDs we looked at previously will be scaled by $1/\nu^m\,J_1^2(m)$. The PSD for the modulation noise is given by an analytic approximation (Hartwig's thesis, appendix):
+\begin{equation*}
+    S_M(f) = \left(1 \times 10^{-14}\,\frac{\mathrm{s}}{\sqrt{\mathrm{Hz}}}\right)^2
+\left[1 + \left(\frac{1.5 \times 10^{-2}\,\mathrm{Hz}}{f}\right)^2\right].
+\end{equation*}
+Another interesting point, which I did not think about before, is that the sideband measurement doesn't suffer from the phase noise of the USO noise coupling from the ADC, as this is directly canceled by a part of the modulation. I'm currently not sure how to think about it -- I see that happening in the row about eq. (\ref{rij}), But currently, it just seems like a neat math thing to me. Which ultimately, a lot of this is. It probably makes the most sense when thought about in units of phase.
+We now also give the USO PSD from the same source:
+\begin{equation*}
+    S_{N_{\mathrm{iq}}}(f) = (1 \times 10^{-14})^2 \, f^{-3}.
+\end{equation*}
+
+\subsubsection{Brief discussion on the differences between the lower and the higher sideband}
+For LISA, clock jitter subtraction is done by using the difference between the higher and lower sideband phase readouts from the science interferometer. This correction assumes, that these sidebands contain the exact same data. So for example, the modulation phase noise $\color{cyan}N_{ij}$ will ultimately look exactly like clock jitters $\color{orange}\dot{q}_i$. But if there was now some noise that 
+
+\subsubsection{RIN cancellation in the correcting variables}
+Firstly, due to the order of magnitude of RIN, $10^{-8}/\sqrt{\text{Hz}}$, compared to some of the other noises, I don't think it matters whether it cancels or not, but out of interest, I will see what I come up with. We first write out the photocurrent for the carrier, considering RIN as the only noise:
+\begin{align*}
+\frac{I^{\text{carrier}}(t)}{\mathcal{R}} &= J^2_0(m)\left(E_{ij}\sqrt{1+{\color{red}\text{RIN}_{ij}(t)}}\,e^{i\omega_{ij} t} + E_{ji}\sqrt{1+{\color{red}\text{RIN}_{ji}(t)}}\,e^{i\omega_{ji} t}\right)\\
+&\quad\times\left(E_{ij}\sqrt{1+{\color{red}\text{RIN}_{ij}(t)}}\,e^{-i\omega_{ij} t} + E_{ji}\sqrt{1+{\color{red}\text{RIN}_{ji}(t)}}\,e^{-i\omega_{ji} t}\right) \\[6pt]
+&= E_{ij}^2(1+{\color{red}\text{RIN}_{ij}(t)}) + E_{ji}^2(1+{\color{red}\text{RIN}_{ji}(t)})\\
+&\quad + 2E_{ij}E_{ji}\sqrt{(1+{\color{red}\text{RIN}_{ij}(t)})(1+{\color{red}\text{RIN}_{ji}(t)})}\cos(\Delta\omega\, t),
+\end{align*}
+and for the upper sideband
+\begin{align*}
+\frac{I^{\text{SB}+}(t)}{\mathcal{R}} = &J^2_1(m)E_{ij}^2(1+{\color{red}\text{RIN}_{ij}(t)}) +J^2_1(m) E_{ji}^2(1+{\color{red}\text{RIN}_{ji}(t)})\\
+&\quad + 2J^2_1(m)E_{ij}E_{ji}\sqrt{(1+{\color{red}\text{RIN}_{ij}(t)})(1+{\color{red}\text{RIN}_{ji}(t)})}\cos((\Delta\omega + \Delta\omega^m)\, t),
+\end{align*}
+Okay, we already see that due to the different scaling, if we subtract the carrier from the sideband, we are left with residual RIN. Now, since this subtraction is done after the conversion to phase, we need to look at the phase noise caused by RIN at the sideband readouts. Since the conversion to phase noise is non-linear and I believe also dependent on the instantaneous phase, I'm quite sure there is no cancellation of any additive noises in the final data streams.
+
+
+\section{miniLISA}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/miniLISAarm.pdf}
+    \caption{Labratory setup to replicate the LISA arm readouts}\label{pic}
+\end{figure}
+\noindent
+We now try to go through the same process with the miniLISA setup. The two main changes are the addition of the reference oscillator and the lower modulation frequency. However, the laser powers are different, so we aren't so concerned with shot noise (as it hopefully will turn out after this endeavour). And, of course, there is the delay line. We will first assume it, and the corresponding ADCs and DACs add no additional noise. Once that is done, we should also see what happens if the delay is not as programmed, i.e., there are delay programming errors or timing errors on the board. And then we should also analyse how timing jitters added at the ADCs and DACs behave -- both correlated reference clock jitters as well as the uncorrelated noises from said sources. 
+
+\subsection{Readout Noises, Perfect Delay Line}
+Once again, we can start with the photodetector readings; in this case, they are still on board the supposed SC $i$. So the beatnote between the reference oscillator and the spacecraft laser gets sampled by the ADC and then converted to phase. So we essentially can just borrow the work from the previous section. We start with beams
+\begin{align}
+\mathbf{A}:&\quad\,E_{i}\exp[i(\omega_{i} t + {\color{blue}\delta\phi_{i}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{i}^m (t + {\color{orange}q_{i}(t)} + {\color{cyan}N_{i}(t)})]\right),
+  \label{eq:fieldA}\\[4pt]
+\mathbf{A'}:&\quad
+ E_{ji}\exp[i(\omega_{\text{REF}}t + {\color{blue}\delta\phi_{\text{REF}
+ }(t)})]
+\end{align}
+So these are the two beams that will be interfering before the delay line. The delay line looks at the carrier and the sidebands separately. We first write down what enters the carrier pipeline
+\begin{align*}
+    V_\text{AC}(t) &= 2\mathcal{R} Z \, E_{i} E_{\text{REF}}
+    \cos(\Delta\omega_{i,\text{REF}}\, t + {\color{blue}\delta\phi_{ij}(t)} - {\color{blue}\delta\phi_{\text{REF}}(t)})\\[6pt]
+    &+ \mathcal{R}  \,\left(Z{\color{teal}n_\text{shot}(t)}+{\color{ForestGreen}n_\text{dark}(t)}\right) + {\color{violet}n_\text{amp}(t)}\\[6pt]
+    &+ \mathcal{R}Z\Big[E_{i}^2{\color{red}\text{RIN}_{i}(t)} + E_{\text{REF}}^2{\color{red}\text{RIN}_{\text{REF}}(t)}\Big]\\[6pt]
+    &+ 2\mathcal{R} Z \, E_{i} E_{\text{REF}}
+    \left(\tfrac{1}{2}{\color{red}\text{RIN}_{i}(t)} + \tfrac{1}{2}{\color{red}\text{RIN}_{\text{REF}}(t)}\right)
+    \cos(\Delta\omega\, t + {\color{blue}\delta\phi_{i}(t)} - {\color{blue}\delta\phi_{\text{REF}}(t)})
+\end{align*}
+And we already know how these noises couple into the phase noise... as PSD. Question: Might it actually be useful to also look at the time domain data streams? Answer: Maybe? and we can do that by just using a placeholder phase noise term $\phi_{\text{input}}$. So now we are in the delay line, and the signal is converted to phase. We write it for both spacecraft as such
+\begin{align*}
+    \text{sci}_{i,\text{input}}^\text{c}(t) = \Delta\nu_{i,\text{REF}}\, t + {\color{blue}\phi_{i}(t)}-{\color{blue}\phi_{\text{REF}}(t)} + {\color{red}N_{\text{RIN}, i,\text{REF}}(t)}+ {\color{teal}N_{i,\text{PD}}},\\[5pt]
+    \text{sci}_{j,\text{input}}^\text{c}(t) = \Delta\nu_{j,\text{REF}}\, t + {\color{blue}\phi_{j}(t)}-{\color{blue}\phi_{\text{REF}}(t)} + {\color{red}N_{\text{RIN}, j,\text{REF}}(t)}+ {\color{teal}N_{j,\text{PD}}}
+\end{align*}
+Later we see how the ADC noise might also couple here. I will also note that explicit time dependence is only used for noises that might cancel to some extent. Also, the RIN phase noise term here represents both 1f and 2f mechanisms. But now we also write out the equivalent sideband representation in the delay line.
+\begin{align*}
+    \text{sci}_{i,\text{input}}^{\text{SB}+}(t) = \Delta\nu_{i,\text{REF}}\, t + {\color{blue}\phi_{i}(t)}-{\color{blue}\phi_{\text{REF}}(t)} + \nu_{i}^m (t+{\color{orange}\dot{q}_i(t)}) +\nu_{i}^m {\color{cyan}N_{i}}+  {\color{red}N_{\text{RIN}, i,\text{REF}}(t)}+ {\color{teal}N_{i,\text{PD}}},\\[5pt]
+    \text{sci}_{j,\text{input}}^{\text{SB}+}(t) = \Delta\nu_{j,\text{REF}}\, t + {\color{blue}\phi_{j}(t)}-{\color{blue}\phi_{\text{REF}}(t)} + \nu_{j}^m (t+{\color{orange}\dot{q}_j(t)}) +  \nu_{j}^m{\color{cyan}N_{j}}+  {\color{red}N_{\text{RIN}, j,\text{REF}}(t)}+ {\color{teal}N_{j,\text{PD}}}
+\end{align*}
+Now, from here, it looks like any noise that gets coupled into phase noise at this point is indistinguishable from laser phase noise and should therefore cancel via TDI. Another important thing to notice is that the sideband will propagate through the delay line with the frequency $\Delta\nu_{i,\text{REF}}+ \nu_{i}^m$, and this value cannot be bigger than 60 MHz. Let's now see what the LISA-like phase signal would be. We neglect the carrier now as it will eventually be demodulated by the phasemeter, and in this section, we are not interested in any noise added along the way (except the clock noise at the ADC, of course).
+\begin{align*}
+    \text{sci}_j^\text{c}(t) = {\color{blue}\delta \phi_{i}(t-\tau)}-{\color{blue}\delta \phi_{\text{REF}}(t-\tau)} + {\color{gray}N_{i,\text{in}}(t-\tau)} - \left({\color{blue}\delta \phi_{j}(t)}-{\color{blue}\delta \phi_{\text{REF}}(t)} + {\color{gray}N_{j,\text{in}}(t)}\right) + \Delta\nu_{ij}{\color{orange}\dot{q}_j(t)}.
+\end{align*}
+We merged every other input noise here. And we look at the sidebands similarly:
+\begin{align*}
+    \text{sci}_j^{\text{SB}+}(t) = &{\color{blue}\delta \phi_{i}(t-\tau)}-{\color{blue}\delta \phi_{\text{REF}}(t-\tau)} + \nu_{i}^m {\color{orange}\dot{q}_i(t-\tau)} +  \nu_{i}^m{\color{cyan}N_{i}(t-\tau)}+  {\color{gray}N_{i,\text{in}}(t-\tau)} -\\
+    &-\left({\color{blue}\delta \phi_{j}(t)}-{\color{blue}\delta \phi_{\text{REF}}(t)} + \nu_{j}^m{\color{orange}\dot{q}_j(t)} +  \nu_{j}^m{\color{cyan}N_{j}(t)}+  {\color{gray}N_{j,\text{in}}(t)}\right)+ \left(\Delta\nu_{ij}+\Delta\nu^m_{ij}\right){\color{orange}\dot{q}_j(t)}=\\[6pt]
+    = &{\color{blue}\delta \phi_{i}(t-\tau)}-{\color{blue}\delta \phi_{\text{REF}}(t-\tau)} + \nu_{i}^m {\color{orange}\dot{q}_i(t-\tau)} +  \nu_{i}^m{\color{cyan}N_{i}(t-\tau)}+  {\color{gray}N_{i,\text{in}}(t-\tau)} -\\
+    &-\left({\color{blue}\delta \phi_{j}(t)}-{\color{blue}\phi_{\text{REF}}(t)} +  \nu_{j}^m{\color{cyan}N_{j}(t)}+  {\color{gray}N_{j,\text{in}}(t)}\right)+ \left(\Delta\nu_{ij}+\nu^m_{i}\right){\color{orange}\dot{q}_j(t)}
+\end{align*}
+These signals are created by the mixers in the schematic above. Real RF mixers generate the sum and difference frequencies, and the sum must be filtered. In our case, the mixing is done in the FPGA by just subtracting the two signals. Hence, no low-pass filtering is needed.\\
+\newline
+For the carrier beatnote, we really don't care about the noises covered by the gray term, as they should be canceled by TDI and are likely way quieter than laser frequency noise. However, since they are not directly correlated between the carrier and sidebands, and the sidebands aren't treated with TDI (maybe they should be?), here the noises in gray should be considered, especially as we don't really get a good signal boost from the modulation frequency. Furthermore, in our case, the readout noises (RIN, shot noise, dark noise, and amplifier noise, or like any electronic noise) are doubled compared to the LISA case.\\
+\newline
+Borrowing from the last section, we write out the calculation for these phase noises again. We start with the noises that ultimately add up to the gray $\text{in}$ noises. These are noises that (in power units) are added twice to the readout. We write them for the upper sideband; for the lower sideband, the difference would be the sign before the modulation frequency (if present in the expression).
+
+\begin{align*}
+    {\color{teal}\sqrt{S_{\phi_\text{shot}}}}
+        &= \frac{\sqrt{2}\,Z\sqrt{2e\mathcal{R}(E_{ij}^2+E_{ji}^2)}}{2\mathcal{R}Z\,E_{ij}E_{ji}}
+         = \frac{\sqrt{e(E_{ij}^2+E_{ji}^2)}}{\sqrt{\mathcal{R}}\,E_{ij}E_{ji}}
+    \\[6pt]
+    {\color{ForestGreen}\sqrt{S_{\phi_\text{dark}}}}
+        &= \frac{\sqrt{2}\,n_\text{dark}}{A}
+         = \frac{\sqrt{2}\,n_\text{dark}}{2\mathcal{R}Z\,E_{ij}E_{ji}}
+    \\[6pt]
+    {\color{violet}\sqrt{S_{\phi_\text{amp}}}}
+        &= \frac{\sqrt{2}\,n_\text{amp}}{A}
+         = \frac{\sqrt{2}\,n_\text{amp}}{2\mathcal{R}Z\,E_{ij}E_{ji}}
+    \\[6pt]
+    {\color{red}\sqrt{S_{\phi_{\text{RIN},1f}}}(f)}
+        &= \frac{\sqrt{E_{ij}^4+E_{ji}^4}}{\sqrt{2}\,E_{ij}E_{ji}}\,
+           \text{RIN}(f_\text{het}+\Delta f_\text{mod})
+    \\[6pt]
+    {\color{red}\sqrt{S_{\phi_{\text{RIN},2f}}}(f)}
+        &= \frac{\sqrt{{\text{RIN}}_{ij}^2(2(f_\text{het}+\Delta f_\text{mod}))
+                     + {\text{RIN}}_{ji}^2(2(f_\text{het}+\Delta f_\text{mod}))}}{\sqrt{8}}
+\end{align*}
+
+
+
+\begin{align*}
+    {\color{orange}\sqrt{S_{\phi_\text{mod}}}(f)}
+        &= \frac{\sqrt{S_M(f)}}{J_1(m)/J_0(m)}
+         \approx \sqrt{S_M(f)}\cdot\frac{J_0(m)}{J_1(m)}
+    \\[6pt]
+    {\color{blue}\sqrt{S_{\phi_\text{USO}}}(f)}
+        &= f_\text{het}\,\sqrt{S_{q_i}(f)}
+         = f_\text{het}\cdot\frac{1\times10^{-14}}{\sqrt{f^3}}
+\end{align*}
+
+
+
+
+\end{document}  
+
+\begin{landscape}
+\renewcommand{\arraystretch}{1.45}
+\setlength{\tabcolsep}{5pt}
+\small
+
+
+\begin{longtable}{
+    L{2.5cm}   % Element
+    C{3.6cm}   % Frequency
+    C{1.8cm}   % Noise
+    C{2.9cm}   % Function
+    L{11.5cm}   % Notes
+}\\
+\caption{%
+    The shape function is
+    $\mathcal{S}(f;\,f_\mathrm{k}) = \sqrt{1 + (f_\mathrm{k}/f)^4}$.
+} \\
+\toprule
+\rowcolor{white}
+\textbf{Element}
+    & \textbf{Associated Frequency}
+    & \textbf{Associated Noise}
+    & \textbf{Transfer Function}
+    & \textbf{Notes}  \\
+\midrule
+\endfirsthead
+
+\multicolumn{5}{l}{\small\textit{Table~\ref{tab:lisa_frequencies} continued\ldots}}\\[2pt]
+\toprule
+\rowcolor{white}
+\textbf{Element}
+    & \textbf{Associated Frequency}
+    & \textbf{Associated Noise}
+    & \textbf{Transfer Function}
+    & \textbf{Associated } \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\small\textit{Continued on next page\ldots}}\\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+\grouprowB{Optical Input}
+\rA LFN 
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & Main noise source. No associate transfer function actually \\[2pt]
+
+\rB RIN 
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    &  \\[2pt]
+
+\rA PLL noise 
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & Main noise source. No associate transfer function actually \\[2pt]
+    
+\rB EOM 
+    & $\nu_{ij}^m = \mathcal{O}(10 \text{MHz})$
+    & $N_{ij}$
+    & doesn't exist like that
+    & RAM noise, fiber noise. straight to phase noise\\[2pt]
+
+\rA PD -- dark current
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & additive noise \\[2pt]
+    
+\rB PD -- transimpedance amplifier 
+    & $\nu_{ij}^m = \mathcal{O}(10 \text{MHz})$
+    & $N_{ij}$
+    & doesn't exist like that
+    & adds noise? also amplifies other noises \\[2pt]
+
+\rA PD -- shot noise
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & additive noise \\[2pt]
+
+\grouprowB{Clock Noise Transfer Chain}
+\rA PD -- contributions to SB
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & additive noise \\[2pt]
+
+\rB timing jitter bw sideband vs ultimate reference clock
+    & $\nu_{ij}$
+    & $\delta \phi_{ij}$
+    & $30 \cdot \mathcal{S}(f;\,2\,\mathrm{mHz})$
+    & coming from cabling, frequency converters \\[2pt]
+
+\grouprowB{Delay Line}
+
+\rA ADC 
+    & $\nu_{ij}^m = \mathcal{O}(10 \text{MHz})$
+    & $N_{ij}$
+    & doesn't exist like that
+    & RAM noise, fiber noise, \\[2pt]
+    
+\rB Noise Floor 
+    & $\nu_{ij}^m = \mathcal{O}(10 \text{MHz})$
+    & $N_{ij}$
+    & doesn't exist like that
+    & RAM noise, fiber noise, \\[2pt]
+
+
+\rA Additive noise @ input 
+    & 
+    & 
+    & 
+    & what happens to additive noise coming from the optical input \\[2pt]
+    
+\rB Mixer
+    & $\nu_{ij}^m = \mathcal{O}(10 \text{MHz})$
+    & $N_{ij}$
+    & doesn't exist like that
+    & RAM noise, fiber noise, \\[2pt]
+    
+\rA DAC 
+    & 
+    & 
+    & 
+    &  \\[2pt]
+
+\grouprowB{Phasemeter}
+
+\rA Additive noise @ input 
+    & 
+    & 
+    & 
+    & what happens to additive noise coming from the optical input \\[2pt]
+    
+\rB ADC
+    & 
+    &
+    & 
+    & \\[2pt]
+
+    
+\end{longtable}
+
+\end{landscape}
+
+

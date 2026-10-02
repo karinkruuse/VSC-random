@@ -1,0 +1,709 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage[table,pdftex,dvipsnames]{xcolor}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xargs} 
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{physics}
+
+
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\geometry{margin=2cm}
+
+
+\definecolor{groupbg}{gray}{0.82}
+\definecolor{rowA}{gray}{1.00}
+\definecolor{rowB}{gray}{0.94}
+
+\newcommand{\grouprowA}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{6}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+\newcommand{\grouprowB}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{6}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+\newcommand{\rA}{\rowcolor{rowA}}
+\newcommand{\rB}{\rowcolor{rowB}}
+
+\renewcommand{\grouprowB}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{5}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+
+\title{Clock Noise Transfer with miniLISA}
+
+%\newcommand\Dapprox{\stackrel{\mathbf{D}\nu(t) = \nu(t)}{=}}
+
+\begin{document}
+
+\maketitle
+LISA uses the sidebands to transfer the clock noise between the satellites. Later these measurements can be used to "correct" the phase noise introduced by the clocks. It can also be used to synchronize the clocks (or phasemeter data streams, rather). MiniLISA needs to reproduce this. Currently, due to the ADCs on the delay line boards, the upper sideband shouldn't be at a frequency higher than 60 MHz. So let's analyze what performance we might get with such a frequency. We will see that due to additional phase noises, this will not result in LISA-like performance. We also analyze ways of using a GHz-level modulation.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/miniLISAarm.pdf}
+    \caption{Labratory setup to replicate the LISA arm readouts}\label{pic}
+\end{figure}
+\noindent
+
+In Table 2, we see all sorts of noises that contribute to the ultimate sideband-sideband phase noise. The very first row is the actual signal in that measurement -- the source clock jitter. Everything else is noise that needs to be as low as possible. In Figure 1, we see the one-arm measurement for miniLISA. It should be noted that the delay lines in this case would, in a typical case, be on separate boards. Though it might be useful to also analyze a topology where two delay lines constituting one arm are on the same board. 
+
+
+
+\begin{longtable}{p{2.2cm} p{2.2cm} p{12cm}}
+\caption{%
+    Symbols and parameters used in converting between natural noise units
+    and phase noise.
+} \label{tab:symbols} \\
+\toprule
+\rowcolor{white}
+\textbf{Symbol} & \textbf{Value} & \textbf{Description} \\
+\midrule
+\endfirsthead
+
+\multicolumn{2}{l}{\small\textit{Table~\ref{tab:symbols} continued\ldots}} \\[2pt]
+\toprule
+\rowcolor{white}
+\textbf{Symbol} & \textbf{Value} & \textbf{Description} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{2}{r}{\small\textit{Continued on next page\ldots}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+\rA $P_\mathrm{beam}$ & 5 mW & Beam power (on PD there will be two) \\[2pt]
+\rB $f_\mathrm{het}$ & 18 MHz & Heterodyne beatnote frequency \\[2pt]
+\rA $\nu_\mathrm{mod}$ & 10 MHz  & Modulating frequency \\[2pt]
+\rB T & 295 K & Temperature \\[2pt]
+\rA R & 0.65 A/W & PD responsivity. This is basic InGaAs \\[2pt]
+\rB Z & 50 $\Omega$ & PD resistor value (impedance). Gain V/A \\[2pt]
+
+\end{longtable}
+
+\newgeometry{margin=0.5cm, headheight=0pt, headsep=0pt, footskip=0pt}
+
+\begin{landscape}
+
+\renewcommand{\grouprowB}[1]{%
+    \rowcolor{groupbg}%
+    \multicolumn{5}{l}{\textbf{\textsc{#1}}} \\[0pt]%
+}
+
+\begin{longtable}{
+    >{\raggedright\arraybackslash}p{4.5cm}   % Noise source
+    >{\raggedleft\arraybackslash}p{2cm}   % Value / ASD (natural units)
+    >{\centering\arraybackslash}p{1.6cm}     % Units
+    >{\centering\arraybackslash}p{2cm}   % Converted phase noise
+    >{\raggedright\arraybackslash}p{12cm}   % Notes
+}
+\caption{%
+    Candidate noise sources contributing to the clock-sideband phase readout,
+    with approximate conversion to phase noise.
+    The shape function is
+    $\mathcal{S}(f;\,f_\mathrm{k}) = \sqrt{1 + (f_\mathrm{k}/f)^n}$. 
+} \label{tab:noise_sources} \\
+\toprule
+\rowcolor{white}
+\textbf{Noise source}
+    & \textbf{Value}
+    & \textbf{Units}
+    & \textbf{$\mathrm{cyc}/\sqrt{\mathrm{Hz}}$}
+    & \textbf{Notes} \\
+\midrule
+\endfirsthead
+
+\multicolumn{5}{l}{\small\textit{Table~\ref{tab:noise_sources} continued\ldots}} \\[2pt]
+\toprule
+\rowcolor{white}
+\textbf{Noise source}
+    & \textbf{Value}
+    & \textbf{Units}
+    & \textbf{$\mathrm{cyc}/\sqrt{\mathrm{Hz}}$}
+    & \textbf{Notes} \\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{5}{r}{\small\textit{Continued on next page\ldots}} \\
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+%--- Signal generation ---
+\grouprowB{Sideband generation}
+
+\rA Clock (USO) timing jitter
+    & $6\cdot 10^{-9}$
+    & $\mathrm{s}/\sqrt{\mathrm{Hz}}$
+    & $6\cdot 10^{-2}$
+    & This is what needs to be preserved with high fidelity. \\[2pt]
+
+\rB Timing error from synth.
+    & ---
+    & $\mathrm{s}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & Need to figure out the limits. Basically should directly compare to the USO noise. $\nu_{\text{mod}}$ for conversion.\\[2pt]
+
+\rA Noise from Cables
+    & ---
+    & ---
+    & ---
+    & Check some models. \\[2pt]
+    
+\rB Modulator noise
+    & $10^{-5}$
+    & $\mathrm{cyc}/\sqrt{\mathrm{Hz}}$
+    &  $10^{-5}$
+    & Measured. \\[2pt]
+
+\rA Residual amplitude modulation
+    & ---
+    & $\mathrm{cyc}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & check EOM's RAM spec. This should technically already be in the previous one, but it only couples into the measurement at the phasemeter. \\[2pt]
+
+%--- Optical readout ---
+\grouprowB{Optics and  readout -- $N_{PD}$}
+
+\rA Temperature-induced fiber noise
+    & ---
+    & $\mathrm{m}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & Check some models.  \\[2pt]
+
+\rB Shot noise
+    & $4.56 \cdot 10^{-11}$
+    & $\mathrm{A}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & $\sqrt{2eI_{\text{DC}}}=\sqrt{4eRP_{\text{beam}}}$. Uniform spectrum \\[2pt]
+
+\rA Johnson--Nyquist noise
+    & 
+    & $\mathrm{A}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & $\sqrt{4k_BT f_\mathrm{BW}/Z}$. Frequency dependence\\[2pt]
+
+\rB Electrical noise in photodetector (TIA)
+    & ---
+    & $\mathrm{V}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & \\[2pt]
+
+\rA RIN-to-phase coupling
+    & $10^{-7}$
+    & $1/\sqrt{\mathrm{Hz}}$
+    & ---
+    & This is close to 10x the measured value for higher frequencies \\[2pt]
+
+\rB Stray light / backscatter 
+    & ---
+    & ---
+    & ---
+    & No idea \\[2pt]
+
+%--- Delay line ---
+\grouprowB{Delay line}
+
+\rA ADC/DAC jitter
+    & ---
+    & ---
+    & ---
+    & This technically is already counted in the baseline, so the separate line here is just informative \\[2pt]
+
+\rB frequency mismatch contribution
+    & ---
+    & ---
+    & ---
+    & Should be estimated. How much is this covered in the baseline? It's probably covered.\\[2pt]
+    
+\rA Delay line baseline
+    & $5\cdot10^{-5}$
+    & $\mathrm{cyc}/\sqrt{\mathrm{Hz}}$
+    & $2\cdot10^{-5}$
+    & there is some noise in the mixed signal that is not there in the pure undelayed signal. \\[2pt]
+
+
+%--- Phasemeter ---
+\grouprowB{Phasemeter}
+
+
+\rB Moku channel differential noise
+    & ---
+    & $\mathrm{cyc}/\sqrt{\mathrm{Hz}}$
+    & ---
+    & Easy measurement. First approximation for the overall noise our PM will add. \\[2pt]
+
+\end{longtable}
+
+\end{landscape}
+
+\newgeometry{margin=2cm}
+
+\section*{MHz sideband performance}
+\subsection*{Noises in raw data}
+
+We write the electric fields of spacecraft $i$ and the reference:
+\begin{align*}
+\mathbf{A}:&\quad\,E_{i}\exp[i(\omega_{i} t + {\color{blue}\delta\phi_{i}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{i}^m (t + {\color{orange}q_{i}(t)} + {\color{red}q_{N,i}(t)})+ {\color{purple}N_{\text{mod},i}(t)}]\right),
+  \\[4pt]
+\mathbf{A'}:&\quad
+ E_{i}\exp[i(\omega_{r}t + {\color{blue}\delta\phi_{r}(t)})]
+\end{align*}
+Here, we have taken into account the laser frequency noise, USO timing jitter, and any timing jitter added on top of the USO timing jitter as it is converted to the modulating tone. For a modulating frequency of 10 MHz, this would essentially be just noise from the cable. But for any other converted frequency, there will be noise from the conversion process. We also included the modulation noise that is added by the modulator as phase noise. From these fields, we get three beatnotes that are all measured by the delay line board. The signals propagating within the delay board, excluding the LFN, should be
+\begin{align*}
+    \phi^{c}&=\Delta \omega_i t - \Delta \omega_i({\color{green}\epsilon_{i}(t)}+ {\color{cyan}q_{ADC,i}(t)}) \\
+    \phi^{SB+}&=\Delta\omega_i^{SB+}t + \omega_i^{m}({\color{orange}q_{i}(t)} + {\color{red}q_{N,i}(t)})- \Delta \omega_i^{SB+}({\color{green}\epsilon_{i}(t)} + {\color{cyan}q_{ADC,i}(t)}) +  {\color{purple}N_{\text{mod},i+}} +  {\color{teal}N_{\text{PD},i+}}+ {\color{violet}N_{ADC,i+}(t)}\\
+    \phi^{SB-}&=\Delta\omega_i^{SB-}t - \omega_i^{m}({\color{orange}q_{i}(t)} + {\color{red}q_{N,i}(t)}) -  \Delta\omega_i^{SB-}({\color{green}\epsilon_{i}(t)} + {\color{cyan}q_{ADC,i}(t)})+{\color{purple}N_{\text{mod},i-}} +  {\color{teal}N_{\text{PD},i-}}+ {\color{violet}N_{ADC,i-}(t)}
+\end{align*}
+This is, of course, not an exhaustive list of noises. All noises that appear with either a + or a - sign are uncorrelated stochastic noises and can not be canceled out, but only suppressed. And the noises here are actually amalgamations of several other noises listed in the table above. I'll point out that the delay line ADCs will add phase noise due to the board clock -- this is something we have already seen, and we can even estimate the clock noise ASD. On top of the source clock noise, they will add further timing noise that MIGHT be correlated between the channels and can be corrected for via a pilot tone correction. This is my hope at the time of writing. For example, if the reference voltage in the ADC is noisy, that should be seen by the signal and the PT. However, the ADCs will definitely also add uncorrelated phase noise, whose magnitude I currently do not know. Let's also try to add the noises coming from the output. We get more noise from the board clock in the DAC, and a new coupling of the USO jitters. Note, we also bring frequency $\omega_j$ into the mix now, so pay attention. Some of the $j$ terms cancel out, some don't.
+\begin{align*}
+    \phi^{c}&=\Delta \omega_{ij}{\color{orange}q_{i}(t)} - \Delta \omega_i({\color{green}\epsilon_{i}(t-\tau)}+ {\color{cyan}q_{ADC,i}(t-\tau)}+{\color{green}\epsilon_{i}(t)}+ {\color{magenta}q_{DAC,i}(t)})
+\end{align*}
+\begin{align*}
+    \phi^{SB+}&= \omega_i^{SB}({\color{orange}q_{i}(t-\tau)} + {\color{red}q_{N,i}(t-\tau)})- \Delta \omega_i^{SB}({\color{green}\epsilon_{i}(t-\tau)} - {\color{cyan}q_{ADC,i}(t-\tau)}-{\color{green}\epsilon_{i}(t)}- {\color{magenta}q_{DAC,i}(t)})+\\
+    &+{\color{purple}N_{\text{m},i+}} +  {\color{teal}N_{\text{PD},i+}}+ {\color{violet}N_{ADC,i+}(t)}
+\end{align*}
+\begin{align*}
+    \phi^{SB-}&= - \omega_i^{SB}({\color{orange}q_{i}(t-\tau)} + {\color{red}q_{N,i}(t-\tau)}) -  \Delta\omega_i^{SB}({\color{green}\epsilon_{i}(t-\tau)} - {\color{cyan}q_{ADC,i}(t-\tau)}-{\color{green}\epsilon_{i}(t)}- {\color{magenta}q_{DAC,i}(t)})+\\
+    &+{\color{purple}N_{\text{m},i-}} +  {\color{teal}N_{\text{PD},i-}}+ {\color{violet}N_{ADC,i-}(t)}
+\end{align*}
+This needs checking. But basically, $\omega_i^{m}$ is the modulating frequency and $\Delta\omega_i^{SB}$ is the frequency at which the sideband signal sits on the PD (which is right in front of the delay line input). Based on this, we can already get some estimates for what would be acceptable noise levels.
+
+\subsection*{Noise Levels in Raw Data}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/oscillator_phase_noise.png}
+    \caption{Two estimations for the Rb standard noise ASD. Carrier was at 10 MHz.}\label{pic}
+\end{figure}
+On the graph here, we have two estimations for the USO noise of the miniLISA setup. To get meaningful cancellation, the other noises should be lower. The blue line is an extrapolation based on the 4 red dots and a model ChatGPT offered. The green measurement comes from a delay line board baseline measurement -- the ASD is extracted from the knowledge that the clock noise interferes with a delayed version of itself from the ADC and DAC. As an artifact, we get those peaks that correspond to the delay time and its harmonics. The measurement was done with an 11 MHz signal.
+
+So we should compare other noises to this. To do this with phase noises, they should be divided by the modulating frequency, which we'll take to be 10 MHz for now. The bluish and purplish lines on the plot are exactly that: two measured noises currently present in the setup, converted to timing jitters via division by 10 MHz. We can see that the modulation noise is definitely above the clock noise. Currently, we could potentially increase the modulation frequency to about 50 MHz, which would then probably allow for some correction. For comparison, there is the dashed line corresponding to a 1 pm displacement noise and the dotted line, which would be the noise $\color{teal}N_{\text{PD}}$ using the PD without an amplifier. Other PDs would put this line about 1 order of magnitude higher, as they would allow for much less power, but the amplification helps with Johnson noise. Even the current line can be lower, but the power can be about 10x what was used to calculate it.
+
+One thing I'd like to meander on is that the delay line board's baseline noise is lower than the clock driving it. On first glance, this didn't sit right with me. But the baseline measurement is configured so that the clock noise can be subtracted. The noise coupling into the ADC and DAC is corrected using the DDS signal. Now, the leftover noise is still caused at least in part by clock jitter, but the coupling isn't as straightforward anymore. The two other coupling mechanisms are the delay error and the change in the frequency at the input vs. the delayed output. I currently do not know how to estimate the ultimate noise level this error would cause. {\color{red}This is a TODO.} But also, the stochastic noise from the ADC and DAC would be included here, as well as sampling-timing errors introduced by these -- including the Moku phasemeter ADC. This is to convince myself that it, in fact, makes sense.
+
+On the plot, we don't see the actual clock jitter coupling from the delay board ${\color{green}\epsilon(t)}$. There are a couple of things to discuss here. Firstly, what even is ${\color{green}\epsilon(t)}$? If the boards are free-running, then it is the timing error from the board clock. However, the boards will definitely not be free-running since their crystal oscillators are quite bad (how bad?). The boards are locked to the Rb standard. For some time, our group had the hypothesis that the boards didn't lock very well, and the clock noise was the source of all evil. We haven't exactly confirmed nor disproven it. So what would be lovely is an estimate of how much clock jitter there is on the sampling clock w.r.t the source clock. {\color{red}This is a TODO, though Reid already has this data, I believe, 5.5.2 end.} But in anycase, it is there -- if it's just like ${\color{orange}q_{i}(t)}$ it changes the phasemeter noise coupling, and if it's ${\color{orange}q_{i}(t)} +$ \textit{something} it changes the PM noise coupling AND adds new noise. If its the first case, we need to modify the clock noise correction algorithm. If it's the latter, we need to add a reference measurement to get the \textit{something} and modify the clock noise correction algorithm. 
+
+There is a way to add a reference measurement that, in combination with the clock noise correction algorithm, cancels out the ${\color{green}\epsilon(t)}$ terms. Currently, there is no other solution for these terms in my opinion (meaning I don't think the DDS measurement used as a pilot tone correction can fix the problem). I will dedicate a subsection to discussing the method I have in mind and how to start testing it. 
+
+This actually brings me to the other thing I wanted to discuss about the ${\color{green}\epsilon(t)}$ terms. We should analyze what exactly the DDS signal can be used to correct for. 
+
+\subsubsection*{DDS correction and its limits}
+The DDS tone can be written as 
+\begin{equation*}
+    \phi_{\text{DDS}}(t) = \omega_{\text{DDS}}({\color{green}\epsilon_i(t)} +{\color{orange}q_{i}(t)} ).
+\end{equation*}
+So one takeaway here is that the DDS signal can replace the board jitters with the phasemeter clock jitters. But could there be a situation where both terms in the signal can be used to cancel not LISA-like terms? Let's look at the phasemeter readouts from above, excluding other noises for now
+\begin{align*}
+    \phi^{c}&=\Delta \omega_{ij}{\color{orange}q_{i}(t)} - \Delta \omega_i({\color{green}\epsilon_{i}(t-\tau)}+{\color{green}\epsilon_{i}(t)})
+\end{align*}
+\begin{align*}
+    \phi^{SB+}&= \omega_i^{SB}{\color{orange}q_{i}(t-\tau)} - \Delta \omega_i^{SB}({\color{green}\epsilon_{i}(t-\tau)} -{\color{green}\epsilon_{i}(t)})
+\end{align*}
+The green terms are the only non-LISA-like terms, so the DDS can't be directly used to cancel these since it would add in more of the phasemeter noise. Though with some modifications to the clock noise removal algorithm, that might work. The complication is that the board jitters are both on the carrier and on the sidebands, so either both have to be corrected via DDS and then a modified clock noise algorithm is applied, or you perform the regular clock noise correction and see what the DDS can do afterward. For the former option, I currently have no further comments as I have not really looked at it. For the latter, I can say that after clock noise correction, only the board jitter terms remain, so DDS kinda just makes it messier, but I have no formal proof that it can work at that point. Actually, I think it can't, it really only can take all the board terms and replace them with the phasemeter jitter terms, and that's it, because there is no mixing of $i$, $j$, and $k$ terms -- that's the final reason why, without modification to the clock noise correction algorithm, the DDS correction alone can't help. Of course, then there is the other configuration. But even then, unless we deliberately mix the DDS signal and phasemeters, we can't cancel things properly.
+
+Applying the DDS signal to the carrier and sideband gets us
+\begin{align*}
+    \phi^{c}&=\Delta \omega_{ij}{\color{orange}q_{i}(t)} + \Delta \omega_i({\color{orange}q_{i}(t-\tau)}+{\color{orange}q_{i}(t)})
+\end{align*}
+\begin{align*}
+    \phi^{SB+}&= \omega_i^{m}{\color{orange}q_{i}(t-\tau)} - \Delta \omega_i^{SB}({\color{orange}q_{i}(t-\tau)} -{\color{orange}q_{i}(t)})
+\end{align*}
+{\color{red}This is a TODO: can we modify the clock noise correction to take away this?}
+
+Another thing the DDS might be able to help with is noise added by the DAC of the delay board and the ADC of the phasemeter. For example the term $ {\color{magenta}q_{DAC,i}(t)}$. This is something a direct clock reference measurement wouldn't help. I am interested in this because after the clock noises, the ADC and DAC noises are runners-up for the blame for the noise floor of the delay line board. The DDS can only help with this if the noise is correlated between channels (?), signals (?). This depends on 
+\begin{enumerate}
+    \item  what the architecture of the ADC or DAC is at hand,
+    \item whether the DDS signal is on the same physical channel,
+    \item and the mechanism of the noise.
+\end{enumerate}
+Let's put a pin in this for now, to think about this is another {\color{red} TODO}. I will only add that if this is deemed useful, my other method for removing the board jitters likely doesn't stack nicely with the DDS correction. And to know if this is useful (before trying it), we would need a way to measure or estimate the ADC and DAC noise that is correlated (ie, timing jitter). This is another {\color{red} TODO}.
+
+All that said, the modulation noise would still prevent us from performing any clock noise correction. Unless we figure out how to suppress modulation noise, we can not use MHz sidebands. It's that easy. Though the previous discussion on the board clock noise is still relevant even with GHz sidebands (and maybe should be moved somewhere else). 
+Claude: Bottom-line conclusions
+\begin{enumerate}
+    \item Modulation noise is the current showstopper: until it's suppressed, MHz-range sidebands cannot be used for clock-noise correction — full stop.
+    \item Clock-noise (${\color{green}\epsilon_{i}(t)}$) coupling remains relevant even with GHz sidebands, and likely needs a new reference measurement plus an algorithm modification, not DDS alone.
+    \item Several quantities are still unmeasured and blocking firm conclusions: uncorrelated ADC noise magnitude, sampling-vs-source clock jitter, the delay-error/frequency-change coupling, and the correlated component of ADC/DAC noise.
+\end{enumerate}
+
+\subsection*{Modulation noise measurement}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/EOM phase noise.png}
+    \caption{Measurement setup for the EOM phase noise.}\label{pic}
+\end{figure}
+Here we see the setup for how we measured the additional phase noise added by the modulation process. We measured three heterodyne signals with the phasemeter. Only considering clock noise and any ADC noises, we write them
+\begin{align*}
+    \phi^{c}&=-\Delta \omega_{ij}({\color{orange}q_{i}(t)} + q_{\text{ADC}}(t)) +  \delta\phi_{\text{ADC}}^c(t),
+\end{align*}
+\begin{align*}
+    \phi^{SB+}&= \omega_i^{m}({\color{orange}q_{i}(t)} + {\color{red}q_{N,i}(t)}) +{\color{purple}\delta \phi_{N+,i}(t)}+  \delta\phi_{\text{ADC}}^{SB+}(t) -\Delta \omega_{ij}^{SB+}({\color{orange}q_{i}(t)} + q_{\text{ADC}}(t)),
+\end{align*}
+\begin{align*}
+    \phi^{SB-}&= -\omega_i^{m}({\color{orange}q_{i}(t)} + {\color{red}q_{N,i}(t)}) +{\color{purple}\delta \phi_{N-,i}(t)} +  \delta\phi_{\text{ADC}}^{SB-}(t) -\Delta \omega_{ij}^{SB-}({\color{orange}q_{i}(t)} + q_{\text{ADC}}(t)).
+\end{align*}
+The red term is the timing error that differs from the sampling clock but is a part of the modulating tone. The purple timing jitter is something that moves both sidebands in the same direction -- so really it's probably some phase noise on both sidebands with the same spectrum but probably a different realization, but I don't feel like differentiating that currently. The point is, it's not correlated in the time domain, and this is essentially what we aimed to measure. The ADC phase noise as well. And then there is some sampling error that is common to all signals (this is close to being something a pilot tone would also correct). Now we can also look at all of the differences. The orange source-clock jitter
+${\color{orange}q_{i}(t)}$ is common and cancels in both:
+\begin{align*}
+    \phi^{SB+}-\phi^{c}&= \omega_i^{m}\big({\color{red}q_{N,i}(t)}- q_{\text{ADC}}(t)\big)
+    + {\color{purple}\delta\phi_{N,i}(t)}
+    + \delta\phi_{\text{ADC}}^{SB+}(t) - \delta\phi_{\text{ADC}}^{c}(t)
+    + \delta\phi_{\text{RO}}^{SB+}(t) - \delta\phi_{\text{RO}}^{c}(t),\\[4pt]
+    \phi^{SB+}-\phi^{SB-}&= 2\omega_i^{m}\big({\color{red}q_{N,i}(t)}-q_{\text{ADC}}(t)\big)
+    + 2\,{\color{purple}\delta\phi_{N,i}(t)}
+    + \delta\phi_{\text{ADC}}^{SB+}(t) - \delta\phi_{\text{ADC}}^{SB-}(t)
+    + \delta\phi_{\text{RO}}^{SB+}(t) - \delta\phi_{\text{RO}}^{SB-}(t).
+\end{align*}
+The timing jitters ${\color{red}q_{N,i}(t)}- q_{\text{ADC}}(t)$ are essentially the jitters between the actual modulating tone and the sampling clock of the phasemeter. To check their level in the final result, we could repeat the measurement with different frequencies. Now, the purple terms are essentially the actual noise we are interested in. We assume that the noise spectrum is the same for each sideband -- this means that the two carrier - SB spectra should look the same, and they pretty much do, for now. This might change if it turns out that this measurement was not modulation noise dominated. 
+
+The reason to think the latter is the following. To extract the spectrum of the noise of interest, the sideband difference should be divided by two (because the noise term is present twice). After this division, the spectrum should be approximately on the same level as a sideband carrier difference. Currently, it is not; it is instead 2 times lower. This means that the measurement must be dominated by some other noise that has an equal amplitude in both differences. The main culprit that comes to mind is the ADC noise (hence its explicit inclusion in the math here). But that doesn't really correlate well with many of the other measurements we have done that have a lower noise floor than this (i.e., the ADC noise floor should be lower). It also can't be the timing jitters ${\color{red}q_{N,i}(t)}- q_{\text{ADC}}(t)$ as these should behave like the modulation phase noise of interest. 
+
+Assuming the sources are mutually independent and that the two modulators phase-noise realizations share one ASD ($\mathcal{S}_{{\color{purple}\delta\phi_{N}}}$) while the two ADC phase-noise realizations share another ($\mathcal{S}_{\delta\phi_{\text{ADC}}}$), the ASD of the sideband difference is
+\begin{equation*}
+    \mathcal{S}_{\phi^{SB+}-\phi^{SB-}}
+    = \sqrt{\,4\,(\omega_i^{m})^{2}\!\left(\mathcal{S}_{{\color{red}q_{N,i}}}^{2}
+      + \mathcal{S}_{q_{\text{ADC}}}^{2}\right)
+      + 4\,\mathcal{S}_{{\color{purple}\delta\phi_{N}}}^{2}
+      + 2\,\mathcal{S}_{\delta\phi_{\text{ADC}}}^{2}
+      + 2\,\mathcal{S}_{\delta\phi_{\text{RO}}}^{2}\,}\,.
+\end{equation*}
+Notice that since the ${\color{purple}\delta\phi_{N}}$ terms are assumed to by anti symmetric, just like the additional timing jitters are, their ASDs couple in with a factor of 2 (which is squared to give 4). Other noises, which are now antisymmetric but do share an ASD, get a factor of 2 once the ASDs are added. So we divide the whole thing by two, getting
+\begin{equation*}
+    \mathcal{S}_{\theta_m}
+    = \frac{\mathcal{S}_{\phi^{SB+}-\phi^{SB-}}}{2}
+    = \sqrt{\,(\omega_i^{m})^{2}\!\left(\mathcal{S}_{{\color{red}q_{N,i}}}^{2}
+      + \mathcal{S}_{q_{\text{ADC}}}^{2}\right)
+      + \mathcal{S}_{{\color{purple}\delta\phi_{N}}}^{2}
+      + \tfrac{1}{2}\,\mathcal{S}_{\delta\phi_{\text{ADC}}}^{2}
+      + \tfrac{1}{2}\,\mathcal{S}_{\delta\phi_{\text{RO}}}^{2}\,}\,.
+\end{equation*}
+If the measurement is dominated by either of the two noises that are antisymmetric (the timing jitters or the noise of interest), then this estimator should give the same result as the estimator based on the difference of a sideband and carrier
+\begin{equation*}
+    \mathcal{S}_{\phi^{SB+}-\phi^{c}}
+    = \mathcal{S}_{\theta_{m2}}
+    = \sqrt{\,(\omega_i^{m})^{2}\!\left(\mathcal{S}_{{\color{red}q_{N,i}}}^{2}
+      + \mathcal{S}_{q_{\text{ADC}}}^{2}\right)
+      + \mathcal{S}_{{\color{purple}\delta\phi_{N}}}^{2}
+      + 2\,\mathcal{S}_{\delta\phi_{\text{ADC}}}^{2}
+      + 2\,\mathcal{S}_{\delta\phi_{\text{RO}}}^{2}\,}\,.
+\end{equation*}
+Based on our first measurement, the former is a factor of two lower. This means the other noises that don't differ in scaling between the two differences must dominate. This means that this measurement really is just an upper bound on the modulation noise. In fact, the two estimators differ almost EXACTLY by a factor of two, so it's very likely the noise floor isn't even touching the modulation noise. From the measurement, the relative amplitude noise is exactly the same between the three signals. From this, we can likely conclude that (1) we are not shot noise limited, as shot noise would make the relative intensity fluctuations larger in the sidebands, and (2) 
+
+Still, to distinguish between the timing jitters and the noise of interest, the measurement should be repeated with different modulation frequencies. For each frequency, we calculate the timing jitter ASD estimator for both types of differences:
+\begin{equation*}
+    \mathcal{S}_{\text{jit}}
+    = \frac{\mathcal{S}_{\theta_m}}{\omega_i^{m}}
+    = \sqrt{\,\mathcal{S}_{{\color{red}q_{N,i}}}^{2} + \mathcal{S}_{q_{\text{ADC}}}^{2}
+      + \frac{\mathcal{S}_{{\color{purple}\delta\phi_{N}}}^{2}}{(\omega_i^{m})^{2}}
+      + \frac{\mathcal{S}_{\delta\phi_{\text{ADC}}}^{2}
+      + \mathcal{S}_{\delta\phi_{\text{RO}}}^{2}}{2\,(\omega_i^{m})^{2}}\,}\,,
+\end{equation*}
+and
+\begin{equation*}
+    \mathcal{S}_{\text{jit}}
+    = \frac{\mathcal{S}_{\theta_{m2}}}{\omega_i^{m}}
+    = \sqrt{\,\mathcal{S}_{{\color{red}q_{N,i}}}^{2} + \mathcal{S}_{q_{\text{ADC}}}^{2}
+      + \frac{\mathcal{S}_{{\color{purple}\delta\phi_{N}}}^{2}}{(\omega_i^{m})^{2}}
+      + \frac{\mathcal{S}_{\delta\phi_{\text{ADC}}}^{2}
+      + \mathcal{S}_{\delta\phi_{\text{RO}}}^{2}}{(\omega_i^{m})^{2}}\,}\,.
+\end{equation*}
+If the measurement is dominated by the modulation noise itself, then the resulting ASD should not depend on the frequency used. I guess using a lower frequency should result in less phase noise due to the timing jitters overall.
+
+
+\subsection*{Phase fidelity between modulation tone and sideband}
+
+
+Now, another thought I am having. From S. Barke's thesis: "There are a number of effects that can degrade the phase fidelity between the modulation signal and the sideband: a change of the electric potential, a change of the refractive index due to different optical powers, physical length changes, and a change of the refractive index due to temperature fluctuations." Out of the named effects, the first would be antisymmetric, and the other three should be common mode and largely cancel out, but not completely as they affect different frequencies with a different scale factor. The term ${\color{purple}\delta\phi_{N}}$ should be made up of these effects. So let's try to analyze a bit further what sort of behavior we expect from this noise.
+
+
+\paragraph{Why the common-mode terms do not cancel completely.} A common optical-path change $\delta(nL)$ imprints a phase $\phi_i = \omega_i\,\delta(nL)/c$ on each tone, where $\omega_i$ is that tone's \emph{optical} frequency. Since the carrier and sidebands sit at optical frequencies differing by $\pm\omega_m$, the residual surviving the sideband--sideband difference is
+%
+\begin{equation*}
+    \theta_m^{\mathrm{resid}}
+    = \tfrac{1}{2}\!\left(\phi^{SB+}-\phi^{SB-}\right)
+    \approx \frac{\omega_m}{\omega_c}\,\phi_{\mathrm{common}},
+    \qquad
+    \frac{\omega_m}{\omega_c}
+    = \frac{11\,\mathrm{MHz}}{2.83\times10^{14}\,\mathrm{Hz}}
+    = 3.9\times10^{-8},
+\end{equation*}
+%
+i.e.\ the common terms cancel to a part in $\sim\!10^{7}$, but not perfectly, because the tones are weighted by a slightly different scale factor $\omega_i$. 
+
+\paragraph{Consistency with the measured thermal feature.} 
+This mechanism is testable against the $1.375\,\mathrm{mHz}$ thermal feature (period $\approx 12\,$min) observed common to all three tones. Its single-tone phase level there is $\phi_{\mathrm{common}} \approx 734\,\mathrm{cyc}/\sqrt{\mathrm{Hz}}$, so the predicted residual in $\theta_m$ is
+%
+\begin{equation*}
+    \theta_m^{\mathrm{resid}}
+    \approx (3.9\times10^{-8})\times 734\,\mathrm{cyc}/\sqrt{\mathrm{Hz}}
+    \approx 2.9\times10^{-5}\,\mathrm{cyc}/\sqrt{\mathrm{Hz}},
+\end{equation*}
+%
+against a measured $1.4\times10^{-4}\,\mathrm{cyc}/\sqrt{\mathrm{Hz}}$ --- agreement
+to a factor of $\sim\!5$.  
+
+\paragraph{Two caveats.}
+(i) The $\omega_m/\omega_c$ suppression is relative to the \emph{carrier} phase, not to the clock-transfer signal: the signal ($\omega_m q$) and this residual ($\omega_m\,\delta(nL)/c$) both scale with $\omega_m$, so their ratio, $q\,c/\delta(nL)$, is independent of the modulation frequency. Choosing $\nu_{\mathrm{mod}}$ trades signal against residual in equal measure. (ii) For a LISA-like $\nu_{\mathrm{mod}} = 2.4\,\mathrm{GHz}$ the ratio is $\omega_m/\omega_c = 8.5\times10^{-6}$, i.e.\ the residual per unit common phase is $\sim\!220\times$ larger than at $11\,\mathrm{MHz}$: the low modulation frequency of this testbed gives correspondingly cleaner common-mode rejection of these path effects.
+
+\subsection*{Frequency-dependent modulation and common-mode terms}
+
+We keep only the two effects from the fidelity discussion: the
+\emph{antisymmetric} modulation noise ${\color{purple}\delta\phi_{m}(t)}$, and the \emph{common-mode but
+frequency-dependent} optical-path noise, written as a delay or timing error
+$\Phi(t)\equiv\delta L(t)/c$ that imprints a phase $\omega_i\,\Phi(t)$ on a tone
+at optical frequency $\omega_i$. With $\omega_i = \omega_c,\ \omega_c\pm\omega_m$:
+%
+\begin{align*}
+    \phi^{c}   &= \omega_c\,\Phi(t),\\
+    \phi^{SB+} &= (\omega_c+\omega_m)\,\Phi(t) + {\color{purple}\delta\phi_{m}(t)},\\
+    \phi^{SB-} &= (\omega_c-\omega_m)\,\Phi(t) - {\color{purple}\delta\phi_{m}(t)}.
+\end{align*}
+%
+The large common part $\omega_c\Phi$ cancels in every difference, leaving only
+the frequency-dependent residual $\omega_m\Phi$:
+%
+\begin{align*}
+    \phi^{SB+}-\phi^{c}   &= \omega_m\,\Phi(t) + {\color{purple}\delta\phi_{m}(t)},\\
+    \phi^{SB+}-\phi^{SB-} &= 2\,\omega_m\,\Phi(t) + 2\,{\color{purple}\delta\phi_{m}(t)},\\
+    \theta_m \equiv \tfrac12(\phi^{SB+}-\phi^{SB-}) &= \omega_m\,\Phi(t) + {\color{purple}\delta\phi_{m}(t)}.
+\end{align*}
+%
+Both terms are antisymmetric, so both pick up the factor 2 in the sideband--sideband difference. Taking $\Phi$ and ${\color{purple}\delta\phi_m}$ mutually independent, the ASDs are
+%
+\begin{align*}
+    \mathcal{S}_{\phi^{SB+}-\phi^{c}}
+      &= \sqrt{\,\omega_m^{2}\,\mathcal{S}_{\Phi}^{2}
+        + \mathcal{S}_{{\color{purple}\delta\phi_{m}}}^{2}\,},\\
+    \mathcal{S}_{\phi^{SB+}-\phi^{SB-}}
+      &= 2\sqrt{\,\omega_m^{2}\,\mathcal{S}_{\Phi}^{2}
+        + \mathcal{S}_{{\color{purple}\delta\phi_{m}}}^{2}\,},\\
+    \mathcal{S}_{\theta_m}
+      &= \sqrt{\,\omega_m^{2}\,\mathcal{S}_{\Phi}^{2}
+        + \mathcal{S}_{{\color{purple}\delta\phi_{m}}}^{2}\,},
+\end{align*}
+%
+and referred to equivalent clock jitter,
+%
+\begin{equation*}
+    \mathcal{S}_{\mathrm{jit}}
+    = \frac{\mathcal{S}_{\theta_m}}{\omega_m}
+    = \sqrt{\,\mathcal{S}_{\Phi}^{2}
+      + \frac{\mathcal{S}_{{\color{purple}\delta\phi_{m}}}^{2}}{\omega_m^{2}}\,}.
+\end{equation*}
+%
+The common-path residual can be written using $\omega_m\mathcal{S}_{\Phi} = (\omega_m/\omega_c)\,\omega_c\mathcal{S}_{\Phi} = (\omega_m/\omega_c)\,\mathcal{S}_{\phi^{c}}$, i.e.\ the common carrier phase suppressed by $\omega_m/\omega_c$. This was the basis for the thermal peak test dont on the data previously.
+
+\newgeometry{margin=0.5cm}
+\begin{landscape}
+\begin{footnotesize}
+\begin{longtable}{
+    >{\raggedright\arraybackslash}p{2.2cm}
+    >{\raggedright\arraybackslash}p{3.2cm}
+    >{\raggedright\arraybackslash}p{5cm}
+    >{\raggedright\arraybackslash}p{6.3cm}
+    >{\raggedright\arraybackslash}p{6.3cm}
+}
+\caption{What could be the actual limiting noise in the modulation noise measurement?}
+\label{tab:meas_noise_budget}\\
+\toprule
+\textbf{Source} & \textbf{Level ($\mathrm{cyc}/\sqrt{\mathrm{Hz}}$)} &
+\textbf{Couples as / status} & \textbf{How to check} & \textbf{How to fix} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small\textit{Table~\ref{tab:meas_noise_budget} continued\ldots}}\\
+\toprule
+\textbf{Source} & \textbf{Level ($\mathrm{cyc}/\sqrt{\mathrm{Hz}}$)} &
+\textbf{Couples as / status} & \textbf{How to check} & \textbf{How to fix} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\small\textit{Continued\ldots}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+
+
+Fibers
+  & $\sim\!10^{-5}$ (blended with LFN)
+  & Common: the $11\,$MHz optical spacing is $4\times10^{-8}$ of $\nu_{\mathrm{opt}}$, so all tones see the same path $\rightarrow$ cancels
+  & Gently heat or tap a fiber: single-tone phase moves, $\theta_m$ does not
+  & None needed for $\theta_m$; shorter/shielded or common-path fiber only if absolute stability is required \\[3pt]
+
+\rowcolor{rowB}
+\textbf{Moku PM}
+  & $\sim\!6\times10^{-8}$ (per ch., 1--15\,Hz; rising to $\sim\!2\times10^{-6}$ at mHz, intrinsic $1/f$)
+  & Additive, per-channel, amplitude-independent (digital PLL/NCO). \emph{Measured by loopback; $\sim\!19\times$ below the optical floor, so \textbf{not} the limit.}
+  & Electronic loopback (one RF source split into channels, no optics): floors at $\sim\!6\times10^{-8}$, and the 12-min thermal peak vanishes
+  & N/A --- already well below the optical floor; cross-correlation only needed if this ever dominates \\[3pt]
+
+ADC
+  & $\lesssim 1.3\times10^{-6}$
+  & Additive, per-channel; algebraically identical to the phasemeter floor
+  & Same loopback --- cannot be separated from the phasemeter floor
+  & Same as above (cross-correlation) \\[3pt]
+
+\rowcolor{rowA}
+${\color{purple}\delta\phi_{N}}$ \emph{(signal)}
+  & $<10^{-6}$ ($1$--$15\,$Hz); $<6\times10^{-6}$ (mHz) --- \emph{upper bound only}
+  & Antisymmetric on the sidebands (signal-like); currently buried under the floor
+  & Repeat at several $\nu_{\mathrm{mod}}$; use cross-correlation to reach below the floor
+  &\\[3pt]
+
+RIN$\rightarrow$phase
+  & $\sim\!10^{-8}$ if $\tilde r(f_{\mathrm{het}})\!\sim\!10^{-7}$; could approach the floor if RIN at $20$--$80\,$MHz is high
+  & Additive per tone (each samples RIN at its own $f_{\mathrm{het}},2f_{\mathrm{het}}$); the $2f$ term is amplitude-independent
+  & Measure laser RIN at $19$--$82\,$MHz (RF analyser on DC-coupled PD); sweep the working point (coupling is sinusoidal in it)
+  & Balanced detection removes $1f$; stabilise power near $2f_{\mathrm{het}}$ for the $2f$ term \\[3pt]
+
+Shot noise
+  & $\sim\!10^{-9}$ (carrier) to $\sim\!10^{-8}$ (sidebands)
+  & Additive, scales as $1/A$
+  & Scales as $1/\sqrt{I_{\mathrm{DC}}}$; already $\gtrsim\!100\times$ below the floor
+  & More optical power (not needed) \\[3pt]
+
+
+NEP $12.6\frac{\text{pW}}{\sqrt{\mathrm{Hz}}}$
+  & $\sim\!4\times10^{-10}$
+  & Additive; below shot noise (detection is shot-limited)
+  & Dark-noise (beam-blocked) measurement
+  & More optical power (already shot-limited) \\[3pt]
+  
+Polarization
+  & unknown; plausibly $\lesssim 10^{-6}$ at low $f$
+  & Two paths: (i) pol.\ $\rightarrow$ amplitude $\rightarrow$ phase (feeds RIN/RAM, mostly common); (ii) PER-limited cross-pol.\ interference $\rightarrow$ phase, birefringent-path dependent, \emph{not} cleanly $\omega_m/\omega_c$-suppressed $\rightarrow$ can leak into $\theta_m$
+  & Insert a polariser and rotate it / stress or heat a PM fiber and watch $\theta_m$ (not just single-tone); check EOM PER (std.\ 20\,dB)
+  & Clean PM alignment / key the connectors; add a polariser before the PD; high-PER EOM option (25--30\,dB) \\[3pt]
+
+\end{longtable}
+\end{footnotesize}
+\end{landscape}
+\restoregeometry
+
+\subsection*{Noise Cancellation in Post-processing -- TDI Generation 1}
+
+
+\subsection*{Noise Cancellation in Post-processing -- TDI Generation 2}
+
+\subsection*{My Method}
+
+\section*{GHz Sidebands}
+\subsection*{Modulating the Reference Laser}
+\begin{align*}
+\mathbf{A}:&\quad\,E_{i}\exp[i(\omega_{i} t + {\color{blue}\delta\phi_{i}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{i}^m (t + {\color{orange}q_{i}(t)})]\right),
+  \label{eq:fieldA}\\[4pt]
+\mathbf{A'}:&\quad
+ E_{i}\exp[i(\omega_{\text{REF}}t + {\color{blue}\delta\phi_{\text{REF}
+ }(t)})] \left(1 + \tfrac{im}{2}\exp[i\omega_{\text{REF}}^m (t + {\color{orange}q_{\text{REF}}(t)})]\right)
+\end{align*}
+In the table below, we see which beatnotes and with which amplitudes should be expected to lie in the measurable range for the delay line board.
+ 
+\begin{table}[h]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{cllll}
+\toprule
+BN & Pairing & Frequency (general) & Example $f$ & Power \\
+\midrule
+1 & $C_{i} \times C_{\text{REF}}$
+  & $\Omega_{\text{het}}$
+  & $-40\,\text{MHz}$
+  & $2J_0^2(m)\,E_i^2$ \\
+\color{gray}2 & \color{gray}$\mathrm{USB}_{i} \times C_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} + \omega_{i}^{m}$
+  & \color{gray}$+2360\,\text{MHz}$
+  & \color{gray}$2J_0(m)J_1(m)\,E_i^2$ \\
+\color{gray}3 & \color{gray}$C_{i} \times \mathrm{USB}_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} - \omega_{\text{REF}}^{m}$
+  & \color{gray}$-2450\,\text{MHz}$
+  & \color{gray}$2J_0(m)J_1(m)\,E_i^2$ \\
+\color{gray}4 & \color{gray}$\mathrm{LSB}_{i} \times C_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} - \omega_{i}^{m}$
+  & \color{gray}$-2440\,\text{MHz}$
+  & \color{gray}$2J_0(m)J_1(m)\,E_i^2$ \\
+\color{gray}5 & \color{gray}$C_{i} \times \mathrm{LSB}_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} + \omega_{\text{REF}}^{m}$
+  & \color{gray}$+2370\,\text{MHz}$
+  & \color{gray}$2J_0(m)J_1(m)\,E_i^2$ \\
+6 & $\mathrm{USB}_{i} \times \mathrm{USB}_{\text{REF}}$
+  & $\Omega_{\text{het}} + \omega_{i}^{m} - \omega_{\text{REF}}^{m}$
+  & $-50\,\text{MHz}$
+  & $2J_1^2(m)\,E_i^2$ \\
+7 & $\mathrm{LSB}_{i} \times \mathrm{LSB}_{\text{REF}}$
+  & $\Omega_{\text{het}} - \omega_{i}^{m} + \omega_{\text{REF}}^{m}$
+  & $-30\,\text{MHz}$
+  & $2J_1^2(m)\,E_i^2$ \\
+\color{gray}8 & \color{gray}$\mathrm{USB}_{i} \times \mathrm{LSB}_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} + \omega_{i}^{m} + \omega_{\text{REF}}^{m}$
+  & \color{gray}$+4770\,\text{MHz}$
+  & \color{gray}$2J_1^2(m)\,E_i^2$ \\
+\color{gray}9 & \color{gray}$\mathrm{LSB}_{i} \times \mathrm{USB}_{\text{REF}}$
+  & \color{gray}$\Omega_{\text{het}} - \omega_{i}^{m} - \omega_{\text{REF}}^{m}$
+  & \color{gray}$-4850\,\text{MHz}$
+  & \color{gray}$2J_1^2(m)\,E_i^2$ \\
+\bottomrule
+\end{tabular}
+\caption{All 9 cross-beatnotes.
+         Example parameters: $f_{i} = 281\,\text{THz}$,
+         $f_{\text{REF}} = 281\,\text{THz} + 40\,\text{MHz}$,
+         $f_{i}^{m} = 2400\,\text{MHz}$,
+         $f_{\text{REF}}^{m} = 2410\,\text{MHz}$.
+         Negative frequencies indicate that the REF field is the higher-frequency one;
+         a PLL locks to $|f|$ with the sign absorbed into the phase convention.
+         Power hierarchy for small $m$:
+         $P_{1} \sim 2E_i^2 \gg P_{2\text{--}5} \sim mE_i^2
+          \gg P_{6\text{--}9} \sim \tfrac{m^2}{2}E_i^2$.}
+\end{table}
+
+
+What about using the board clocks?
+\begin{align*}
+\mathbf{A}:&\quad\,E_{i}\exp[i(\omega_{i} t + {\color{blue}\delta\phi_{i}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{i}^m (t + {\color{orange}q_{i}(t)})]\right),\\[4pt]
+\mathbf{A'}:&\quad
+ E_{i}\exp[i(\omega_{\text{REF}}t + {\color{blue}\delta\phi_{\text{REF}
+ }(t)})] \left(1 + \tfrac{im}{2}\exp[i\omega_{\text{REF}}^m (t + {\color{Aquamarine}\epsilon_{i}(t)})]\right)
+\end{align*}
+
+What about using the sideband as a clock for the PM? Let's say the SB is in at 10 MHz, and we use the Moku.
+
+\begin{align*}
+\mathbf{A}:&\quad\,E_{i}\exp[i(\omega_{i} t + {\color{blue}\delta\phi_{i}(t)})]
+  \left(1 + \tfrac{im}{2}\exp[i\omega_{i}^m (t + {\color{orange}q_{i}(t)})]\right),\\[4pt]
+\mathbf{A'}:&\quad
+ E_{i}\exp[i(\omega_{r}t + {\color{blue}\delta\phi_{r
+ }(t)})] \left(1 + \tfrac{im}{2}\exp[i\omega_{r}^m (t + {\color{Aquamarine}q_{r}(t)})]\right)
+\end{align*}
+So the sideband phase reads
+\begin{equation*}
+    \phi^{SB}=\delta\phi_i-\delta \phi_r+\omega^m_iq_i(t)-\omega^m_rq_r(t)
+\end{equation*}
+The laser frequency noise will be louder than the timing jitters. So one would still need to combine the readouts before using them to drive the PM. 
+
+\subsection*{Synthesizing a clear GHz signal}
+\subsubsection*{Why are MHz sidebands not enough}
+We have established (somewhere), that the modulating frequency is the amplification factor of the clock jitters w.r.t other phase noises. So now the question is, how loud are the other phase noises? What's the factor we would need to divide them by to still be able to correct the timing errors? The noises that come to mind are: timing errors on the modulating frequency, modulator phase noise, temperature-induced fiber noise, shot noise, Johnson noise, electrical noise in the photodetector, RIN-to-phase coupling, delay line noise (ADC, DAC, something with the mixing), ADC noise from phasemeter, and other phasemeter noises (quantization).
+
+
+Okay, so we already see that the rubidium standard, according to Claude's estimate, has a timing jitter of $6 \cdot 10^{-9}$ s$/\sqrt{\text{Hz}}$. Now, this means that the timing jitter is about 5 orders of magnitude too high, if I look at the requirement shown in S. Barkes thesis, for example. Basically, that's how much the timing jitter added by the signal generator can add, $10^{-14}$ s$/\sqrt{\text{Hz}}$, if we want to get to LISA-like performance.
+\end{document}

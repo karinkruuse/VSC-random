@@ -110,4 +110,10 @@ Olaf Hartwig and Jean-Baptiste Bayle.
 \newblock {\em Physical Review D}, 103(12):123027, 2021.
 \newblock Publisher: American Physical Society.
 
+\bibitem{srs_rb_standard}
+{Stanford Research Systems}.
+\newblock {FS725} rubidium frequency standard: specifications.
+\newblock \url{https://www.thinksrs.com/products/fs725.html}.
+\newblock Accessed 22 September 2026.
+
 \end{thebibliography}

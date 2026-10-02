@@ -1,0 +1,32 @@
+\section{Parameters of the Component-Noise Calculation}
+\label{app:noise_parameters}
+We use the four links of the second-generation Michelson observable $X_2$. Every delay is evaluated at the time reached after the preceding delays. For example,
+\begin{equation}
+ \mathcal D_{12}\mathcal D_{21}x(t)
+ =x\!\left(t-d_{12}(t)-d_{21}(t-d_{12}(t))\right).
+\end{equation}
+The calculation retains this ordering rather than multiplying the first-generation result by a static filter.
+
+The example uses $d_{12}(t)=d_{21}(t)=L+vt$ and $d_{13}(t)=d_{31}(t)=L-vt$, with $L=8.339\,\mathrm s$ and $v=5\times10^{-8}\,\mathrm{s/s}$. One arm grows while the other shrinks. This is a simple flexing-arm example, not an orbit reconstruction. The nominal electrical input frequencies are $(15.0,10.9,21.6)\,\mathrm{MHz}$ and the modulation frequencies are $(35,36,34)\,\mathrm{MHz}$. The beat-frequency coefficients are held constant to isolate the effect of changing delays.
+
+For this reduced measurement model, $\alpha_{j1}=-\alpha_{1j}$. The clock terms cancel in the corrected round trips
+\begin{equation}
+ R^{\mathrm c}_{1j}=\eta_{1j}+\mathcal D_{1j}\eta_{j1}-\alpha_{1j}r_{1j},
+ \qquad j=2,3.
+\end{equation}
+The corrected second-generation combination is then
+\begin{align}
+ X_{2\mathrm c}={}&(1-\mathcal D_{121}-\mathcal D_{12131}
+                  +\mathcal D_{1312121})R^{\mathrm c}_{13}\nonumber\\
+ &-(1-\mathcal D_{131}-\mathcal D_{13121}
+                  +\mathcal D_{1213131})R^{\mathrm c}_{12}.
+ \label{eq:performance_x2}
+\end{align}
+Successive subscripts specify the ordered link path, for example $\mathcal D_{12131}=\mathcal D_{12}\mathcal D_{21}\mathcal D_{13}\mathcal D_{31}$. This is the phase-domain Michelson construction of \cite{hartwig_clock-jitter_2021}. It cancels laser noise through first order in the arm-length rates. The simple round-trip clock correction used here relies on constant, opposite forward and reverse beat frequencies; an orbit-dependent frequency plan requires the corresponding general clock correction.
+
+
+For the spectral estimate, the interval is one day centred on $t=0$. We evaluate the transfer functions at 25 equally spaced interval midpoints and average $|T_a(f,t)|^2$ for each source. This treats the slowly changing response as a sequence of local spectra; it does not calculate the exact spectrum of a time-warped stochastic record.
+
+As a static check, setting all arm rates to zero and all one-way delays to $L$ recovers the independent-link ASD gain $8|\sin(2\pi fL)\sin(4\pi fL)|$ of $X_2$. A separate algebraic check shows that the surviving local-laser paths have equal delays through first order in arbitrary arm rates. Increasing the number of averaging times from 25 to 101 changes the retained component powers by less than 0.3\% away from numerically vanishing responses. These are checks of the calculation, not measurements of hardware cancellation.
+
+The current figure retains the electronic, modulation and detector curves from the saved vector output. Because the original measured input files are unavailable in this checkout, their quadrature sum was reconstructed by log--log interpolation of the saved curve vertices. This preserves the plotted spectra to vector-export precision; it is not a new evaluation of the raw measurements.

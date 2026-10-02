@@ -1,116 +1,67 @@
 \section{Noise Contributions}
 \label{sec:performance}
-% im not a big fan of syaing that modulation and detector noise are added by the optics. but then again i dont think anyone else cares?
-% Also, its just an awkward paragraph
-The optical extension adds modulation and detector noise to the electronic testbed. We estimate these contributions, combine them with the measured electronic baseline and an assumed board-timing spectrum, and propagate them through TDI with changing arm lengths. The result describes the included noise sources. It is not a prediction of the complete testbed performance, since work on the delay implementation is ongoing.
-
-\subsection{Laser and Clock Noise}
-% since these are assumed to get perfectly cancelled, why include them? it only makes sense to include them if we model the ranging errors
-
-% we adapt it for modelling. But also, we dont actually model any noise herer. so like why include this at all? we already said that we will aim for this noise level.
-For the laser frequency noise we adopt the LISA pre-stabilization reference \cite{bayle_unified_2023},
-\begin{equation}
- A_\nu(f)=30\,\frac{\mathrm{Hz}}{\sqrt{\mathrm{Hz}}}
- \sqrt{1+\left(\frac{2\,\mathrm{mHz}}{f}\right)^4}.
-\end{equation}
-For the spacecraft clocks we use the LISA fractional-frequency noise model \cite{hartwig_clock-jitter_2021},
-\begin{equation}
- S_{\dot q}(f)=4\times10^{-27}\left(\frac{f}{1\,\mathrm{Hz}}\right)^{-1}\mathrm{Hz}^{-1}.
-\end{equation}
-The timing-noise ASD is $\sqrt{S_{\dot q}}/(2\pi f)$. The experiment will be configured to reproduce this clock-noise level over the analysis band. It refers to the timing shared by each spacecraft's modulation and phase measurement, not to the separate delay-board jitter $\epsilon_i$.
-
-These are the primary noises that TDI and clock correction are intended to suppress. The calculation below assumes that the processing delays match the intended physical delays. It does not use these input levels to predict residuals from the current hardware's delay errors.
+We estimate the noise after TDI and clock correction by propagating measured electronic and modulation spectra together with a calculated detector contribution. For comparison, we use the optical-metrology and test-mass acceleration reference adopted by Ferguson et al.~\cite{ferguson2025applying}. The following calculation identifies the relative contributions of these sources; it assumes matched physical and processing delays.
 
 \subsection{Modulation and Optical Readout Noise}
 \label{sec:readout_noise}
+% I think this section needs to make it slightly more clear that we are talking about two separate noises with separate levels here. Basically the wording should be changed a bit. Also, this section should more clearly link them to the LISA equivalent again.
 
-The modulation measurement takes half the phase difference between the upper and lower sidebands of a local optical beat. This removes the common optical phase and retains modulation fluctuations together with noise added by the readout.
-%no, we assume it to be fully direct pahse noise currently.
-We use the present spectrum as an estimate of the source modulation noise $m_i$.
+The modulation measurement takes half the phase difference between the upper and lower sidebands of a local optical beat. The common optical phase cancels, leaving modulation fluctuations and readout noise. We assign the full measured spectrum to direct source phase noise, $m_i=\psi_i^{\mathrm{mod}}$, with $\tau_i^{\mathrm{mod}}=0$. This specifies how the measured spectrum enters the calculation; it does not establish that all of the measured noise originates in the modulator.
 
+% For this chapter and all other paragraphs, im not sure im a fan of "bright-beam operating point" term bc like 4 mW in general is not that bright. also, LISA local beam also is quite bright. so like i feel like this term should be scratched.
+For the illustrative bright-beam operating point, shot noise, detector electronics, intensity noise and ideal ADC quantization give carrier and sideband readout ASDs of approximately $3\times10^{-9}$ and $1\times10^{-8}$ cycles/$\sqrt{\mathrm{Hz}}$, respectively. These order-of-magnitude estimates are well below the measured modulation spectrum and electronic baseline.
 
-Shot noise, dark-current shot noise, thermal noise and additive intensity noise are converted into phase noise by dividing by the beat amplitude. For a locally white current-noise ASD $i_n$ and peak beat current $I_{\mathrm{pk}}$,
-\begin{equation}
- A_\phi=\frac{\sqrt{2}\,i_n}{2\pi I_{\mathrm{pk}}}.
- \label{eq:perf_phase_asd}
-\end{equation}
-The factor $\sqrt{2}$ accounts for noise on both sides of the RF beat; $2\pi$ converts radians to cycles. With an ideal three-way electrical split and a 14-bit, $2\,\mathrm{GS/s}$ ADC, the calculated carrier and sideband readout ASDs are $3.40\times10^{-9}$ and $1.24\times10^{-8}$ cycles/$\sqrt{\mathrm{Hz}}$. The ADC sampling rate here is distinct from the 125 MHz digital processing rate. Figure~\ref{fig:newport_readout} shows the contributions.
+% This is an awkward paragraph. i think this idea should be communicated way more briefly and as like a couple of sentences basically to high light that we do these rough calculations to show that in out case the readout noise is not a limiting thing like it is for LISA
+The modulation measurement already contains readout noise, so the detector estimate primarily checks whether optical detection is likely to limit the experiment. Adding it separately can count a small readout contribution twice; the plotted sum should therefore be treated as a component estimate, rather than a decomposition into independently measured noises. At the calculated level, this ambiguity does not change the ordering of the larger contributions. Unlike LISA's weak-light measurement, the laboratory readout uses strong optical beats to make residual laser and clock noise easier to resolve.
 
-% if the noises are just straight lines, then why use plots? why not just tables with the values?
-\begin{figure*}[t]
- \centering
- \includegraphics[width=\textwidth]{images/performance/newport_readout_breakdown.pdf}
- \caption{Calculated carrier and first-order sideband readout noise for the stated bright-beam operating point. The model uses a $50\,\Omega$ load at $300\,\mathrm K$, $100\,\mathrm{nA}$ dark current, and white fractional intensity noise of $9\times10^{-9}/\sqrt{\mathrm{Hz}}$, with the two beams' additive intensity noise summed coherently. The assumed current-to-voltage gain at each ADC is $50/\sqrt{3}\,\mathrm{V/A}$, with a $1\,\mathrm V$ full-scale span, 14 bits and $2\,\mathrm{GS/s}$. The ADC curve is ideal quantization noise. The calculation assumes linear detection and adequate filtering before sampling and decimation; it does not include a measured receiver or phasemeter noise floor.}
- \label{fig:newport_readout}
-\end{figure*}
+% This paragraph should be removed. i dont understand what its saying, and like the readout terms should neved be considered common mode imo.
+The detector model also assumes that copies of a split signal have matched tracking responses and demodulation phases. Only under this assumption can the shared photocurrent noise be represented by a common phase error in Eq.~\eqref{eq:shared_readout}.
 
-These small values follow from the strong laboratory beats and ideal readout assumptions. They are not measurements of the complete receiver. In particular, RF losses, excess ADC noise and imperfect filtering can raise the readout contribution.
-
-miniLISA does not need to reproduce LISA's weak received light or its shot-noise-limited readout. Stronger signals give a lower detector contribution and make residual laser and clock noise easier to study. With the present inputs, the electronic and modulation spectra exceed the calculated detector noise.
-
-%im not sure about this. like im not convinced that all the RIN and shot noise will be common mode since the couping to phase depends on the instantaneous phase.
-Detector noise added before the electrical split is shared between boards. It must therefore be propagated as a shared input, while noise added after the split is assigned to the individual readouts. This differs from adding an independent detector noise to every LISA link.
 
 \subsection{Electronic Noise and Board Timing}
 \label{sec:electronic_noise}
+% Again, since these two noises are kinda distince, they should be a bit more concretely separated in this text. like it should be more clear that we are talking about two noises originating from the boards.
 
-The electronic delay line and its timing-noise coupling were studied by Ferguson et al.~\cite{ferguson2025applying}. We retain the measured electronic baseline as an input to the optical-testbed calculation. The same baseline PSD is assigned to carrier and sideband readouts, with independent equivalent noise terms for each link and channel. This represents the measured chain without separating every electronic component. The ideal ADC estimate above is not added again to the combined curve.
+% The first sentence should say that from Ferguson et al article or whatever. like that the measurement is described there.
+We use the measured electronic delay-line baseline as an equivalent noise contribution for each carrier and sideband readout. The same ASD is assigned to every link and channel, with independent noise realizations. This describes the measured electronic chain without separating its individual components.
 
-Development of the delay line is ongoing. The additive baseline and the coupling of board timing remain relevant when optical inputs are introduced, so both are included here. Other residuals associated with the present delay implementation are being addressed separately. Their eventual reduction has not been demonstrated by this calculation.
+% What does "suppresses this common term to the same order as laser noise" mean exactly? bc im not sure its true since this supression scales with te input noise level and ranging error.
+The delay boards share a timing reference. We write $\epsilon_i=\epsilon_{\mathrm{com}}+\Delta\epsilon_i$ and combine all appearances of $\epsilon_{\mathrm{com}}$ before calculating its noise power. As shown in Section~\ref{sec:setup}, TDI with clock correction suppresses this common term to the same order as laser noise. At the retained cancellation order, the board-timing residual is therefore
+\begin{equation}
+ X_{2\mathrm c}^{\epsilon}=\sum_i T_{\Delta\epsilon_i}\Delta\epsilon_i,
+\end{equation}
+where $T_{\Delta\epsilon_i}$ denotes the complete delay response of the differential timing error on board $i$. The spectrum of the shared reference is not an input spectrum for these differential terms.
 
-For board timing only, we use the Rb-standard model: a 10 MHz reference with single-sideband phase noise of $-130\,\mathrm{dBc/Hz}$ at 10 Hz \cite{srs_rb_standard}. Below 10 Hz, its phase PSD is extrapolated as $f^{-1}$ down to 1 Hz, $f^{-2}$ down to 10 mHz, and $f^{-3}$ below 10 mHz. This gives a timing ASD of $2.25\,\mathrm{ps}/\sqrt{\mathrm{Hz}}$ at 10 mHz. It is an assumed board-clock spectrum, separate from the LISA spacecraft-clock model above.
-
-The plotted board contribution assumes independent $\epsilon_i$ and applies no additional board-timing correction. A fluctuation shared by all boards cancels to the same order as laser noise in the ideal model; differences between boards can remain. The actual contribution therefore depends on the clock distribution. Board timing also changes the physical delay, as described in Section~\ref{sec:delay_line}. Its nominal beat-frequency coupling is already included in the $\epsilon_i$ terms and is not added again as independent ranging noise. The coupling of delay fluctuations to laser-frequency noise is not included in this component sum.
+We assume differential timing to be small compared with the included electronic and modulation contributions and neglect it in the plotted sum. This describes the shared-reference configuration; it does not assign an independent oscillator spectrum to each board. The additional coupling of delay fluctuations to laser-frequency noise and residuals from imperfect delay implementation are also excluded.
 
 \input{images/performance/component_inputs_caption}
 
-\subsection{Propagation Through TDI with Changing Arms}
+\subsection{Propagation Through TDI}
 \label{sec:noise_propagation}
-% This section misses the point. all that needs to be axplained here is the method of propagating the noises though TDI. and we basically do the same as the clock jitter paper by Hartwig and Bayle.
+We follow the noise-propagation approach of Hartwig and Bayle~\cite{hartwig_clock-jitter_2021}. First, each noise source is written in the carrier and sideband $\eta$ measurements. We then form the clock-transfer variables and substitute the measurements into the corrected Michelson combination. Collecting all appearances of one source gives its complete delay polynomial and hence its transfer function. This includes both the physical link delays and the delays applied in processing.
 
-We use the four links of the second-generation Michelson observable $X_2$. Every delay is evaluated at the time reached after the preceding delays. For example,
+Let $T_a(f)$ be the transfer function of source $n_a$, with PSD $S_a(f)$. For independent sources, the output PSD is
 \begin{equation}
- \mathcal D_{12}\mathcal D_{21}x(t)
- =x\!\left(t-d_{12}(t)-d_{21}(t-d_{12}(t))\right).
+ S_X(f)=\sum_a |T_a(f)|^2 S_a(f).
 \end{equation}
-The calculation retains this ordering rather than multiplying the first-generation result by a static filter.
+The order of these operations matters. A carrier readout reused in clock correction is the same noise source in both occurrences, so its coefficients must be added before taking the squared magnitude. The same applies to a clock fluctuation shared between boards. Treating these occurrences as independent would remove the cancellations present in the measurement model.
 
-% Some of this, like the frequencies, should be in the appendix maybe?
-The example uses $d_{12}(t)=d_{21}(t)=L+vt$ and $d_{13}(t)=d_{31}(t)=L-vt$, with $L=8.339\,\mathrm s$ and $v=5\times10^{-8}\,\mathrm{s/s}$. One arm grows while the other shrinks. This is a simple flexing-arm example, not an orbit reconstruction. The nominal electrical input frequencies are $(15.0,10.9,21.6)\,\mathrm{MHz}$ and the modulation frequencies are $(35,36,34)\,\mathrm{MHz}$. The beat-frequency coefficients are held constant to isolate the effect of changing delays.
+For changing arms, the transfer functions also depend on the evaluation time. We calculate each response using the delays at that time, including the earlier times reached along a sequence of delays, and average the resulting noise powers over the chosen interval. This approximates the spectrum while the arms vary slowly. Appendix~\ref{app:noise_parameters} specifies the delay model, averaging interval and checks on the calculation.
 
-For this reduced measurement model, $\alpha_{j1}=-\alpha_{1j}$. The clock terms cancel in the corrected round trips
-\begin{equation}
- R^{\mathrm c}_{1j}=\eta_{1j}+\mathcal D_{1j}\eta_{j1}-\alpha_{1j}r_{1j},
- \qquad j=2,3.
-\end{equation}
-The corrected second-generation combination is then
-\begin{align}
- X_{2\mathrm c}={}&(1-\mathcal D_{121}-\mathcal D_{12131}
-                  +\mathcal D_{1312121})R^{\mathrm c}_{13}\nonumber\\
- &-(1-\mathcal D_{131}-\mathcal D_{13121}
-                  +\mathcal D_{1213131})R^{\mathrm c}_{12}.
- \label{eq:performance_x2}
-\end{align}
-Successive subscripts specify the ordered link path, for example $\mathcal D_{12131}=\mathcal D_{12}\mathcal D_{21}\mathcal D_{13}\mathcal D_{31}$. This is the phase-domain Michelson construction of \cite{hartwig_clock-jitter_2021}. It cancels laser noise through first order in the arm-length rates. The simple round-trip clock correction used here relies on constant, opposite forward and reverse beat frequencies; an orbit-dependent frequency plan requires the corresponding general clock correction.
-
-Each noise source is inserted into the carrier and sideband measurements before forming Eq.~\eqref{eq:performance_x2}. All appearances of one source are combined before calculating its noise power. This retains the correlations of shared detector inputs and of the carrier readout reused in clock correction. Independent source powers are then added. Four independent noises with unit weights would give twice the single-source ASD; the actual TDI weights depend on frequency.
-
-For the spectral curves, we evaluate the response of each ordered path at 25 times spanning one day and average the local output powers. This uses the slow variation of the delays to estimate the component spectra; it is not a full time-domain simulation of an orbit or of the firmware. The calculation is checked against the static limit and the first-order laser-noise cancellation for unequal arm rates.
-
-\subsection{Combined Noise Contributions}
-% I am not a big for of how the board noise is modelled. 1) i think the Rb extrapolated ASD should also be shown in the single link noise plot via lets say 15 MHz.
-% But also, we currently see, that since the boards share a Rb reference, their jitters are largely common mode and almost completely cancel in TDI. I THINK, but not sure, they common mode jitter should also cancel in clock noise removal.
-% But since i dont know how much is common mode and how much is differential, this modelling is hard to do. all i know is that the current result is heavily ove estimating the resulting noiase.
-
-Figure~\ref{fig:total_tdi2_noise} combines the modulation estimate, calculated detector noise, measured electronic baseline and assumed board jitter. Their propagated powers are added to obtain the black curve. It shows the noise associated with these inputs under the stated model, rather than the performance expected from the current delay-line implementation.
+\subsection{Combined Noise Contributions and Implications}
+Figure~\ref{fig:total_tdi2_noise} shows the propagated electronic, modulation and detector contributions. The black curve is their quadrature sum, under the assumption that differential board timing is negligible. The dashed reference combines optical-metrology and test-mass acceleration noise, converted to phase at 1064 nm and propagated as independent equivalent link noises. Its input scales are $15\,\mathrm{pm}/\sqrt{\mathrm{Hz}}$ and $3\,\mathrm{fm\,s^{-2}}/\sqrt{\mathrm{Hz}}$, with the frequency dependence given in \cite{colpi_lisa_2024}. Test-mass noise is included only in this reference.
 
 \begin{figure*}[t]
  \centering
  \includegraphics[width=\textwidth]{images/performance/total_noise_tdi2_corrected_budget.pdf}
- \caption{Included noise contributions after ordered, varying-arm TDI~2 and clock correction. The black curve is their quadrature sum. The board-jitter curve uses independent Rb-model timing fluctuations; it is not measured board performance. The calculation uses the changing delays and constant frequency plan of Section~\ref{sec:noise_propagation}. The dashed reference is the OMS-plus-acceleration model propagated as four independent equivalent link noises. Delay-implementation residuals are excluded, so the sum is not a sensitivity prediction for the assembled testbed.}
+ \caption{Component phase-noise ASDs after second-generation Michelson TDI and clock correction, for the changing delays and constant beat frequencies in Appendix~\ref{app:noise_parameters}. The black curve sums the electronic, modulation and detector terms. Shared board timing is suppressed by TDI and clock correction; differential timing is assumed negligible. The dashed curve is the propagated OMS-plus-acceleration reference. Delay-implementation residuals are excluded.}
  \label{fig:total_tdi2_noise}
 \end{figure*}
 
-The dashed reference uses the usual optical-metrology displacement scale of $15\,\mathrm{pm}/\sqrt{\mathrm{Hz}}$ and test-mass acceleration scale of $3\,\mathrm{fm\,s^{-2}}/\sqrt{\mathrm{Hz}}$, with their frequency dependence as specified in \cite{colpi_lisa_2024}. Both are converted to phase at 1064 nm and propagated through the same science combination. This is a comparison of noise scales; test-mass noise is not physically present in miniLISA.
+The detector contribution lies well below the electronic and modulation curves. The bright optical readout therefore does not set the calculated residual. Among the contributions based on measured spectra, the electronic baseline is larger than the modulation estimate over most of the plotted band. Under the direct-phase-noise assumption, improving the modulation source alone would consequently leave the electronic contribution as the main limitation. This conclusion concerns the present operating point and the measured estimator; it does not establish the noise of the planned Moku modulation chain.
 
-The optical readout remains a small contribution for the assumed bright-beam operating point. In this example, independent board timing gives a larger contribution than the electronic baseline over much of the low-frequency band. That conclusion depends on the assumed independence and the absence of additional board-timing correction. The repeat modulation measurement will update the optical-extension estimate. Residuals from the delay implementation must be considered separately before comparing this component sum with the complete experiment.
+This conclusion assumes that differential board timing remains below the included contributions. The shared reference is combined coherently in the measurement model and does not enter as an independent board-noise floor.
+
+The repeated minima at higher frequencies arise from the delayed differences in the TDI response. They occur in several component curves and in the propagated reference. A small ASD at one of these minima is therefore not evidence of a quieter instrument; a sensitivity comparison must also include the response to the injected GW signal. The dashed curve provides a common noise scale, but crossing below it does not by itself demonstrate LISA-like sensitivity or successful laser- and clock-noise suppression.
+
+The calculation thus supports using strong optical beats to study noise cancellation without an evident detector-noise limitation. The next useful improvements are to establish the differential board-timing contribution and reduce or characterize the electronic residual, while repeating the modulation measurement with the intended source and readout. Once delay-related residuals are included, the resulting budget can be tested against the assembled system and the recovery of a specified GW injection.

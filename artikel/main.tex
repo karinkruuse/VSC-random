@@ -1,4 +1,4 @@
-\documentclass[aps,twocolumn,10pt,nofootinbib]{revtex4-2}
+\documentclass[aps,twocolumn,10pt,nofootinbib,floatfix]{revtex4-2}
 
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage[T1]{fontenc}
@@ -33,7 +33,38 @@
 
 
 
+% Definitions only - not typeset, see the nolist option in the preamble.
+
+    %\newacro{AC}{alternatng current}
+    \newacro{ADC}{analog to digital converter}
+    \newacro{EOM}{electro-optic modulator}
+    \newacro{DAC}{digital to analog converter}
+    \newacro{DDS}{direct digital synthesis}
+    \newacro{DPLL}{digital phase lock loop}
+    \newacro{FDS}{frequency distribution system}
+    \newacro{FPGA}{field programmable gate array}
+    \newacro{GW}{gravitational wave}
+    \newacro{IDS}{interferometric detection system}
+    %\newacro{ISI}{interspacecraft interferometer}
+    \newacro{LISA}{Laser Interferometer Space Antenna}
+    \newacro{LFN}{laser frequency noise}
+    \newacro{LVK}{LIGO-Virgo-KAGRA}
+    \newacro{MOSA}{movable optical system assembly}
+    %\newacro{PD}{photodetector}
+    %\newacro{PDH}{Pound-Drever-Hall}
+    \newacro{PLL}{phase locked loop}
+    \newacro{PM}{phasemeter}
+    \newacro{PMS}{phase measurement system}
+    \newacro{PS}{processing system}
+    \newacro{PT}{pilot tone}
+    \newacro{SC}{spacecraft}
+    \newacro{TDI}{time delay interferometry}
+    \newacro{UFLIS}{University of Florida Laser Interferometry Simulator}
+    \newacro{ULE}{ultra-low expansion}
+    \newacro{USO}{ultra-stable oscillator}
+
 \begin{document}
+
 %\listoftodos
 
 \title{miniLISA: Design and Component Noise Model of an Optical Time-Delay Interferometry Testbed}% Force line breaks with \\
@@ -51,7 +82,8 @@ Max Planck Institute for Gravitational Physics
              %  but any date may be explicitly specified
 
 \begin{abstract}
-We describe miniLISA, a laboratory testbed combining optical laser signals, electronic propagation delays and independent spacecraft clocks. The design reproduces the laser-noise structure of LISA's one-way measurements, a reduced sideband clock-transfer model, and injected gravitational-wave signals. We calculate the modulation and readout contributions introduced by the optical extension, alongside the electronic baseline and an assumed board-timing spectrum. These noises are propagated through second-generation time-delay interferometry with changing arm lengths and clock correction. The resulting sum describes the included components; it excludes residuals from the current delay implementation and does not predict the complete testbed performance. The setup will allow tests of laser- and clock-noise suppression together with recovery of an injected signal.
+miniLISA is a laboratory testbed for testing laser- and clock-noise suppression together with gravitational-wave signal recovery. Optical inputs provide laser phase noise and modulation sidebands, while FPGA delay lines represent inter-spacecraft propagation and add prescribed signal responses. We relate the synthesized readouts to a reduced LISA measurement model and propagate measured electronic and modulation spectra through second-generation time-delay interferometry with clock correction. An order-of-magnitude detector calculation lies below these contributions for the assumed bright optical readout. The electronic baseline is the larger measured contribution over most of the plotted band. The common board-reference fluctuation is suppressed by TDI and clock correction; differential board timing is assumed negligible in the component sum. This assumption and the remaining delay errors require experimental verification.
+
 \end{abstract}
 
 %\keywords{Suggested keywords}%Use showkeys class option if keyword
@@ -71,13 +103,13 @@ We describe miniLISA, a laboratory testbed combining optical laser signals, elec
 \section{miniLISA Design}
 \label{sec:setup}
 
-\subsection{Motivation for the Present Work}
-The present work extends the electronic delay-line testbed with optical inputs and independent spacecraft clocks. It combines physical laser noise, sideband-based clock transfer, and hardware delays of several seconds, and estimates the noise contributions introduced by the optical extension alongside the electronic baseline.
+\subsection{Design Aim} % This is a horrible Title.
+The optical extension combines physical laser noise, sideband clock transfer and electronic delays of several seconds. The delays place samples acquired at different times in the same measurement, as inter-spacecraft propagation does in LISA. The following model specifies the couplings that the hardware must reproduce.
 
-The electronic delays place samples acquired several seconds apart in the same interferometric measurement. This lets us test noise cancellation with independently clocked hardware, including changes in the delay caused by the hardware clock itself.
+\subsection{Target Measurements} % This is also a horrible Title.
+% Why is the modulation frequency mentioned separately? like its a weird choice of mentiong laser noise clock noise and modulation frequency out of all values. like what groups them together? maybe skip the modulation frequnecy in this list
+The design has six directed links between three spacecraft. Each spacecraft has one effective laser phase $\delta\phi_i$, one timing error $q_i$ and one modulation frequency $\nu_i^m$. With the first link index denoting the receiver, the target carrier measurement is
 
-\subsection{Measurement Philosophy}
-The design provides six directed links between three spacecraft, allowing LISA TDI combinations to be formed within the measurement model described below. We use the familiar Michelson $X$ for the performance analysis; it uses four of these links. The testbed reproduces the \ac{LFN}, clock-noise, and GW couplings of the LISA measurements. The first index of a link denotes the receiving \ac{SC}; source quantities carry a single spacecraft index, $\delta\phi_i$, $q_i$, and $\nu_i^m$. The target carrier phase fluctuations are
 \begin{equation*}
     \delta\phi^{\mathrm c}_{ij}(t)
     =\mathbf D_{ij}\delta\phi_j(t)-\delta\phi_i(t)
@@ -90,22 +122,24 @@ and the upper-sideband fluctuations are
     +\delta\phi^{\mathrm{GW}}_{ij}(t)\\
     &-(\alpha_{ij}+\nu_j^m)q_i(t)+\nu_j^m\mathbf D_{ij}q_j(t).
 \end{align*}
+% In general i think this whole section is very good. However, in the two last paragraph of this section, i feel like the comparson to LISA could be a bit more clear? like i feel like currently that text is very clutterred, but i also cant point to anythin specific. it just kkinda feels too "wordy"
 Here $\alpha_{ij}$ is the signed nominal carrier beat frequency. The sideband sampling coefficient is $\gamma_{ij}=\alpha_{ij}+\nu_j^m-\nu_i^m$; combining it with the local modulation phase gives the clock term above. Both channels use the common GW phase approximation of Section~\ref{sec:modelling}. We call a measurement \emph{LISA-like} when it reproduces these couplings. Modulation, board, and readout noises are added below.
 
-An FPGA delay line supplies the propagation delay and the prescribed Doppler and GW frequency shifts. Heterodyning the optical fields with a common reference laser brings their phase information into the MHz range accessible to the electronics. The reference laser noise becomes part of the effective input laser noise, whose cancellation is discussed below.
+The delay line supplies the propagation delay and prescribed Doppler and GW frequency shifts. A common optical reference brings each spacecraft laser signal into the MHz input band. Its phase noise becomes part of the effective source phase and is therefore included in the laser-noise cancellation.
 
 The testbed omits the test-mass and reference interferometers, together with test-mass acceleration noise, optical-bench motion, backlink noise, and tilt-to-length coupling. Consequently, the local combinations $T_{ji}$ and $\xi_{ji}$ used to remove bench motion in Section~\ref{sec:modelling} are unnecessary. Identifying the two bench lasers on each spacecraft with a single source also removes the need for the reference differences $z_{ji}$. The synthesized links reproduce the three-laser structure of the $\eta$ observables, but omit the reference-interferometer clock terms proportional to $\beta_{ji}$. The clock correction tested here is therefore the reduced case of the LISA construction with those terms absent.
 
 \subsection{Optical Input}
-Three lasers represent the spacecraft, each with an independent clock driving its modulation and phase measurement. A fourth laser provides the common optical reference.
-The role of the reference laser is to convert the optical phase fluctuations of each \ac{SC} laser into electronically processable heterodyne beat notes, which can then be measured by the delay line. This heterodyning step effectively downconverts the optical signals from approximately 281 THz to tens of megahertz, preserving laser frequency noise in the millihertz range of interest.
-Among the \ac{SC} lasers, one is frequency-stabilized to a 25 cm \ac{ULE} glass cavity, while the reference laser is locked to a 30 cm \ac{ULE} cavity via the Pound-Drever-Hall method.
-Both cavities are housed in a vacuum chamber surrounded by three layers of aluminum thermal shielding. The target is a pre-stabilized \ac{LFN} level of around 30 Hz/$\sqrt{\text{Hz}}$ in the millihertz band. The remaining two \ac{SC} lasers are PLL-locked to the synthetic LISA-like beat notes.
+Three lasers represent the spacecraft, and a fourth laser supplies their common optical reference. Heterodyning each spacecraft laser with the reference produces a MHz beat note that retains their relative phase fluctuations. These beat notes form the inputs to the electronic delay lines.
+
+One spacecraft laser is stabilised to a 25 cm \ac{ULE} cavity; the reference laser is locked to a separate 30 cm cavity by the Pound--Drever--Hall method. Both cavities are housed in a vacuum chamber with three layers of aluminium thermal shielding. The target laser frequency noise is approximately 30 Hz/$\sqrt{\mathrm{Hz}}$ in the millihertz band. The other two spacecraft lasers are phase-locked to synthesized beat notes.
 
 Each spacecraft uses an independent timing reference for its Moku. The Moku supplies both the phase readout and the modulation tone driving the fiber-coupled EOM. We use $q_i$ for the timing fluctuations common to the EOM drive and the phasemeter's sampling reference. Excess noise between these paths enters the modulation and readout terms separately.
 
-The reference laser is unmodulated in the configuration described here, so the spacecraft carrier and sidebands each beat with the reference carrier. The modulation frequency must therefore keep all three electrical beat notes within the delay-line input bandwidth. These input tones carry the optical phase and clock information; the LISA-like carrier--carrier and sideband--sideband readouts are formed by digital subtraction downstream. Modulating the reference laser is a possible extension for higher modulation frequencies, discussed in Section~\ref{sec:clock_extensions}.
-The construction of a two-way arm link is illustrated in the lower panel of Fig.~\ref{fig:armlink}, alongside a simplified schematic of the corresponding LISA link showing only the functionally relevant elements. Taking the signed photodetector beat phase as \ac{SC} laser minus reference laser, the carrier signal phase before additive detector noise is
+The reference laser is unmodulated, so its carrier beats with the spacecraft carrier and both sidebands. The optical frequency plan must keep these three input tones within the delay-line bandwidth. Digital subtraction then forms the carrier--carrier and sideband--sideband measurements of the target model. A possible extension with a modulated reference is discussed in Section~\ref{sec:clock_extensions}.
+
+The lower panel of Fig.~\ref{fig:armlink} shows one two-way laboratory link. Taking the photodetector beat phase as spacecraft laser minus reference laser, the carrier phase before detector noise is
+
 \begin{align*}
     \Phi_{\mathrm{PD},i}^{\mathrm c}(t)
     ={}&\nu_{\mathrm{R},i}t
@@ -127,7 +161,7 @@ These are the single-index counterparts of $\tau_{ij}^{\mathrm{mod}}$ and $\psi_
 \end{equation*}
 The lower sideband carries the opposite modulation phase, $-\nu_i^m q_i-m_i$. If its signed electrical frequency $\nu_{\mathrm R,i}-\nu_i^m$ is negative, representing it at positive frequency also reverses the measured phase sign; the clock correction below uses the upper sideband.
 
-The photodetector output is then split and distributed across three delay-line boards. One of these boards synthesizes the local LISA-like beat note signals, the other two do so for the other two \ac{SC}. The signal routing between the boards is illustrated in Fig.~\ref{fig:triangular}.
+Each photodetector output is split between the three delay boards. A board uses the local and remote inputs to synthesize the links received at its spacecraft. Figure~\ref{fig:triangular} shows the six-link routing.
 
 \begin{figure}
     \centering
@@ -138,33 +172,34 @@ The photodetector output is then split and distributed across three delay-line b
 \end{figure}
 
 
-Shot noise, intensity noise and detector electronics add fluctuations to the photocurrent, which produce phase errors when the delay-line PLLs track the beat notes. Noise added before the electrical split is shared between boards; ADC and electronics noise added after the split need separate terms. Their phase-noise scales are calculated in Section~\ref{sec:readout_noise}, and their different propagation is described in Section~\ref{sec:noise_propagation}.
-
+Photocurrent noise produces phase errors when the delay-line PLLs track the input beats. Copies of a detector signal can share this error if the tracking responses match; ADC and electronics noise added after the split also contributes to each path. Section~\ref{sec:readout_noise} estimates the detector scale, and Section~\ref{sec:noise_propagation} describes the propagation of shared and independent sources.
 
 \subsection{The Delay Line}
 \label{sec:delay_line}
 The digital delay line emulates the light-travel time along each directed link. The current firmware always tracks and stores the carrier and both sidebands. At the resulting data rate, the available memory supports a maximum delay of approximately 8.5 s, covering LISA's nominal one-way light-travel time of about 8.3 s.
 
-The implementation uses an AMD Xilinx ZCU208 RFSoC evaluation board, with integrated ADCs and DACs, FPGA programmable logic, and an embedded \ac{PS}. For each synthesized link, separate DPLLs track the carrier and sidebands of the remote and local input signals. The tracked remote frequencies are buffered to impose the arm delay, then combined with the current local frequencies. The present 125 MHz input-processing rate restricts the optical heterodyne tones to below 62.5 MHz. This is a constraint on the laboratory optical frequency plan, distinct from the frequencies of the synthesized LISA-like outputs.
+The delay line uses an AMD Xilinx ZCU208 RFSoC board with integrated ADCs, DACs, FPGA logic and an embedded \ac{PS}. For each link, separate DPLLs track the carrier and sidebands in the remote and local inputs. The remote frequency records pass through a buffer before subtraction of the current local frequencies. The 125 MHz processing rate limits the input tones to below 62.5 MHz; the digitally synthesized output frequencies are set separately.
 
 Orbital delays and GW link responses are computed in advance in Python and uploaded to the \ac{PS}. During playback, the \ac{PS} converts the model inputs into fixed-point commands and streams timestamped records to the programmable logic.
 The buffer supplies the macroscopic light-travel time, while fine delay actuation follows the prescribed arm-length evolution using fractional-delay interpolation. The underlying electronic architecture is described in \cite{ferguson2025applying}.
 
-The FPGA subtracts the local frequency from the delayed remote frequency and adds the prescribed Doppler and GW offsets. Integrating this frequency produces the output phase for each of the carrier and sideband tones, which are combined at the DAC. Section~\ref{sec:gw_injection} describes the GW scaling. Omitting the nominal frequency evolution, the intended carrier phase is
+The FPGA subtracts the local frequency from the delayed remote frequency and adds the prescribed Doppler and GW offsets. Section~\ref{sec:gw_injection} describes the GW scaling. Omitting the nominal frequency evolution, the intended carrier phase is
 \begin{equation*}
     \mathbf D_{ij}\delta\phi_j^{\mathrm{eff}}
     -\delta\phi_i^{\mathrm{eff}}+\delta\phi^{\mathrm{GW}}_{ij}.
 \end{equation*}
 Section~\ref{sec:noise_propagation} propagates the component noises through ideal phase delays with changing arm lengths.
 
-The two ADC inputs and the DAC output share the timing jitter $\epsilon_i(t)$ of the board on spacecraft $i$. Sampling imprints this jitter on both inputs. The remote contribution then passes through the delay, while subtracting the local signal in the digital mixer reverses the sign of its ADC contribution. The DAC adds jitter at the output beat frequency $\alpha_{ij}$, giving
+% I dont think the reader here will understand what local and distance mean for the ADCs and DACs. i think this part should be less "wordy" and just sort of show the equations and then if the reader wants, then can follow the logic looking at a figure or something? OR, the wording should be made more easy to understand.
+The ADCs and DAC on board $i$ share a timing fluctuation $\epsilon_i$. The remote ADC contribution is delayed with the stored signal. The local ADC contribution changes sign when the local frequency is subtracted, and the DAC contributes at the output frequency $\alpha_{ij}$. The resulting carrier error is
+
 \begin{align*}
     \delta\phi^{\mathrm c}_{\epsilon,ij}(t)={}&
     -\nu_{\mathrm R,j}\mathbf D_{ij}\epsilon_i(t)\\
     &+\nu_{\mathrm R,i}\epsilon_i(t)+\alpha_{ij}\epsilon_i(t)\\
     ={}&\nu_{\mathrm R,j}(1-\mathbf D_{ij})\epsilon_i(t).
 \end{align*}
-Here $\alpha_{ij}=\nu_{\mathrm R,j}-\nu_{\mathrm R,i}$, so the local ADC and DAC terms combine to give $\nu_{\mathrm R,j}\epsilon_i(t)$.
+The local ADC and DAC terms combine to give $\nu_{\mathrm R,j}\epsilon_i(t)$.
 
 The same cancellation applies to the upper sideband, with the remote input frequency replaced by $\nu_{\mathrm R,j}+\nu_j^m$:
 \begin{equation*}
@@ -173,6 +208,8 @@ The same cancellation applies to the upper sideband, with the remote input frequ
 \end{equation*}
 Both expressions assume constant nominal frequencies and no additional output frequency offset.
 
+% What is t_in
+% And really, this whole part i dont understand. whats the point?
 The same board jitter also changes the physical duration of a programmed delay. For a constant command $d_{ij}$ in board time $u_i(t)=t+\epsilon_i(t)$, the input and output times satisfy $u_i(t)-u_i(t_{\mathrm{in}})=d_{ij}$. To first order,
 \begin{align}
     d^{\mathrm{phys}}_{ij}(t)&=t-t_{\mathrm{in}}
@@ -180,7 +217,7 @@ The same board jitter also changes the physical duration of a programmed delay. 
     \delta d^\epsilon_{ij}(t)&=-(1-\mathbf D_{ij})\epsilon_i(t).
     \label{eq:board_delay_jitter}
 \end{align}
-Thus the physical delay can fluctuate even when its programmed value is known exactly. In LISA, ranging errors leave uncertainty in the light-travel times used for TDI. Here, board timing changes the realized delay itself. Both effects can leave laser noise if the delays applied in processing do not match the physical delays.
+A fixed delay command therefore need not give a fixed physical delay. The relevant error for TDI is the difference between this physical delay and the delay applied in processing. Both uncertainty in the delay estimate and untracked timing fluctuations can leave residual laser noise.
 
 \subsection{GW Signal Injection}
 \label{sec:gw_injection}
@@ -194,7 +231,7 @@ Since the nominal optical frequency $\nu_j$ is constant, the frequency offset su
     =\delta\dot\phi^{\mathrm{GW}}_{ij}(t)
     =-\nu_j\dot H_{ij}(t).
 \end{equation}
-Accumulating this offset reproduces the required GW phase up to an initial phase constant. The scale factor is the represented optical frequency, not the MHz beat note frequency entering the delay-line ADC. Thus the GW signal is generated by adding phase evolution to the reconstructed signal; the hardware delay itself remains $d_{ij}$ and is not additionally perturbed by $H_{ij}$. This implements the first-order propagation model of Section~\ref{sec:modelling}.
+Integrating this command gives the required GW phase, up to an initial constant. The conversion uses the represented optical frequency, rather than the MHz input beat frequency. The signal is added to the reconstructed phase after the background delay; the buffer delay itself is not changed by $H_{ij}$.
 
 Each directed-link waveform is evaluated at its reception time $t$. The propagation and source geometry are already included in $H_{ij}$, so no additional background delay is applied to the injection waveform after it is generated. Relative timing between the playback streams must reproduce this convention.
 
@@ -204,7 +241,6 @@ When the link response is supplied as a fractional-frequency signal $y_{ij}=-\do
 The link responses can be computed in Python for a chosen waveform and constellation geometry. Multiple sources can be combined by summing their link responses in the linear regime. The source class is not fixed by the hardware, but the resulting commands must lie within its frequency range, resolution and update bandwidth.
 
 A signed 32-bit GW command is added on the 64-bit phase-increment scale. At a 125 MHz accumulator clock, one least significant bit corresponds to $125\,\mathrm{MHz}/2^{64}\simeq6.78\times10^{-12}\,\mathrm{Hz}$.
-\reviewnote{Generate the delay commands and GW responses from the same orbit and reception-time convention. State the command update rate and verify the recovered amplitude and phase, including quantization and playback timing.}
 
 \subsection{Readout and Data Processing}
 
@@ -238,7 +274,7 @@ The additive phase noise $b^a_{ij}$ combines optical readout, residual board, an
     b^a_{ij}=\mathbf D_{ij}p_j^a-p_i^a+e_{ij}^a,
     \label{eq:shared_readout}
 \end{equation}
-where $p_i^a$ is the equivalent input phase noise in channel $a$ before the split, and $e_{ij}^a$ contains noise added by the individual electronic paths. This expression assumes matched tracking responses. Any mismatch must be included in the transfer functions rather than treating copies of $p_i^a$ as independent sources.
+where $p_i^a$ is the equivalent input phase noise in channel $a$ before the split, and $e_{ij}^a$ contains noise added by the individual electronic paths. This expression assumes matched tracking responses and demodulation phases, so that shared photocurrent noise gives the same phase error in each copy. Any mismatch must be included in the transfer functions rather than treating copies of $p_i^a$ as independent sources.
 
 The effective laser phases $\delta\phi_i^{\mathrm{eff}}$ enter with the same delayed-difference structure as the LISA laser phases. TDI therefore suppresses both the spacecraft and reference laser noise.
 
@@ -253,8 +289,8 @@ Finally, the upper-sideband-minus-carrier variable takes the form
 \end{align*}
 The common GW phase cancels, leaving the clock-transfer signal together with modulation, board and readout noise.
 
-The following common-mode cancellation assumes a shared board timing reference, with residual differences between distribution paths. Writing $\epsilon_i=\epsilon_{\mathrm{com}}+\Delta\epsilon_i$ separates their shared fluctuation from the differential jitter. In the constant-frequency model above, the common term can be absorbed into the effective laser phases and clock errors as $\delta\phi_i^{\mathrm{eff}}-\nu_{\mathrm R,i}\epsilon_{\mathrm{com}}$ and $q_i-\epsilon_{\mathrm{com}}$. It is therefore suppressed with laser noise by TDI and clock correction. Differential board jitter remains and sets the relevant timing residual.
-\reviewnote{State which oscillator references the delay-board ADCs, DACs and delay counters, and how it is distributed. Confirm whether the boards share one reference or follow their spacecraft clock references. In the latter case, specify the correlations between $\epsilon_i$ and $q_i$ and revise the timing budget accordingly.}
+The delay boards share an Rb reference. We write $\epsilon_i=\epsilon_{\mathrm{com}}+\Delta\epsilon_i$ to separate shared timing from differences between boards. In the constant-frequency model, the shared term is absorbed by replacing the effective source phases with $\delta\phi_i^{\mathrm{eff}}-\nu_{\mathrm R,i}\epsilon_{\mathrm{com}}$ and the clock errors with $q_i-\epsilon_{\mathrm{com}}$. It is then suppressed by TDI and clock correction to the same order as laser noise. Differential board timing remains a separate contribution.
+\reviewnote{Document the distribution of the Rb reference to the ADCs, DACs and delay counters, and measure the differential timing between boards.}
 
 Tables~\ref{tab:noise_comparison} and \ref{tab:lab_noise} summarize the noise inputs. The optical readout calculation and the measured electronic and modulation spectra are discussed in Section~\ref{sec:performance}.
 
@@ -265,21 +301,6 @@ Tables~\ref{tab:noise_comparison} and \ref{tab:lab_noise} summarize the noise in
 
 
 \section{Future Extensions}
-%\subsection{Discussion on Omitted noise sources }
-%We omit noise sources associated with the test mass, including test-mass acceleration noise and optical-bench jitter, as the testbed does not include the gravitational reference sensor. Backlink noise, arising from the fiber connecting the two optical benches on a given spacecraft, is similarly absent from the current configuration.
-\subsection{Injection of Secondary Noise}
-Test-mass displacement can be emulated by adding the corresponding phase terms $M_{ij}$ from Section~\ref{sec:modelling} to the synthesized links. Each simulated test mass must use the same displacement realization wherever it occurs, including the delayed occurrence in the reverse link. Independent noise added to every link would not reproduce these correlations. For a specified acceleration spectrum, the displacement ASD is obtained by dividing by $(2\pi f)^2$ over the analysis band. This injection would test the secondary-noise transfer functions as well as primary-noise suppression.
-
-Independent phase perturbations can also be added after link synthesis to test a prescribed LISA-like readout-noise model. Lower optical power would test weak-light tracking and readout, but would not by itself remove the correlations introduced by splitting one detector output across boards.
-
-\subsection{Orbit-Based Delays}
-The calculation in Section~\ref{sec:noise_propagation} uses a simple model with one growing arm and one shrinking arm. Orbit-derived delays and Doppler shifts would extend it to a full constellation model. The six-link design also supports combinations beyond Michelson $X_2$.
-
-For the frequency-tracking delay line to reproduce a delayed phase, its output must include the delay-rate factor,
-\begin{equation}
- \frac{d}{dt}\phi(t-d(t))=(1-\dot d(t))\dot\phi(t-d(t)).
-\end{equation}
-Implementing and testing this response is part of the ongoing delay-line work. The noise calculation assumes the intended phase response. A full orbit model must also account for changing beat frequencies in the clock correction and keep the synthesized tones within the readout bandwidth.
 
 \subsection{Changes to the Clock-Transfer and Locking Configuration}
 \label{sec:clock_extensions}
@@ -288,114 +309,35 @@ Changing the modulation frequency requires separating the measured estimator int
 A second optical source and modulator on each spacecraft, together with reference interferometers and backlinks, would reproduce the local $\xi/z/\eta$ reduction and the $\beta$ clock couplings omitted here \cite{otto2012tdi}. Distinct synthesis chains and a local sideband comparison would also allow tests of differential tone-generation noise.
 
 
+%\subsection{Discussion on Omitted noise sources }
+%We omit noise sources associated with the test mass, including test-mass acceleration noise and optical-bench jitter, as the testbed does not include the gravitational reference sensor. Backlink noise, arising from the fiber connecting the two optical benches on a given spacecraft, is similarly absent from the current configuration.
+\subsection{Injection of Secondary Noise}
+Test-mass displacement can be emulated by adding the corresponding phase terms $M_{ij}$ from Section~\ref{sec:modelling} to the synthesized links. Each simulated test mass must use the same displacement realization wherever it occurs, including the delayed occurrence in the reverse link. Independent noise added to every link would not reproduce these correlations. For a specified acceleration spectrum, the displacement ASD is obtained by dividing by $(2\pi f)^2$ over the analysis band. This injection would test the secondary-noise transfer functions as well as primary-noise suppression.
 
-\begin{comment}
-\begin{table*}[htbp]
-\centering
-\caption{Comparison of key metrology elements between LISA and the present testbed.}
-\label{tab:lisa_testbed_comparison}
-\begin{tabular}{lcc}
-\hline
-\textbf{Element} & \textbf{LISA} & \textbf{Testbed} \\
-\hline
-Lasers per spacecraft
-& 2
-& 1 \\
+Independent phase perturbations can also be added after link synthesis to test a prescribed LISA-like readout-noise model. Lower optical power would test weak-light tracking and readout, but would not by itself remove the correlations introduced by splitting one detector output across boards.
 
-Laser pre-stabilisation
-& Optical cavity, phase locking
-& Optical cavity, phase locking \\
-
-Inter-spacecraft links
-& Optical (free-space)
-& Electrical (after heterodyning) \\
-
-Delay implementation
-& Physical light-travel time
-& FPGA-based electrical delay line \\
-
-Delays
-& 8.3 s
-& 8.3 s\\
-
-Ranging
-& PRN
-& tone assisted \\
-
-Clock sources
-& 3 independent USOs
-& 3 independent USOs \\
-
-Clock transfer
-& GHz sideband modulation
-& MHz sideband modulation \\
-
-Reference interferometer
-& Implemented
-& not presently implemented \\
-
-
-TDI generation considered
-& Second generation
-& First generation, Second in the future \\
-
-\hline
-\end{tabular}
-\end{table*}
-
-\end{comment}
 
 
 
 
 \section{Conclusion}\label{Conclusion}
-miniLISA is being developed to test whether laser and clock noise can be removed from laboratory measurements while preserving a gravitational-wave signal. The design combines optical signals, independent spacecraft clocks and electronic delays that represent the light-travel times between spacecraft. Its six directed links will support different TDI combinations. Here, we use the four links needed for the second-generation Michelson combination to calculate the included noise contributions.
+miniLISA combines optical laser signals, independent spacecraft clocks and electronic propagation delays to test TDI and clock correction in one measurement chain. The synthesized links reproduce the three-laser structure of the LISA measurements and a reduced sideband clock-transfer model. Adding prescribed GW phase responses allows the same experiment to test whether noise suppression preserves a known signal.
 
-The calculation combines component measurements with optical readout and board-timing noise models. For the assumed operating conditions, the detector contribution is smaller than the electronic and modulation contributions. miniLISA does not need to reproduce LISA's weak-light readout: strong laboratory signals make it easier to study the remaining noise after laser and clock correction. The component noises are propagated with changing delays. Residuals from the current delay implementation are excluded, so the combined curve does not predict the performance of the complete setup.
+The component calculation indicates that strong laboratory beats keep detector readout below the measured electronic and modulation contributions. Electronics provide the larger measured contribution over most of the plotted band. The shared board-reference fluctuation is suppressed with laser noise, and differential timing is assumed below the included contributions. These results identify electronic noise and differential timing as priorities for characterisation, without assigning a complete sensitivity to the testbed.
 
-The next steps are to repeat the modulation-noise measurement and assemble the optical setup. The main experimental test will then be to suppress laser and clock noise and recover an injected gravitational-wave signal with the expected amplitude and phase.
+The next steps are to repeat the modulation measurement with the intended source and readout, quantify differential board timing and delay errors, and compare the resulting budget with the assembled optical system. A specified GW injection will then test the recovered amplitude and phase alongside the achieved laser- and clock-noise suppression.
 
-%\newpage
-%\listoftodos[Notes]
 
-% Definitions only - not typeset, see the nolist option in the preamble.
-\begin{acronym}
-    %\acro{AC}{alternatng current}
-    \acro{ADC}{analog to digital converter}
-    \acro{EOM}{electro-optic modulator}
-    \acro{DAC}{digital to analog converter}
-    \acro{DDS}{direct digital synthesis}
-    \acro{DPLL}{digital phase lock loop}
-    \acro{FDS}{frequency distribution system}
-    \acro{FPGA}{field programmable gate array}
-    \acro{GW}{gravitational wave}
-    \acro{IDS}{interferometric detection system}
-    %\acro{ISI}{interspacecraft interferometer}
-    \acro{LISA}{Laser Interferometer Space Antenna}
-    \acro{LFN}{laser frequency noise}
-    \acro{LVK}{LIGO-Virgo-KAGRA}
-    \acro{MOSA}{movable optical system assembly}
-    %\acro{PD}{photodetector}
-    %\acro{PDH}{Pound-Drever-Hall}
-    \acro{PLL}{phase locked loop}
-    \acro{PM}{phasemeter}
-    \acro{PMS}{phase measurement system}
-    \acro{PS}{processsing unit}
-    \acro{PT}{pilot tone}
-    \acro{SC}{spacecraft}
-    \acro{TDI}{time delay interferometry}
-    \acro{UFLIS}{University of Florida Laser Interferometry Simulator}
-    \acro{ULE}{ultra-low expansion}
-    \acro{USO}{ultra-stable oscillator}
-\end{acronym}
+
 
 \newpage
-% unsrt numbers references in order of first citation in the text
-% (plain would sort them alphabetically by author instead).
+\appendix
+\input{noise_parameters}
+
 \bibliographystyle{unsrt}
 \bibliography{citations}
 
-%\appendix
+
 
 
 \end{document}

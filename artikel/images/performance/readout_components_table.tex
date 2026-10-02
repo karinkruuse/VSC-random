@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\caption{Calculated white readout ASDs in $10^{-9}$ cycles/$\sqrt{\mathrm{Hz}}$. Each beam supplies 4 mW, with modulation depth 0.53 rad, responsivity $0.6\,\mathrm{A/W}$ and power-overlap efficiency 0.9. The model uses a $50\,\Omega$ load at 300 K, 100 nA dark current and white fractional intensity noise $9\times10^{-9}/\sqrt{\mathrm{Hz}}$, summed coherently between beams. Gain after the three-way split is $50/\sqrt{3}\,\mathrm{V/A}$; the ADC has a 1 V full-scale span, 14 bits and $2\,\mathrm{GS/s}$.}
+\label{tab:readout_components}
+\begin{tabular}{lrr}
+\hline
+Contribution & Carrier & Sideband \\
+\hline
+Shot + dark current & 2.082 & 7.578 \\
+Thermal & 0.966 & 3.517 \\
+Intensity & 2.294 & 8.347 \\
+ADC quantization & 1.025 & 3.729 \\
+Total & 3.403 & 12.385 \\
+\hline
+\end{tabular}
+\end{table}

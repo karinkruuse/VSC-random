@@ -18,6 +18,8 @@ Updated 30 September 2026. This is the central checklist. Purple draft notes als
 - [ ] **Use the Moku report to guide the readout check.** Request the existing same-DAC, two-ADC phase records and the signal amplitudes/readout settings. Those data may already provide the differential readout estimate needed; start there before arranging another measurement.
 - [ ] **Decide whether an external signal generator is needed after the modulation test.** The relevant quantity is excess modulation-path noise relative to the phasemeter timing reference. The DAC report alone does not determine it.
 - [ ] **After assembly, test noise suppression and GW recovery.** Compare the recovered signal with the amplitude and phase predicted using the same delays. Use the adopted LISA laser and spacecraft-clock noise levels for planning. The Rb spectrum now applies only to board timing. The experiment is to reproduce the LISA spacecraft-clock level; it is not claimed to do so already.
+- [ ] **Is the PD readout noise common mode after split between PLLS?** Measure the cross-spectra of phase estimates from the split detector signal. Use them to check the assumed phase-noise correlations and to distinguish detector noise from the readout contribution already present in the modulation measurement.}
+
 
 ## Later, for a full orbit-dependent model
 

@@ -16,19 +16,12 @@
 \parbox[t]{0.18\textwidth}{\raggedright Sideband readout\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright $600\,\mu\mathrm{rad}/\sqrt{\mathrm{Hz}}$ allocation\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright $0.0778\,\mu\mathrm{rad}/\sqrt{\mathrm{Hz}}$ calculation\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Shared detector inputs have different propagation from independent link readouts.\par\vspace{3pt}} \\[5pt]
 \parbox[t]{0.18\textwidth}{\raggedright ADC / phasemeter noise\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Included in readout allocations\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Electronic baseline in Table~\ref{tab:lab_noise}\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Not added twice in the combined curve.\par\vspace{3pt}} \\[5pt]
 \hline
-\multicolumn{4}{l}{\textbf{LISA sources not reproduced in miniLISA}} \\
-\parbox[t]{0.18\textwidth}{\raggedright Test-mass acceleration\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright $3\,\mathrm{fm\,s^{-2}}/\sqrt{\mathrm{Hz}}$ reference scale\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No free test masses\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Used only in the comparison curve.\par\vspace{3pt}} \\[5pt]
-\parbox[t]{0.18\textwidth}{\raggedright Optical-bench motion\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No separate level used here\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Not reproduced\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Removed by LISA's local combinations.\par\vspace{3pt}} \\[5pt]
-\parbox[t]{0.18\textwidth}{\raggedright Backlink noise\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No separate level used here\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No inter-bench backlink\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Reciprocal part cancels in LISA.\par\vspace{3pt}} \\[5pt]
-\parbox[t]{0.18\textwidth}{\raggedright Test-mass / reference readout\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No separate levels used here\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No corresponding interferometers\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Absent from the reduced model.\par\vspace{3pt}} \\[5pt]
-\parbox[t]{0.18\textwidth}{\raggedright Tilt-to-length noise\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright No separate level used here\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Not explicitly modelled\par\vspace{3pt}} & \parbox[t]{0.24\textwidth}{\raggedright Laboratory alignment noise is not quantified.\par\vspace{3pt}} \\[5pt]
-\hline
 \end{tabular}
 \end{table*}
 
 \begin{table*}[t]
 \centering
-\caption{Additional sources associated with the laboratory implementation. Levels at 10 mHz are illustrative input values. The electronic spectrum is measured; the board-timing spectrum and its independence between boards are assumptions.}
+\caption{Additional sources associated with the laboratory implementation. Levels at 10 mHz are illustrative input values. The electronic spectrum is measured. The boards share a timing reference; differential timing is assumed negligible in the plotted component sum.}
 \label{tab:lab_noise}
 \small
 \renewcommand{\arraystretch}{1.2}
@@ -37,7 +30,7 @@
 \parbox[t]{0.24\textwidth}{\raggedright Noise source\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright Level used\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Treatment\par\vspace{3pt}} \\[5pt]
 \hline
 \parbox[t]{0.24\textwidth}{\raggedright Shared reference laser\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright Included in effective laser phases\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Shared between all optical inputs; suppressed with laser noise by TDI.\par\vspace{3pt}} \\[5pt]
-\parbox[t]{0.24\textwidth}{\raggedright Delay-board timing $\epsilon_i$\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright $2.25\,\mathrm{ps}/\sqrt{\mathrm{Hz}}$ Rb-model estimate\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Propagated for independent boards without additional timing correction. A common fluctuation cancels to the same order as laser noise.\par\vspace{3pt}} \\[5pt]
+\parbox[t]{0.24\textwidth}{\raggedright Differential board timing $\Delta\epsilon_i$\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright No separate spectrum assigned\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Common timing is suppressed by TDI and clock correction. Differential timing is assumed below the included contributions.\par\vspace{3pt}} \\[5pt]
 \parbox[t]{0.24\textwidth}{\raggedright Electronic baseline\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright $4.7\times10^{-6}$ cycles/$\sqrt{\mathrm{Hz}}$ measured\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Assigned to the carrier and sideband link readouts.\par\vspace{3pt}} \\[5pt]
 \parbox[t]{0.24\textwidth}{\raggedright Delay-implementation residuals\par\vspace{3pt}} & \parbox[t]{0.28\textwidth}{\raggedright Not quantified in this calculation\par\vspace{3pt}} & \parbox[t]{0.41\textwidth}{\raggedright Development is ongoing; excluded from the component sum.\par\vspace{3pt}} \\[5pt]
 \hline

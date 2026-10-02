@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99e
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: modelling-comments.aux
+Reallocating 'name_of_file' (item size: 1) to 24 items.
+Reallocating 'name_of_file' (item size: 1) to 10 items.
+Reallocating 'name_of_file' (item size: 1) to 6 items.
+The style file: unsrt.bst
+Database file #1: modelling-commentsNotes.bib
+Database file #2: citations.bib
+You've used 15 entries,
+            1791 wiz_defined-function locations,
+            545 strings with 8775 characters,
+and the built_in function-call counts, 5005 in all, are:
+= -- 284
+> -- 530
+< -- 1
++ -- 182
+- -- 167
+* -- 494
+:= -- 927
+add.period$ -- 48
+call.type$ -- 15
+change.case$ -- 15
+chr.to.int$ -- 0
+cite$ -- 15
+duplicate$ -- 138
+empty$ -- 340
+format.name$ -- 167
+if$ -- 995
+int.to.chr$ -- 0
+int.to.str$ -- 15
+missing$ -- 13
+newline$ -- 81
+num.names$ -- 15
+pop$ -- 32
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 59
+stack$ -- 0
+substring$ -- 230
+swap$ -- 25
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 29
+width$ -- 17
+write$ -- 169
