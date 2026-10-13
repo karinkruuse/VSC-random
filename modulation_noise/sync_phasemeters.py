@@ -7,7 +7,7 @@ from scipy.interpolate import CubicSpline
 from scipy.optimize import minimize_scalar
 
 
-def estimate_offset(x, y, max_lag):
+def estimate_offset(x, y, max_lag, minimum_correlation=.8):
     """Return lag in samples: y[j] corresponds to x[j + lag]."""
     x = x - np.mean(x)
     y = y - np.mean(y)
@@ -30,7 +30,7 @@ def estimate_offset(x, y, max_lag):
     shift = fit(idx)
     aligned = spline(idx - shift)
     quality = float(np.corrcoef(x[idx], aligned)[0, 1])
-    if quality < .8:
+    if quality < minimum_correlation:
         raise ValueError(f"Ambiguous input B alignment (correlation={quality:.3f})")
     return shift, quality, [fit(block) for block in np.array_split(idx, 3)]
 
@@ -50,11 +50,23 @@ def synchronize(first, second):
         raise ValueError('Cannot distinguish carrier and LSB from input A frequencies')
     if np.median(a['Input A Frequency (Hz)']) > np.median(b['Input A Frequency (Hz)']):
         return synchronize(second, first)
-    x, y = a['Input B Frequency (Hz)'], b['Input B Frequency (Hz)']
-    if abs(np.median(x) - np.median(y)) > 1e3:
+    x_frequency, y_frequency = a['Input B Frequency (Hz)'], b['Input B Frequency (Hz)']
+    if abs(np.median(x_frequency) - np.median(y_frequency)) > 1e3:
         raise ValueError("Input B frequencies do not identify the same reference signal")
     max_lag = min(int(round(10 / dt)), min(len(a), len(b)) // 4)
-    lag, quality, block_lags = estimate_offset(x, y, max_lag)
+    candidates = []
+    for field in ('Input B Frequency (Hz)', 'Input B I (V)', 'Input B Q (V)'):
+        try:
+            candidate = estimate_offset(a[field], b[field], max_lag,
+                                        minimum_correlation=-1)
+            candidates.append((candidate[1], field, candidate))
+        except (ValueError, FloatingPointError):
+            continue
+    if not candidates:
+        raise ValueError("No usable common input B observable for synchronization")
+    quality, sync_field, (lag, quality, block_lags) = max(candidates)
+    if quality < .8:
+        raise ValueError(f"Ambiguous input B alignment (best correlation={quality:.3f})")
     indices = np.arange(len(a))
     keep = (indices - lag >= 0) & (indices - lag <= len(b) - 1)
     indices = indices[keep]
@@ -76,14 +88,17 @@ def synchronize(first, second):
         merged[f'Input 1 {q}'] = CubicSpline(np.arange(len(b)), values-offset)(mapped) + offset
         merged[f'Input 2 {q}'] = a[f'Input A {q}'][indices]
         merged[f'Input 3 {q}'] = a[f'Input B {q}'][indices]
+    x, y = a[sync_field], b[sync_field]
     centered_y = y - np.median(y)
-    residual = (x[indices] - np.median(y)) - CubicSpline(np.arange(len(b)), centered_y)(mapped)
+    residual = (x[indices] - np.median(x)) - CubicSpline(np.arange(len(b)), centered_y)(mapped)
     report = {
         'reference_file': str(first), 'shifted_file': str(second),
         'offset_definition': 'shifted file sample j occurs at reference sample j + offset_samples',
         'offset_samples': lag, 'offset_seconds': lag * dt,
+        'synchronization_field': sync_field,
         'thirds_offset_seconds': [v*dt for v in block_lags],
-        'aligned_B_correlation': quality, 'aligned_B_difference_std_Hz': float(np.std(residual)),
+        'aligned_B_correlation': quality,
+        'aligned_B_difference_std': float(np.std(residual)),
         'sample_rate_Hz': 1/dt, 'overlap_samples': len(indices),
         'overlap_duration_seconds': float(merged['Time (s)'][-1]),
         'channel_mapping': {'1': 'shifted file A: carrier', '2': 'reference file A: LSB', '3': 'reference file B: USB'},
