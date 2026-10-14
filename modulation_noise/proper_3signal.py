@@ -59,7 +59,8 @@ def minmax_envelope(t, x, max_bins=6000):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    default_data = Path(__file__).resolve().parent / "data" / "multi_PM" / "mod27_20261002_163549.npy"
+    default_data = (Path(__file__).resolve().parent / "data" / "multi_PM"
+                    / "mod27_20261002_1635" / "mod27_20261002_163549.npy")
     default_second = default_data.with_name("mod27_20261002_163550.npy")
     parser.add_argument("data", nargs="?", type=Path,
                         help="NPY file or directory containing a two-PM pair")

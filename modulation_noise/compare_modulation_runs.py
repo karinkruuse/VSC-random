@@ -1,5 +1,5 @@
 """Compare the modulation-frequency ASD of two synchronized measurements."""
-# python modulation_noise/proper_3signal.py modulation_noise/data/multi_PM/mod19_20261014_135811.npy --second-pm modulation_noise/data/multi_PM/mod19_20261014_135812.npy --welch-seconds 128 --debug --exclude-spikes --direct-phase
+# python modulation_noise/proper_3signal.py modulation_noise/data/multi_PM/mod19_20261014_1358 --welch-seconds 128 --debug --exclude-spikes --direct-phase
 from pathlib import Path
 import argparse
 
