@@ -59,13 +59,15 @@ def minmax_envelope(t, x, max_bins=6000):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    default_data = (Path(__file__).resolve().parent / "data" / "multi_PM"
-                    / "mod27_20261002_1635" / "mod27_20261002_163549.npy")
-    default_second = default_data.with_name("mod27_20261002_163550.npy")
     parser.add_argument("data", nargs="?", type=Path,
-                        help="NPY file or directory containing a two-PM pair")
+                        help="NPY file or directory containing a two-PM pair; omit for menu")
     parser.add_argument("--second-pm", type=Path,
                         help="Second phasemeter file; synchronize using common input B")
+    parser.add_argument(
+        "--search-dir", type=Path,
+        default=Path(__file__).resolve().parent / "data",
+        help="Directory searched recursively in interactive mode (default: modulation_noise/data)",
+    )
     parser.add_argument("--channels", nargs=3, type=int, metavar=("CARRIER", "LSB", "USB"))
     parser.add_argument("--cut-start", type=float, default=0)
     parser.add_argument("--cut-end", type=float, default=0, help="Seconds discarded at end (default: 0, full recording)")
@@ -91,16 +93,19 @@ def main():
         parser.error("Cuts must be nonnegative; fmin and threshold must be positive")
     if args.spike_window < 3 or args.spike_window % 2 == 0:
         parser.error("--spike-window must be an odd integer of at least 3")
+    files = None
     if args.data is None:
-        data = default_data
-        if args.second_pm is None:
-            args.second_pm = default_second
+        if args.second_pm is not None:
+            parser.error("--second-pm requires the first NPY path, or omit both paths for the menu")
+        from plot_two_pm_absolute_time import choose_pair
+        files = choose_pair(args.search_dir)
     else:
-        data = args.data
-    data = data.resolve()
-    if data.is_dir() or args.second_pm:
+        data = args.data.resolve()
+    if files is not None or data.is_dir() or args.second_pm:
         from sync_phasemeters import synchronize
-        if data.is_dir():
+        if files is not None:
+            pass
+        elif data.is_dir():
             files = sorted(p for p in data.glob("*.npy") if not p.stem.endswith("_synced"))
             if len(files) != 2 or args.second_pm:
                 parser.error("Supply a directory with exactly two raw NPY files, or a file plus --second-pm")
